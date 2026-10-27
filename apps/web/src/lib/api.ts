@@ -35,3 +35,26 @@ export const api = {
   cancel: (id: string) => req<Job>(`/api/jobs/${id}/cancel`, { method: "POST" }),
 };
 export const ACTIVE = ["queued","analyzing","planning","awaiting_approval","generating_assets","generating_narration","rendering_scenes","assembling","quality_check"];
+
+export type SceneT = {
+  id: string; order: number; narration_text: string; estimated_duration: number; learning_objective: string; key_message: string;
+  visual_type: string; visual_description: string; status: string; director_notes: string;
+  visual_elements: { id: string; kind: string; label: string }[];
+  element_relationships: { source: string; target: string; kind: string }[];
+  animation_sequence: { id: string; at: number; duration: number; action: string; targets: string[]; description: string }[];
+  on_screen_text: { text: string; at: number; duration: number }[];
+  asset_requirements: { id: string; kind: string; query: string; status: string; justification: string }[];
+  transition: { type: string; duration: number };
+  timing: { narration_audio_s: number | null; revised_from_audio: boolean };
+  quality_checks: string[]; [k: string]: unknown;
+};
+export type StoryboardT = { schema_version: number; project_id: string; title: string; revision: number; approved: boolean;
+  created_by: Record<string, unknown>; scenes: SceneT[] };
+export const VISUAL_TYPES = ["animated_diagram","architecture","map","chart","timeline","icons_labels","footage","screenshot","ui_demo","layered_motion","hybrid"];
+export const TRANSITIONS = ["cut","fade","dissolve","wipe","slide"];
+export const sbApi = {
+  plan: (id: string) => req<Job>(`/api/projects/${id}/jobs/storyboard`, { method: "POST" }),
+  get: async (id: string): Promise<StoryboardT | null> => { try { return await req<StoryboardT>(`/api/projects/${id}/storyboard`); } catch (e) { if (/No storyboard/.test((e as Error).message)) return null; throw e; } },
+  save: (id: string, sb: StoryboardT) => req<StoryboardT>(`/api/projects/${id}/storyboard`, { method: "PUT", body: JSON.stringify(sb) }),
+  approve: (id: string) => req<StoryboardT>(`/api/projects/${id}/storyboard/approve`, { method: "POST" }),
+};

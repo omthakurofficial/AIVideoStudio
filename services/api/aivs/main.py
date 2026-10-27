@@ -9,10 +9,20 @@ from .store import Store, TERMINAL_STATES
 from .worker import Worker
 from .models import ProjectCreate, ScriptUpdate, RESOLUTIONS
 from .health import health
+from .director import Director
+from .storyboard import Storyboard, store as sbstore
+from pydantic import ValidationError
 
 
-def create_app(settings: Settings | None = None) -> FastAPI:
+def create_app(settings: Settings | None = None, director_factory=None) -> FastAPI:
     settings = settings or load_settings()
+
+    if director_factory is None:
+        def director_factory():  # built lazily so the app runs without AI credentials
+            from .providers import load_model_specs, get_provider
+            from .providers.base import load_config
+            spec = load_model_specs()['planning']
+            return Director(get_provider(spec.provider, settings.aws_region), spec, load_config()['director'])
 
     def new_store() -> Store:
         return Store(connect(settings.db_path), settings.projects_dir)
@@ -23,7 +33,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         store = new_store()
         migrate(store.conn)
         store.recover_interrupted()
-        worker = Worker(new_store)
+        worker = Worker(new_store, director_factory)
         worker.start()
         # Re-queue jobs that were queued but never started.
         for j in store.list_jobs(limit=1000):
@@ -79,6 +89,50 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         job = store().create_job(pid, "analyze_script")
         app.state.worker.submit(job["id"])
         return job
+
+    @app.post("/api/projects/{pid}/jobs/storyboard", status_code=202)
+    def start_storyboard(pid: str):
+        _project(pid)
+        job = store().create_job(pid, "plan_storyboard")
+        app.state.worker.submit(job["id"])
+        return job
+
+    @app.get("/api/projects/{pid}/storyboard")
+    def get_storyboard(pid: str):
+        _project(pid)
+        sb = sbstore.load(store().workspace(pid).root)
+        if not sb:
+            raise HTTPException(404, "No storyboard yet. Plan one from the project page.")
+        return sb.model_dump()
+
+    @app.put("/api/projects/{pid}/storyboard")
+    def put_storyboard(pid: str, body: dict):
+        """Replace the storyboard with an edited version. Fully re-validated; revision bumps; approval resets."""
+        _project(pid)
+        root = store().workspace(pid).root
+        cur = sbstore.load(root)
+        if not cur:
+            raise HTTPException(404, "No storyboard to edit.")
+        body = {**body, "project_id": pid, "schema_version": 1, "approved": False}
+        try:
+            sb = Storyboard.model_validate(body)
+        except ValidationError as e:
+            raise HTTPException(422, [{"where": ".".join(map(str, x["loc"])), "problem": x["msg"]} for x in e.errors()[:20]])
+        sb = sbstore.save(root, sb.model_copy(update={"created_by": cur.created_by}))
+        return sb.model_dump()
+
+    @app.post("/api/projects/{pid}/storyboard/approve")
+    def approve_storyboard(pid: str):
+        _project(pid)
+        root = store().workspace(pid).root
+        sb = sbstore.load(root)
+        if not sb:
+            raise HTTPException(404, "No storyboard to approve.")
+        sb = sbstore.save(root, sb.model_copy(update={"approved": True}), bump=False)
+        for j in store().list_jobs(pid):
+            if j["kind"] == "plan_storyboard" and j["state"] == "awaiting_approval":
+                store().update_job(j["id"], state="completed", current_step="Storyboard approved")
+        return sb.model_dump()
 
     @app.get("/api/jobs")
     def list_jobs(project_id: str | None = None):

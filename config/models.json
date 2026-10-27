@@ -1,0 +1,9 @@
+{
+  "_comment": "Model per task. Bedrock Claude models require inference-profile IDs (au./global. prefix) on this account; bare IDs fail. Verified invocable 2026-10-27: au.anthropic.claude-sonnet-4-5-20250929-v1:0, au.anthropic.claude-haiku-4-5-20251001-v1:0, global.* equivalents, openai.gpt-oss-120b-1:0. Override with env AIVS_MODEL_<TASK>.",
+  "tasks": {
+    "script":   {"provider": "bedrock", "model_id": "au.anthropic.claude-haiku-4-5-20251001-v1:0",  "structured_mode": "tool", "max_tokens": 4000,  "temperature": 0.7},
+    "planning": {"provider": "bedrock", "model_id": "au.anthropic.claude-sonnet-4-5-20250929-v1:0", "structured_mode": "tool", "max_tokens": 16000, "temperature": 0.4},
+    "review":   {"provider": "bedrock", "model_id": "au.anthropic.claude-haiku-4-5-20251001-v1:0",  "structured_mode": "tool", "max_tokens": 2000,  "temperature": 0.0}
+  },
+  "director": {"max_repair_attempts": 2, "duration_tolerance": 0.3, "narration_coverage_min": 0.92}
+}

@@ -1,0 +1,590 @@
+{
+ "$defs": {
+  "AnimationStep": {
+   "additionalProperties": false,
+   "properties": {
+    "id": {
+     "pattern": "^[a-z][a-z0-9_]{0,40}$",
+     "title": "Id",
+     "type": "string"
+    },
+    "at": {
+     "description": "Seconds from scene start.",
+     "minimum": 0,
+     "title": "At",
+     "type": "number"
+    },
+    "duration": {
+     "exclusiveMinimum": 0,
+     "maximum": 60,
+     "title": "Duration",
+     "type": "number"
+    },
+    "action": {
+     "enum": [
+      "appear",
+      "disappear",
+      "fade_in",
+      "fade_out",
+      "move",
+      "highlight",
+      "pulse",
+      "draw",
+      "flow",
+      "scale",
+      "type_text",
+      "grow"
+     ],
+     "title": "Action",
+     "type": "string"
+    },
+    "targets": {
+     "items": {
+      "type": "string"
+     },
+     "minItems": 1,
+     "title": "Targets",
+     "type": "array"
+    },
+    "params": {
+     "additionalProperties": true,
+     "title": "Params",
+     "type": "object"
+    },
+    "description": {
+     "default": "",
+     "maxLength": 200,
+     "title": "Description",
+     "type": "string"
+    }
+   },
+   "required": [
+    "id",
+    "at",
+    "duration",
+    "action",
+    "targets"
+   ],
+   "title": "AnimationStep",
+   "type": "object"
+  },
+  "AssetRequirement": {
+   "additionalProperties": false,
+   "properties": {
+    "id": {
+     "pattern": "^[a-z][a-z0-9_]{0,40}$",
+     "title": "Id",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "stock_video",
+      "stock_image",
+      "user_asset",
+      "generated_graphic"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "query": {
+     "default": "",
+     "description": "Search phrase for stock media or description of the asset.",
+     "maxLength": 160,
+     "title": "Query",
+     "type": "string"
+    },
+    "orientation": {
+     "default": "any",
+     "enum": [
+      "landscape",
+      "portrait",
+      "any"
+     ],
+     "title": "Orientation",
+     "type": "string"
+    },
+    "required": {
+     "default": false,
+     "title": "Required",
+     "type": "boolean"
+    },
+    "status": {
+     "default": "pending",
+     "enum": [
+      "pending",
+      "found",
+      "missing",
+      "provided"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "justification": {
+     "default": "",
+     "description": "What visual information this adds that animation cannot.",
+     "maxLength": 200,
+     "title": "Justification",
+     "type": "string"
+    }
+   },
+   "required": [
+    "id",
+    "kind"
+   ],
+   "title": "AssetRequirement",
+   "type": "object"
+  },
+  "CameraInstruction": {
+   "additionalProperties": false,
+   "properties": {
+    "at": {
+     "minimum": 0,
+     "title": "At",
+     "type": "number"
+    },
+    "duration": {
+     "exclusiveMinimum": 0,
+     "maximum": 60,
+     "title": "Duration",
+     "type": "number"
+    },
+    "move": {
+     "enum": [
+      "static",
+      "pan",
+      "zoom_in",
+      "zoom_out",
+      "focus"
+     ],
+     "title": "Move",
+     "type": "string"
+    },
+    "target": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Target"
+    },
+    "amount": {
+     "anyOf": [
+      {
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Zoom factor (e.g. 1.3) or pan distance as a fraction of frame.",
+     "title": "Amount"
+    }
+   },
+   "required": [
+    "at",
+    "duration",
+    "move"
+   ],
+   "title": "CameraInstruction",
+   "type": "object"
+  },
+  "OnScreenText": {
+   "additionalProperties": false,
+   "properties": {
+    "text": {
+     "maxLength": 140,
+     "minLength": 1,
+     "title": "Text",
+     "type": "string"
+    },
+    "at": {
+     "minimum": 0,
+     "title": "At",
+     "type": "number"
+    },
+    "duration": {
+     "exclusiveMinimum": 0,
+     "maximum": 60,
+     "title": "Duration",
+     "type": "number"
+    },
+    "element_id": {
+     "anyOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "title": "Element Id"
+    }
+   },
+   "required": [
+    "text",
+    "at",
+    "duration"
+   ],
+   "title": "OnScreenText",
+   "type": "object"
+  },
+  "Relationship": {
+   "additionalProperties": false,
+   "properties": {
+    "source": {
+     "title": "Source",
+     "type": "string"
+    },
+    "target": {
+     "title": "Target",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "connects",
+      "contains",
+      "flows_to",
+      "compares",
+      "depends_on",
+      "precedes"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "label": {
+     "default": "",
+     "maxLength": 80,
+     "title": "Label",
+     "type": "string"
+    }
+   },
+   "required": [
+    "source",
+    "target",
+    "kind"
+   ],
+   "title": "Relationship",
+   "type": "object"
+  },
+  "Scene": {
+   "additionalProperties": false,
+   "properties": {
+    "id": {
+     "pattern": "^s\\d{2,3}$",
+     "title": "Id",
+     "type": "string"
+    },
+    "order": {
+     "minimum": 1,
+     "title": "Order",
+     "type": "integer"
+    },
+    "narration_text": {
+     "minLength": 1,
+     "title": "Narration Text",
+     "type": "string"
+    },
+    "estimated_duration": {
+     "exclusiveMinimum": 0,
+     "maximum": 180,
+     "title": "Estimated Duration",
+     "type": "number"
+    },
+    "learning_objective": {
+     "maxLength": 300,
+     "minLength": 1,
+     "title": "Learning Objective",
+     "type": "string"
+    },
+    "key_message": {
+     "maxLength": 200,
+     "minLength": 1,
+     "title": "Key Message",
+     "type": "string"
+    },
+    "visual_type": {
+     "enum": [
+      "animated_diagram",
+      "architecture",
+      "map",
+      "chart",
+      "timeline",
+      "icons_labels",
+      "footage",
+      "screenshot",
+      "ui_demo",
+      "layered_motion",
+      "hybrid"
+     ],
+     "title": "Visual Type",
+     "type": "string"
+    },
+    "visual_description": {
+     "maxLength": 900,
+     "minLength": 1,
+     "title": "Visual Description",
+     "type": "string"
+    },
+    "visual_elements": {
+     "items": {
+      "$ref": "#/$defs/VisualElement"
+     },
+     "title": "Visual Elements",
+     "type": "array"
+    },
+    "element_relationships": {
+     "items": {
+      "$ref": "#/$defs/Relationship"
+     },
+     "title": "Element Relationships",
+     "type": "array"
+    },
+    "animation_sequence": {
+     "items": {
+      "$ref": "#/$defs/AnimationStep"
+     },
+     "title": "Animation Sequence",
+     "type": "array"
+    },
+    "timing": {
+     "$ref": "#/$defs/SceneTiming"
+    },
+    "camera_instructions": {
+     "items": {
+      "$ref": "#/$defs/CameraInstruction"
+     },
+     "title": "Camera Instructions",
+     "type": "array"
+    },
+    "on_screen_text": {
+     "items": {
+      "$ref": "#/$defs/OnScreenText"
+     },
+     "title": "On Screen Text",
+     "type": "array"
+    },
+    "asset_requirements": {
+     "items": {
+      "$ref": "#/$defs/AssetRequirement"
+     },
+     "title": "Asset Requirements",
+     "type": "array"
+    },
+    "transition": {
+     "$ref": "#/$defs/Transition"
+    },
+    "quality_checks": {
+     "description": "Things QC should verify for this scene.",
+     "items": {
+      "type": "string"
+     },
+     "title": "Quality Checks",
+     "type": "array"
+    },
+    "status": {
+     "default": "planned",
+     "enum": [
+      "planned",
+      "approved",
+      "rendering",
+      "rendered",
+      "failed"
+     ],
+     "title": "Status",
+     "type": "string"
+    },
+    "director_notes": {
+     "default": "",
+     "description": "Why this visual treatment was chosen; link to neighbouring scenes.",
+     "maxLength": 400,
+     "title": "Director Notes",
+     "type": "string"
+    }
+   },
+   "required": [
+    "id",
+    "order",
+    "narration_text",
+    "estimated_duration",
+    "learning_objective",
+    "key_message",
+    "visual_type",
+    "visual_description"
+   ],
+   "title": "Scene",
+   "type": "object"
+  },
+  "SceneTiming": {
+   "additionalProperties": false,
+   "properties": {
+    "unit": {
+     "const": "seconds",
+     "default": "seconds",
+     "title": "Unit",
+     "type": "string"
+    },
+    "scene_relative": {
+     "const": true,
+     "default": true,
+     "title": "Scene Relative",
+     "type": "boolean"
+    },
+    "narration_audio_s": {
+     "anyOf": [
+      {
+       "minimum": 0,
+       "type": "number"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "default": null,
+     "description": "Measured narration length; None until audio exists.",
+     "title": "Narration Audio S"
+    },
+    "revised_from_audio": {
+     "default": false,
+     "title": "Revised From Audio",
+     "type": "boolean"
+    }
+   },
+   "title": "SceneTiming",
+   "type": "object"
+  },
+  "Transition": {
+   "additionalProperties": false,
+   "properties": {
+    "type": {
+     "default": "cut",
+     "enum": [
+      "cut",
+      "fade",
+      "dissolve",
+      "wipe",
+      "slide"
+     ],
+     "title": "Type",
+     "type": "string"
+    },
+    "duration": {
+     "default": 0.0,
+     "maximum": 3,
+     "minimum": 0,
+     "title": "Duration",
+     "type": "number"
+    }
+   },
+   "title": "Transition",
+   "type": "object"
+  },
+  "VisualElement": {
+   "additionalProperties": false,
+   "properties": {
+    "id": {
+     "description": "Unique within the scene; animations and relationships refer to it.",
+     "pattern": "^[a-z][a-z0-9_]{0,40}$",
+     "title": "Id",
+     "type": "string"
+    },
+    "kind": {
+     "enum": [
+      "node",
+      "service_node",
+      "icon",
+      "label",
+      "callout",
+      "box",
+      "group",
+      "arrow",
+      "route",
+      "packet",
+      "chart_bar",
+      "chart_line",
+      "map_region",
+      "map_marker",
+      "timeline_marker",
+      "text",
+      "image",
+      "footage"
+     ],
+     "title": "Kind",
+     "type": "string"
+    },
+    "label": {
+     "default": "",
+     "maxLength": 80,
+     "title": "Label",
+     "type": "string"
+    },
+    "props": {
+     "additionalProperties": true,
+     "description": "Primitive-specific options (icon, color, value, x/y hints).",
+     "title": "Props",
+     "type": "object"
+    }
+   },
+   "required": [
+    "id",
+    "kind"
+   ],
+   "title": "VisualElement",
+   "type": "object"
+  }
+ },
+ "additionalProperties": false,
+ "properties": {
+  "schema_version": {
+   "const": 1,
+   "default": 1,
+   "title": "Schema Version",
+   "type": "integer"
+  },
+  "project_id": {
+   "title": "Project Id",
+   "type": "string"
+  },
+  "title": {
+   "title": "Title",
+   "type": "string"
+  },
+  "revision": {
+   "default": 1,
+   "minimum": 1,
+   "title": "Revision",
+   "type": "integer"
+  },
+  "approved": {
+   "default": false,
+   "title": "Approved",
+   "type": "boolean"
+  },
+  "created_by": {
+   "additionalProperties": true,
+   "description": "Provider/model provenance.",
+   "title": "Created By",
+   "type": "object"
+  },
+  "scenes": {
+   "items": {
+    "$ref": "#/$defs/Scene"
+   },
+   "minItems": 1,
+   "title": "Scenes",
+   "type": "array"
+  }
+ },
+ "required": [
+  "project_id",
+  "title",
+  "scenes"
+ ],
+ "title": "Storyboard",
+ "type": "object"
+}
