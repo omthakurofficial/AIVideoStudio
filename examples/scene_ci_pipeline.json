@@ -1,0 +1,274 @@
+{
+ "id": "s01",
+ "order": 1,
+ "narration_text": "Every time a developer pushes code, a CI pipeline wakes up. It builds a Docker image, runs the automated tests, and pushes the image to a container registry.",
+ "estimated_duration": 10.0,
+ "learning_objective": "Understand what a CI pipeline does after a code push",
+ "key_message": "A push triggers build, test and publish automatically",
+ "visual_type": "animated_diagram",
+ "visual_description": "Developer pushes code into a CI pipeline; the pipeline builds an image, runs tests, and publishes to a registry; a packet travels along the route.",
+ "visual_elements": [
+  {
+   "id": "developer",
+   "kind": "icon",
+   "label": "Developer",
+   "props": {
+    "icon": "person",
+    "color": "#4A90E2"
+   }
+  },
+  {
+   "id": "ci",
+   "kind": "service_node",
+   "label": "CI Pipeline",
+   "props": {
+    "color": "#F5A623"
+   }
+  },
+  {
+   "id": "build",
+   "kind": "node",
+   "label": "Build image",
+   "props": {
+    "color": "#2496ED"
+   }
+  },
+  {
+   "id": "tests",
+   "kind": "node",
+   "label": "Run tests",
+   "props": {
+    "color": "#3aa876"
+   }
+  },
+  {
+   "id": "registry",
+   "kind": "service_node",
+   "label": "Registry",
+   "props": {
+    "color": "#BD10E0"
+   }
+  },
+  {
+   "id": "a1",
+   "kind": "arrow",
+   "label": "",
+   "props": {
+    "from": "developer",
+    "to": "ci"
+   }
+  },
+  {
+   "id": "a2",
+   "kind": "arrow",
+   "label": "",
+   "props": {
+    "from": "ci",
+    "to": "build"
+   }
+  },
+  {
+   "id": "a3",
+   "kind": "arrow",
+   "label": "",
+   "props": {
+    "from": "build",
+    "to": "tests"
+   }
+  },
+  {
+   "id": "a4",
+   "kind": "route",
+   "label": "",
+   "props": {
+    "from": "tests",
+    "to": "registry"
+   }
+  },
+  {
+   "id": "pkt",
+   "kind": "packet",
+   "label": "",
+   "props": {
+    "color": "#ffd166"
+   }
+  }
+ ],
+ "element_relationships": [
+  {
+   "source": "developer",
+   "target": "ci",
+   "kind": "flows_to",
+   "label": "push"
+  },
+  {
+   "source": "ci",
+   "target": "build",
+   "kind": "precedes",
+   "label": ""
+  },
+  {
+   "source": "build",
+   "target": "tests",
+   "kind": "precedes",
+   "label": ""
+  },
+  {
+   "source": "tests",
+   "target": "registry",
+   "kind": "flows_to",
+   "label": "image"
+  }
+ ],
+ "animation_sequence": [
+  {
+   "id": "x1",
+   "at": 0.0,
+   "duration": 0.5,
+   "action": "fade_in",
+   "targets": [
+    "developer"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x2",
+   "at": 0.8,
+   "duration": 0.8,
+   "action": "draw",
+   "targets": [
+    "a1"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x3",
+   "at": 1.6,
+   "duration": 0.5,
+   "action": "fade_in",
+   "targets": [
+    "ci"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x4",
+   "at": 2.1,
+   "duration": 0.6,
+   "action": "pulse",
+   "targets": [
+    "ci"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x5",
+   "at": 3.0,
+   "duration": 0.5,
+   "action": "fade_in",
+   "targets": [
+    "build"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x6",
+   "at": 3.0,
+   "duration": 0.6,
+   "action": "draw",
+   "targets": [
+    "a2"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x7",
+   "at": 4.5,
+   "duration": 0.5,
+   "action": "fade_in",
+   "targets": [
+    "tests"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x8",
+   "at": 4.5,
+   "duration": 0.6,
+   "action": "draw",
+   "targets": [
+    "a3"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x9",
+   "at": 6.0,
+   "duration": 0.5,
+   "action": "fade_in",
+   "targets": [
+    "registry"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x10",
+   "at": 6.0,
+   "duration": 0.8,
+   "action": "draw",
+   "targets": [
+    "a4"
+   ],
+   "params": {}
+  },
+  {
+   "id": "x11",
+   "at": 7.0,
+   "duration": 2.0,
+   "action": "flow",
+   "targets": [
+    "pkt"
+   ],
+   "params": {
+    "route": "a4"
+   }
+  },
+  {
+   "id": "x12",
+   "at": 7.2,
+   "duration": 1.0,
+   "action": "highlight",
+   "targets": [
+    "registry"
+   ],
+   "params": {}
+  }
+ ],
+ "camera_instructions": [
+  {
+   "at": 0,
+   "duration": 10,
+   "move": "static"
+  }
+ ],
+ "on_screen_text": [
+  {
+   "text": "Push triggers the pipeline",
+   "at": 0.8,
+   "duration": 4.0
+  },
+  {
+   "text": "Build \u2192 Test \u2192 Publish",
+   "at": 5.0,
+   "duration": 4.5
+  }
+ ],
+ "transition": {
+  "type": "fade",
+  "duration": 0.5
+ },
+ "quality_checks": [
+  "All five stages visible",
+  "Arrows connect left to right"
+ ]
+}

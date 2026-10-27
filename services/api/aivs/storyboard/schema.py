@@ -135,11 +135,26 @@ class Scene(_M):
         steps = [a.id for a in self.animation_sequence]
         if len(steps) != len(set(steps)):
             err.append("duplicate animation step ids")
+        kinds = {e.id: e.kind for e in self.visual_elements}
+        for e in self.visual_elements:
+            if e.kind in ("arrow", "route"):
+                f, t = e.props.get("from"), e.props.get("to")
+                if f not in known or t not in known or f == t:
+                    err.append(f"{e.kind} '{e.id}' must have props.from and props.to naming two different element ids in this scene (got {f!r}, {t!r})")
+                elif kinds[f] in ("arrow", "route", "packet") or kinds[t] in ("arrow", "route", "packet"):
+                    err.append(f"{e.kind} '{e.id}' must connect non-connector elements")
         d = self.duration
         for a in self.animation_sequence:
             for t in a.targets:
                 if t not in known:
                     err.append(f"animation {a.id} targets unknown element '{t}'")
+            if a.action == "flow":
+                r = a.params.get("route")
+                if r not in known or kinds.get(r) not in ("arrow", "route"):
+                    err.append(f"flow animation {a.id} needs params.route naming an arrow/route element id (got {r!r})")
+                for t in a.targets:
+                    if kinds.get(t) != "packet":
+                        err.append(f"flow animation {a.id} may only target packet elements ('{t}' is {kinds.get(t)})")
             if a.at + a.duration > d + 0.05:
                 err.append(f"animation {a.id} ends at {a.at + a.duration:.1f}s, after scene end {d:.1f}s")
         for c in self.camera_instructions:

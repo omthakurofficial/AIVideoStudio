@@ -160,3 +160,15 @@ def test_automatic_approval_mode(make_client):
         pid = c.post("/api/projects", json={"title": "T", "script": SCRIPT, "settings": {"target_duration_s": 10, "approval_mode": "automatic"}}).json()["id"]
         assert wait(c, c.post(f"/api/projects/{pid}/jobs/storyboard").json()["id"])["state"] == "completed"
         assert c.get(f"/api/projects/{pid}/storyboard").json()["approved"] is True
+
+
+def test_connector_requires_endpoints_and_flow_requires_route():
+    base = scene(1, "x", visual_elements=[{"id": "a", "kind": "node"}, {"id": "b", "kind": "node"}, {"id": "ar", "kind": "arrow"}, {"id": "pk", "kind": "packet"}])
+    with pytest.raises(Exception, match="props.from"):
+        DirectorOutput.model_validate({"title": "t", "scenes": [base]})
+    ok = scene(1, "x", visual_elements=[{"id": "a", "kind": "node"}, {"id": "b", "kind": "node"}, {"id": "ar", "kind": "arrow", "props": {"from": "a", "to": "b"}}, {"id": "pk", "kind": "packet"}],
+               animation_sequence=[{"id": "f", "at": 0, "duration": 1, "action": "flow", "targets": ["pk"], "params": {"route": "ar"}}])
+    DirectorOutput.model_validate({"title": "t", "scenes": [ok]})
+    ok["animation_sequence"][0]["params"] = {}
+    with pytest.raises(Exception, match="params.route"):
+        DirectorOutput.model_validate({"title": "t", "scenes": [ok]})

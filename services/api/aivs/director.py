@@ -28,6 +28,8 @@ Rules:
 6. Stock footage only when real-world imagery adds information animation cannot. If used, add an asset_requirement with a justification and a precise search query. Animation is the default; do not use footage to fill time.
 7. Choose a transition for each scene boundary and note in director_notes how the scene connects to its neighbours.
 8. Scene ids are s01, s02, ... in order. quality_checks list what must be visible in the final scene.
+9. Every `arrow` or `route` element MUST carry props {{"from": <element id>, "to": <element id>}} naming two non-connector elements of the same scene (these are what get drawn). Also list the semantic link in element_relationships. A `flow` animation targets `packet` elements and MUST set params {{"route": <arrow/route element id>}}; `draw` reveals an arrow/route.
+10. Optional layout hints: props {{"x": 0-1, "y": 0-1}} (fractions of the frame). Without hints, layout is automatic from the relationships (left-to-right, or top-to-bottom in portrait). Icons are drawn as colour-coded labelled badges (props.color hex like #2496ED); there are no brand logos, so make every label self-explanatory.
 Return your answer ONLY by calling the provided tool.
 
 {PRIMITIVES_GUIDE}"""
