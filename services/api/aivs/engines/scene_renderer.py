@@ -80,45 +80,75 @@ def layout(scene: Scene, W: int, H: int) -> tuple[dict[str, Placed], float]:
         rank[i] = maxr + 1 if connected else 0
     # hints
     hint = {e.id: (e.props.get("x"), e.props.get("y")) for e in items}
-    auto = [e for e in items if not all(isinstance(v, (int, float)) and 0 <= v <= 1 for v in hint[e.id])]
-    nranks = (max([rank[e.id] for e in auto], default=-1) + 1) or 1
+    has_valid_hint = {
+        e.id: all(isinstance(v, (int, float)) and 0 <= v <= 1 for v in hint[e.id])
+        for e in items
+    }
     landscape = W >= H
     base_w, base_h = 230 * u, 110 * u
-    top, bottom = 0.16 * H, 0.80 * H  # reserve bottom 20% for caption safe area
-    placed: dict[str, Placed] = {}
-    groups: dict[int, list[VisualElement]] = {}
-    for e in auto: groups.setdefault(rank[e.id], []).append(e)
-    cell_main = base_w * 1.30 if landscape else base_h * 2.1
-    avail_main = (W * 0.94) if landscape else (bottom - top)
-    max_main = max(1, int(avail_main // cell_main))
-    lines = math.ceil(nranks / max_main)
-    cols = min(nranks, max_main)
-    tallest = max((len(v) for v in groups.values()), default=1)
-    band = ((bottom - top) / lines) if landscape else (W * 0.94 / lines)
-    cross_cell = (base_h * 1.55) if landscape else (base_w * 1.12)
-    s_cross = band / (tallest * cross_cell) if tallest else 1.0
-    s_main = (avail_main / cols) / cell_main
-    s = max(0.45, min(s_cross, max(1.0, min(1.5, s_main))))  # shrink when crowded, grow up to 1.5x when there is room
-    for r, els in groups.items():
-        line, pos = divmod(r, max_main)
-        for k, e in enumerate(els):
-            n = len(els)
-            w, h = (base_w * s, base_h * s)
-            if e.kind == "icon": w = h = 92 * u * s
-            elif e.kind in ("label", "text"): w, h = 300 * u * s, 50 * u * s
-            elif e.kind == "chart_bar": w, h = 70 * u * s, (60 + 260 * float(e.props.get("value", 0.5) if isinstance(e.props.get("value", 0.5), (int, float)) else 0.5)) * u * s
-            if landscape:
-                x = W * 0.03 + (W * 0.94) * (pos + 0.5) / cols
-                y = top + band * line + band * (k + 0.5) / n
-            else:
-                y = top + (bottom - top) * (pos + 0.5) / cols
-                x = W * 0.03 + band * line + band * (k + 0.5) / n if lines > 1 else W * 0.03 + (W * 0.94) * (k + 0.5) / n
-            placed[e.id] = Placed(e, x, y, w, h)
-    for e in items:
-        if e.id not in placed:
-            hx, hy = hint[e.id]
-            w, h = (base_w * s, base_h * s) if e.kind != "icon" else (92 * u * s, 92 * u * s)
-            placed[e.id] = Placed(e, hx * W, hy * H, w, h)
+    top, bottom = 0.20 * H, 0.79 * H  # reserve top 20% for 1-2 title lines and bottom 21% for caption safe area
+
+    def _build_dag_layout(target_items: list[VisualElement]) -> tuple[dict[str, Placed], float]:
+        nranks = (max([rank[e.id] for e in target_items], default=-1) + 1) or 1
+        groups: dict[int, list[VisualElement]] = {}
+        for e in target_items:
+            groups.setdefault(rank[e.id], []).append(e)
+        cell_main = base_w * 1.30 if landscape else base_h * 2.1
+        avail_main = (W * 0.88) if landscape else (bottom - top)
+        max_main = max(1, int(avail_main // cell_main))
+        lines = math.ceil(nranks / max_main)
+        cols = min(nranks, max_main)
+        tallest = max((len(v) for v in groups.values()), default=1)
+        band = ((bottom - top) / lines) if landscape else (W * 0.88 / lines)
+        cross_cell = (base_h * 1.62) if landscape else (base_w * 1.15)
+        s_cross = band / (tallest * cross_cell) if tallest else 1.0
+        s_main = (avail_main / cols) / cell_main
+        sc = max(0.45, min(s_cross, max(1.0, min(1.35, s_main))))
+        out: dict[str, Placed] = {}
+        for r, els in groups.items():
+            line, pos = divmod(r, max_main)
+            for k, e in enumerate(els):
+                n = len(els)
+                w, h = (base_w * sc, base_h * sc)
+                if e.kind == "icon": w = h = 92 * u * sc
+                elif e.kind in ("label", "text"): w, h = 280 * u * sc, 48 * u * sc
+                elif e.kind == "chart_bar": w, h = 70 * u * sc, (60 + 240 * float(e.props.get("value", 0.5) if isinstance(e.props.get("value", 0.5), (int, float)) else 0.5)) * u * sc
+                if landscape:
+                    x = W * 0.06 + (W * 0.88) * (pos + 0.5) / cols
+                    y = top + band * line + band * (k + 0.5) / n
+                else:
+                    y = top + (bottom - top) * (pos + 0.5) / cols
+                    x = W * 0.06 + band * line + band * (k + 0.5) / n if lines > 1 else W * 0.06 + (W * 0.88) * (k + 0.5) / n
+                out[e.id] = Placed(e, x, y, w, h)
+        return out, sc
+
+    auto = [e for e in items if not has_valid_hint[e.id]]
+    placed, s = _build_dag_layout(auto if auto else items)
+    if len(auto) < len(items):
+        placed = dict(placed) if auto else {}
+        for e in items:
+            if has_valid_hint[e.id]:
+                hx, hy = hint[e.id]
+                w, h = (base_w * s, base_h * s) if e.kind != "icon" else (92 * u * s, 92 * u * s)
+                pad_x = max(w * 0.55, W * 0.09)
+                pad_top = top + h * 0.55
+                pad_bot = bottom - h * 0.55
+                x = pad_x + float(hx) * max(1.0, W - 2 * pad_x)
+                y = pad_top + float(hy) * max(1.0, pad_bot - pad_top)
+                placed[e.id] = Placed(e, x, y, w, h)
+        # If manual hints cause any two elements (or icon labels) to collide, fall back to clean DAG layout
+        plist = list(placed.values())
+        hint_collision = False
+        for i in range(len(plist)):
+            for j in range(i + 1, len(plist)):
+                a, b = plist[i], plist[j]
+                ah = a.h + (36 * u * s if a.el.kind == "icon" else 0)
+                bh = b.h + (36 * u * s if b.el.kind == "icon" else 0)
+                if abs(a.x - b.x) < (a.w + b.w) * 0.52 and abs(a.y - b.y) < (ah + bh) * 0.55:
+                    hint_collision = True
+                    break
+        if hint_collision:
+            placed, s = _build_dag_layout(items)
     return placed, s
 
 
@@ -360,17 +390,25 @@ class SceneCompiler:
     def _camera_keys(self, moves):
         cx, cy = self.W / 2, self.H / 2
         rig_pos = Track([cx, cy, 0.0], self.fps); rig_sc = Track([100.0, 100.0, 100.0], self.fps)
-        first = moves[0]
-        ax, ay = (self.pos[first.target] if first.target in self.pos else (cx, cy))
-        anchor = [ax, ay, 0.0] if first.move == "focus" else [cx, cy, 0.0]
+        anchor = [cx, cy, 0.0]
         self._add("prop.set", {"layer": "camera_rig", "path": "transform/anchor", "value": anchor})
-        rig_pos.init = list(anchor)
+        self._add("prop.set", {"layer": "camera_rig", "path": "transform/position", "value": anchor})
         for c in moves:
-            t0, t1 = c.at, c.at + c.duration; amt = c.amount or 1.3
-            if c.move in ("zoom_in", "focus"): rig_sc.to(t0, t1, [amt * 100, amt * 100, 100.0])
-            elif c.move == "zoom_out": rig_sc.to(t0, t1, [100.0, 100.0, 100.0])
-            if c.move == "focus": rig_pos.to(t0, t1, [cx, cy, 0.0])
-            if c.move == "pan": rig_pos.to(t0, t1, [rig_pos.cur()[0] + (c.amount or 0.1) * self.W, rig_pos.cur()[1], 0.0])
+            t0, t1 = c.at, c.at + c.duration
+            raw_amt = c.amount or 1.04
+            amt = min(1.05, max(0.96, raw_amt if raw_amt <= 1.05 else 1.04))
+            if c.move in ("zoom_in", "focus"):
+                rig_sc.to(t0, t1, [amt * 100, amt * 100, 100.0])
+            elif c.move == "zoom_out":
+                rig_sc.to(t0, t1, [100.0, 100.0, 100.0])
+            if c.move == "focus" and c.target in self.pos:
+                tx, ty = self.pos[c.target]
+                dx = max(-self.W * 0.025, min(self.W * 0.025, (cx - tx) * 0.12))
+                dy = max(-self.H * 0.025, min(self.H * 0.025, (cy - ty) * 0.12))
+                rig_pos.to(t0, t1, [cx + dx, cy + dy, 0.0])
+            elif c.move == "pan":
+                dx = max(-self.W * 0.03, min(self.W * 0.03, (c.amount or 0.02) * self.W))
+                rig_pos.to(t0, t1, [cx + dx, cy, 0.0])
         for prop, tr in (("transform/position", rig_pos), ("transform/scale", rig_sc)):
             if len(tr.keys) <= 1:
                 self._add("prop.set", {"layer": "camera_rig", "path": prop, "value": tr.init}); continue
