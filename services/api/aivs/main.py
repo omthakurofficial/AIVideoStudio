@@ -1,18 +1,19 @@
-"""FastAPI app: projects, storyboards, production pipeline, scene review, quality reports, exports, and health."""
+"""FastAPI app: projects, storyboards, production pipeline, scene review, quality reports, exports, settings, and health."""
 from __future__ import annotations
-import json
+import io, json, tempfile, zipfile
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field, ValidationError
 from .config import load_settings, Settings, REPO_ROOT
 from .db import connect, migrate
 from .store import Store, TERMINAL_STATES
 from .worker import Worker
 from .models import ProjectCreate, ScriptUpdate, RESOLUTIONS
-from .health import health
+from .health import health, verify_engines_mcp
 from .director import Director
 from .storyboard import Storyboard, store as sbstore
 from .analysis import analyze_script, load_sample_scripts, SUPPORTED_SCRIPT_FORMATS
@@ -27,6 +28,48 @@ class SceneRegenerateRequest(BaseModel):
     visual_correction: str | None = Field(default=None, max_length=500)
     visual_type: str | None = None
     visual_description: str | None = Field(default=None, max_length=900)
+
+
+class SceneUpdateRequest(BaseModel):
+    narration_text: str | None = None
+    visual_description: str | None = None
+    visual_type: str | None = None
+    estimated_duration: float | None = Field(default=None, ge=1.0, le=120.0)
+    key_message: str | None = None
+    learning_objective: str | None = None
+    on_screen_text: list[dict] | None = None
+    status: str | None = None
+
+
+DEFAULT_USER_SETTINGS = {
+    "theme": "dark",
+    "accent_color": "blue",
+    "default_aspect_ratio": "16:9",
+    "default_fps": 30,
+    "default_visual_style": "clean-technical",
+    "default_approval_mode": "automatic",
+    "default_voice": "en-US-GuyNeural",
+    "captions_enabled": True,
+    "caption_font_size": 44,
+    "caption_style": "pop_words",
+}
+
+
+def _classify_file(rel: str) -> str:
+    ext = Path(rel).suffix.lower()
+    if ext in (".mp4", ".mov", ".webm", ".mkv"):
+        return "video"
+    if ext in (".wav", ".mp3", ".m4a", ".ogg"):
+        return "audio"
+    if ext in (".png", ".jpg", ".jpeg", ".webp", ".svg"):
+        return "image"
+    if ext in (".ecproj", ".fcproj"):
+        return "project"
+    if ext == ".json":
+        return "json"
+    if ext in (".srt", ".vtt", ".md", ".txt", ".log"):
+        return "text"
+    return "binary"
 
 
 def create_app(settings: Settings | None = None, director_factory=None) -> FastAPI:
@@ -56,15 +99,65 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         app.state.store, app.state.worker, app.state.settings = store, worker, settings
         yield
 
-    app = FastAPI(title="AIVideoStudio API", version="0.2.0", lifespan=lifespan)
+    app = FastAPI(title="AIVideoStudio API", version="0.3.0", lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_methods=["*"], allow_headers=["*"])
 
     def store() -> Store:
         return app.state.store
 
+    def _user_settings_path() -> Path:
+        settings.data_dir.mkdir(parents=True, exist_ok=True)
+        return settings.data_dir / "user_settings.json"
+
+    def _load_user_settings() -> dict:
+        p = _user_settings_path()
+        data = dict(DEFAULT_USER_SETTINGS)
+        if p.is_file():
+            try:
+                data.update(json.loads(p.read_text(encoding="utf-8")))
+            except Exception:
+                pass
+        return data
+
     @app.get("/api/health")
     def get_health(aws: bool = False):
         return health(settings, include_aws=aws)
+
+    @app.post("/api/engines/verify")
+    def verify_engines():
+        return verify_engines_mcp(settings)
+
+    @app.get("/api/settings")
+    def get_app_settings():
+        from .providers.base import load_config
+        cfg = load_config()
+        return {
+            "preferences": _load_user_settings(),
+            "models": cfg.get("tasks", {}),
+            "director": cfg.get("director", {}),
+            "storage": {
+                "projects_dir": str(settings.projects_dir),
+                "data_dir": str(settings.data_dir),
+                "db_path": str(settings.db_path),
+            },
+            "engines": {
+                "effectcraft_cli": settings.effectcraft_cli,
+                "filmcraft_cli": settings.filmcraft_cli,
+                "ffmpeg": settings.ffmpeg,
+                "ffprobe": settings.ffprobe,
+                "aws_region": settings.aws_region,
+            },
+            "health": health(settings, include_aws=True),
+        }
+
+    @app.put("/api/settings")
+    def update_app_settings(body: dict):
+        cur = _load_user_settings()
+        for k in DEFAULT_USER_SETTINGS:
+            if k in body:
+                cur[k] = body[k]
+        _user_settings_path().write_text(json.dumps(cur, indent=2), encoding="utf-8")
+        return {"ok": True, "preferences": cur}
 
     @app.get("/api/scripts/samples")
     def get_script_samples():
@@ -87,7 +180,13 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
 
     @app.get("/api/projects")
     def list_projects():
-        return store().list_projects()
+        projs = store().list_projects()
+        for p in projs:
+            ws_root = settings.projects_dir / p["id"]
+            p["has_export"] = (ws_root / "renders" / "final.mp4").is_file() and (ws_root / "reports" / "quality_report.json").is_file()
+            prevs = sorted((ws_root / "renders" / "previews").glob("*.png")) if (ws_root / "renders" / "previews").is_dir() else []
+            p["thumbnail"] = f"/api/projects/{p['id']}/media/renders/previews/{prevs[0].name}" if prevs else None
+        return projs
 
     def _project(pid: str) -> dict:
         p = store().get_project(pid)
@@ -157,7 +256,6 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         sb = sbstore.load(ws.root)
         if sb and not sb.approved:
             sb = sbstore.save(ws.root, sb.model_copy(update={"approved": True}), bump=False)
-        # Carry over rendered_scenes checkpoint from the most recent production job so approved scenes are reused
         prev_ckpt: dict = {}
         for j in store().list_jobs(pid):
             if j["kind"] in ("produce_video", "regenerate_scene") and j.get("checkpoint"):
@@ -168,6 +266,29 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
             store().update_job(job["id"], checkpoint=prev_ckpt)
         app.state.worker.submit(job["id"])
         return store().get_job(job["id"])
+
+    @app.put("/api/projects/{pid}/scenes/{scene_id}")
+    def update_scene(pid: str, scene_id: str, body: SceneUpdateRequest):
+        _project(pid)
+        ws = store().workspace(pid)
+        sb = sbstore.load(ws.root)
+        if not sb:
+            raise HTTPException(404, "No storyboard exists for this project.")
+        sb_data = sb.model_dump()
+        target = next((s for s in sb_data["scenes"] if s["id"] == scene_id), None)
+        if not target:
+            raise HTTPException(404, f"Scene '{scene_id}' not found in storyboard.")
+        for k, v in body.model_dump(exclude_none=True).items():
+            target[k] = v
+            if k == "estimated_duration":
+                target["timing"]["narration_audio_s"] = None
+                target["timing"]["revised_from_audio"] = False
+        try:
+            sb_valid = Storyboard.model_validate(sb_data)
+        except ValidationError as e:
+            raise HTTPException(422, [{"where": ".".join(map(str, x["loc"])), "problem": x["msg"]} for x in e.errors()[:10]])
+        sb_saved = sbstore.save(ws.root, sb_valid, bump=True)
+        return sb_saved.model_dump()
 
     @app.post("/api/projects/{pid}/scenes/{scene_id}/regenerate", status_code=202)
     def regenerate_scene(pid: str, scene_id: str, body: SceneRegenerateRequest | None = None):
@@ -259,6 +380,55 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
             out["manifest"] = json.loads(mf.read_text(encoding="utf-8"))
         return out
 
+    @app.get("/api/projects/{pid}/files")
+    def list_project_files(pid: str, preview: str | None = None):
+        _project(pid)
+        root = store().workspace(pid).root.resolve()
+        files = []
+        for p in sorted(root.rglob("*")):
+            if not p.is_file():
+                continue
+            rel = str(p.relative_to(root)).replace("\\", "/")
+            if "/_qc_" in f"/{rel}" or rel.endswith("_raw_export.mp4"):
+                continue
+            st = p.stat()
+            parts = rel.split("/")
+            folder = parts[0] if len(parts) > 1 else "root"
+            kind = _classify_file(rel)
+            files.append({
+                "path": rel,
+                "name": p.name,
+                "folder": folder,
+                "kind": kind,
+                "size_bytes": st.st_size,
+                "modified_at": datetime.fromtimestamp(st.st_mtime, tz=timezone.utc).isoformat(),
+                "url": f"/api/projects/{pid}/media/{rel}",
+            })
+        preview_content = None
+        if preview:
+            target = (root / preview).resolve()
+            if target.is_relative_to(root) and target.is_file() and target.stat().st_size <= 250_000:
+                try:
+                    preview_content = target.read_text(encoding="utf-8", errors="replace")
+                except Exception:
+                    preview_content = None
+        return {"workspace_path": str(root), "files": files, "preview_content": preview_content}
+
+    @app.get("/api/projects/{pid}/export-zip")
+    def export_project_zip(pid: str):
+        p = _project(pid)
+        root = store().workspace(pid).root.resolve()
+        buf = io.BytesIO()
+        with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as zf:
+            for item in sorted(root.rglob("*")):
+                if item.is_file() and not item.name.startswith("_"):
+                    rel = str(item.relative_to(root)).replace("\\", "/")
+                    zf.write(item, arcname=f"{pid}/{rel}")
+        buf.seek(0)
+        safe_title = "".join(c if c.isalnum() or c in "-_" else "_" for c in p["title"])[:40] or pid
+        headers = {"Content-Disposition": f'attachment; filename="{safe_title}_{pid}.zip"'}
+        return StreamingResponse(buf, media_type="application/zip", headers=headers)
+
     @app.get("/api/projects/{pid}/media/{rel_path:path}")
     def get_project_media(pid: str, rel_path: str, download: bool = False):
         _project(pid)
@@ -273,7 +443,11 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
 
     @app.get("/api/jobs")
     def list_jobs(project_id: str | None = None):
-        return store().list_jobs(project_id)
+        jobs = store().list_jobs(project_id)
+        proj_map = {p["id"]: p["title"] for p in store().list_projects()}
+        for j in jobs:
+            j["project_title"] = proj_map.get(j["project_id"], j["project_id"])
+        return jobs
 
     @app.get("/api/jobs/{jid}")
     def get_job(jid: str):

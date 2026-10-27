@@ -1,18 +1,17 @@
 import "./globals.css";
-import Link from "next/link";
 import type { ReactNode } from "react";
+import { AppShell } from "@/components/AppShell";
 
-export const metadata = { title: "AIVideoStudio", description: "AI-directed video production" };
+export const metadata = {
+  title: "AIVideoStudio — AI-Directed Automated Video Production",
+  description: "From Script to Stunning Videos — Automatically",
+};
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <header className="top">
-          <Link className="brand" href="/">AIVideoStudio</Link>
-          <nav aria-label="Main"><Link href="/projects/new">New project</Link></nav>
-        </header>
-        <main>{children}</main>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

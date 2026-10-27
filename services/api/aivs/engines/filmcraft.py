@@ -277,12 +277,16 @@ class FilmCraftAdapter:
 
     def _burn_subtitles(self, in_mp4: Path, srt_path: Path, out_mp4: Path, font_size: int = 22, width: int = 1920, height: int = 1080) -> None:
         # libass default PlayResY is 288 (scales font by height/288). Scale target pixel height by frame width so
-        # 42-char lines fit cleanly on 1-2 lines in both 16:9 (1920x1080) and 9:16 (1080x1920).
-        scale_factor = (font_size / 48.0) if font_size else 1.0
-        target_px = width * (0.032 if width >= height else 0.036) * scale_factor
-        ass_size = max(6, min(22, round(target_px / (height / 288.0))))
-        margin_v = 16 if width >= height else 24
-        style = f"FontName=DejaVu Sans,FontSize={ass_size},PrimaryColour=&H00FFFFFF,OutlineColour=&H00101420,BackColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV={margin_v},Alignment=2"
+        # punchy 2-4 word captions pop cleanly with crisp dark outline + drop shadow (BorderStyle=1, no opaque box).
+        scale_factor = (font_size / 44.0) if font_size else 1.0
+        target_px = width * (0.036 if width >= height else 0.046) * scale_factor
+        ass_size = max(8, min(24, round(target_px / (height / 288.0))))
+        margin_v = 26 if width >= height else 38
+        style = (
+            f"FontName=DejaVu Sans,FontSize={ass_size},Bold=1,"
+            f"PrimaryColour=&H00FFFFFF,OutlineColour=&H000A0E1A,BackColour=&H60000000,"
+            f"BorderStyle=1,Outline=2,Shadow=2,MarginV={margin_v},Alignment=2"
+        )
         r = subprocess.run(
             [self.ffmpeg, "-v", "error", "-y", "-i", str(in_mp4.resolve()),
              "-vf", f"subtitles={srt_path.name}:force_style='{style}'",

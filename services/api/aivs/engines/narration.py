@@ -9,11 +9,12 @@ from .filmcraft import CaptionEntry, AudioPlacement, write_srt
 from .mcp_client import EngineError
 
 DEFAULT_VOICE = "en-US-GuyNeural"
-MAX_CHARS_PER_LINE = 42
+MAX_CHARS_PER_LINE = 28
+MAX_WORDS_PER_CAPTION = 4
 MAX_LINES = 2
-MAX_CPS = 26.0
-MIN_CAP_DUR = 0.45
-MAX_CAP_DUR = 7.5
+MAX_CPS = 32.0
+MIN_CAP_DUR = 0.30
+MAX_CAP_DUR = 5.5
 
 
 @dataclass
@@ -246,13 +247,13 @@ def build_synchronized_captions(sb: Storyboard, scene_audios: dict[str, SceneAud
             tok = item["token"]
             cand = " ".join(chunk_tokens + [tok])
             dur_if_added = (item["end_s"] - (chunk_start if chunk_start is not None else item["start_s"]))
-            if chunk_tokens and (len(cand) > MAX_CHARS_PER_LINE * MAX_LINES - 6 or len(chunk_tokens) >= 11 or dur_if_added > MAX_CAP_DUR - 0.5):
+            if chunk_tokens and (len(cand) > MAX_CHARS_PER_LINE or len(chunk_tokens) >= MAX_WORDS_PER_CAPTION or dur_if_added > 2.4):
                 flush()
             if chunk_start is None:
                 chunk_start = item["start_s"]
             chunk_tokens.append(tok)
             chunk_end = item["end_s"]
-            if tok.endswith((".", "!", "?", ";")) and len(chunk_tokens) >= 4:
+            if tok.endswith((".", "!", "?", ";", ",", ":")) and len(chunk_tokens) >= 2:
                 flush()
         flush()
         scene_offset = round(scene_offset + dur, 3)
