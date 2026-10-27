@@ -86,7 +86,7 @@ def layout(scene: Scene, W: int, H: int) -> tuple[dict[str, Placed], float]:
     }
     landscape = W >= H
     base_w, base_h = 230 * u, 110 * u
-    top, bottom = 0.20 * H, 0.79 * H  # reserve top 20% for 1-2 title lines and bottom 21% for caption safe area
+    top, bottom = (0.20 * H, 0.79 * H) if landscape else (0.16 * H, 0.74 * H)  # reserve top title & bottom caption safe area
 
     def _build_dag_layout(target_items: list[VisualElement]) -> tuple[dict[str, Placed], float]:
         nranks = (max([rank[e.id] for e in target_items], default=-1) + 1) or 1

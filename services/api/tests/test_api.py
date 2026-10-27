@@ -75,3 +75,23 @@ def test_health_reports_real_tools(env):
     with TestClient(create_app(env)) as c:
         h = c.get("/api/health").json()
         assert h["tools"]["ffmpeg"]["ok"] and h["tools"]["effectcraft"]["ok"] and h["tools"]["filmcraft"]["ok"]
+
+
+def test_sample_scripts_and_automatic_script_inspection(env):
+    with TestClient(create_app(env)) as c:
+        samples = c.get("/api/scripts/samples").json()
+        assert len(samples["samples"]) >= 4
+        assert len(samples["supported_formats"]) >= 3
+
+        raw = "## Scene 1: Edge Routing\n[Visual: Animated DNS arrow]\nUser queries Anycast DNS to reach the nearest edge node.\n\n## Scene 2: Gateway\n[Visual: TLS badge]\nThe gateway checks mutual TLS certificates automatically."
+        insp = c.post("/api/scripts/inspect", json={"script": raw}).json()
+        assert insp["detected_format"] == "structured_scenes_with_visual_hints"
+        assert insp["paragraph_count"] == 2
+        assert "[Visual" not in insp["clean_narration"] and "## Scene" not in insp["clean_narration"]
+        assert len(insp["visual_hints"]) == 2
+        assert insp["recommended_aspect_ratio"] == "9:16"
+
+        # Creating a project without specifying target_duration_s auto-calculates it from the script
+        p = c.post("/api/projects", json={"title": "Auto Test", "script": raw}).json()
+        assert p["settings"]["target_duration_s"] == insp["recommended_target_duration_s"]
+        assert p["script_analysis"]["detected_format"] == "structured_scenes_with_visual_hints"

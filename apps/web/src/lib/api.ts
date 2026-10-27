@@ -7,9 +7,22 @@ export type Settings = {
   captions: { enabled: boolean; font_size: number };
   topic: string | null; reference_description: string | null;
 };
+export type ScriptAnalysis = {
+  paragraph_count: number; total_words: number; estimated_seconds: number; recommended_target_duration_s: number;
+  detected_format: string; recommended_aspect_ratio: "16:9" | "9:16"; aspect_reason: string;
+  clean_narration: string; visual_hints: string[];
+  paragraphs: { index: number; words: number; sentences: number; estimated_seconds: number; heading?: string | null; visual_hint?: string | null; narration?: string }[];
+};
+export type SampleScript = {
+  id: string; title: string; file: string; aspect_ratio: "16:9" | "9:16"; visual_style: string; category: string;
+  script: string; analysis: { scene_count: number; total_words: number; estimated_seconds: number; recommended_target_duration_s: number; detected_format: string };
+};
+export type SupportedFormat = { id: string; name: string; description: string; example: string };
+
 export type Project = {
   id: string; title: string; status: string; settings: Settings; created_at: string; updated_at: string;
   output?: { width: number; height: number; fps: number }; script?: string; has_export?: boolean;
+  script_analysis?: ScriptAnalysis;
 };
 export type Job = {
   id: string; project_id: string; kind: string; state: string; progress_done: number; progress_total: number | null;
@@ -63,6 +76,8 @@ async function req<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   health: () => req<Health>("/api/health"),
+  scriptSamples: () => req<{ samples: SampleScript[]; supported_formats: SupportedFormat[] }>("/api/scripts/samples"),
+  inspectScript: (script: string) => req<ScriptAnalysis>("/api/scripts/inspect", { method: "POST", body: JSON.stringify({ script }) }),
   projects: () => req<Project[]>("/api/projects"),
   project: (id: string) => req<Project>(`/api/projects/${id}`),
   createProject: (b: { title: string; script: string; settings: Partial<Settings> }) => req<Project>("/api/projects", { method: "POST", body: JSON.stringify(b) }),

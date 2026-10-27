@@ -7,6 +7,7 @@ from pydantic import ValidationError
 from .providers import LLMProvider, ModelSpec, ProviderError
 from .storyboard import Storyboard, DirectorOutput
 from .storyboard.schema import words
+from .analysis import analyze_script
 
 PRIMITIVES_GUIDE = """Available visual building blocks (the renderer maps these to verified motion-graphics operations):
  element kinds: node, service_node, icon, label, callout, box, group, arrow, route, packet, chart_bar, chart_line, map_region,
@@ -90,10 +91,16 @@ class Director:
 
     def plan(self, project_id: str, script: str, settings: dict, log=lambda m: None) -> tuple[Storyboard, DirectorReport]:
         rep = DirectorReport(model_id=self.spec.model_id)
+        parsed = analyze_script(script)
+        clean_script = parsed["clean_narration"] or script.strip()
+        hints_block = ("\nAuthor per-scene visual guidance (use for visual_description/elements, DO NOT include in narration_text):\n- "
+                       + "\n- ".join(parsed["visual_hints"]) + "\n") if parsed["visual_hints"] else ""
+        target_s = float(settings.get("target_duration_s") or parsed["recommended_target_duration_s"])
         brief = (f"Title: (derive from script)\nOutput: {settings['aspect_ratio']} at {settings['fps']} fps. Visual style: {settings['visual_style']}.\n"
-                 f"Target total duration: about {settings['target_duration_s']} seconds.\n"
+                 f"Target total duration: about {target_s:.0f} seconds.\n"
                  + (f"Reference/style notes: {settings['reference_description']}\n" if settings.get("reference_description") else "")
-                 + f"\nSCRIPT (reproduce verbatim across scenes):\n<script>\n{script.strip()}\n</script>")
+                 + hints_block
+                 + f"\nSCRIPT (reproduce verbatim across scenes):\n<script>\n{clean_script}\n</script>")
         messages = [{"role": "user", "content": [{"text": brief}]}]
         schema = DirectorOutput.model_json_schema()
         last_problems: list[str] = []
@@ -107,7 +114,7 @@ class Director:
             out = None
             try:
                 out = DirectorOutput.model_validate(res.data)
-                problems = check_output(script, out, settings["target_duration_s"], self.cfg)
+                problems = check_output(clean_script, out, target_s, self.cfg)
             except ValidationError as e:
                 problems = [f"{'.'.join(map(str, err['loc']))}: {err['msg']}" for err in e.errors()[:12]]
             rep.problems_by_attempt.append(problems)

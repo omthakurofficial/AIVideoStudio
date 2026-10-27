@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field, ValidationError
-from .config import load_settings, Settings
+from .config import load_settings, Settings, REPO_ROOT
 from .db import connect, migrate
 from .store import Store, TERMINAL_STATES
 from .worker import Worker
@@ -15,6 +15,7 @@ from .models import ProjectCreate, ScriptUpdate, RESOLUTIONS
 from .health import health
 from .director import Director
 from .storyboard import Storyboard, store as sbstore
+from .analysis import analyze_script, load_sample_scripts, SUPPORTED_SCRIPT_FORMATS
 
 
 class TopicRequest(BaseModel):
@@ -65,11 +66,23 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
     def get_health(aws: bool = False):
         return health(settings, include_aws=aws)
 
+    @app.get("/api/scripts/samples")
+    def get_script_samples():
+        return {"samples": load_sample_scripts(REPO_ROOT), "supported_formats": SUPPORTED_SCRIPT_FORMATS}
+
+    @app.post("/api/scripts/inspect")
+    def inspect_script(body: ScriptUpdate):
+        return analyze_script(body.script)
+
     @app.post("/api/projects", status_code=201)
     def create_project(body: ProjectCreate):
-        p = store().create_project(body.title, body.script, body.settings.model_dump())
+        sdict = body.settings.model_dump()
+        if body.script.strip() and "target_duration_s" not in body.settings.model_fields_set:
+            sdict["target_duration_s"] = analyze_script(body.script)["recommended_target_duration_s"]
+        p = store().create_project(body.title, body.script, sdict)
         w, h = RESOLUTIONS[body.settings.aspect_ratio]
         p["output"] = {"width": w, "height": h, "fps": body.settings.fps}
+        p["script_analysis"] = analyze_script(body.script)
         return p
 
     @app.get("/api/projects")
@@ -90,6 +103,7 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         ws = store().workspace(pid)
         p["script"] = ws.read_script()
         p["has_export"] = (ws.root / "renders" / "final.mp4").is_file() and (ws.root / "reports" / "quality_report.json").is_file()
+        p["script_analysis"] = analyze_script(p["script"])
         return p
 
     @app.put("/api/projects/{pid}/script")

@@ -253,7 +253,7 @@ class FilmCraftAdapter:
             srt_path = write_srt(manifest.captions, workspace_root / "captions" / "captions.srt")
             if manifest.burn_captions:
                 warnings.append("FilmCraft caption tracks are not burned into video frames by file.exportMedia; burned in via FFmpeg subtitles filter.")
-                self._burn_subtitles(raw_mp4, srt_path, out_mp4, manifest.caption_font_size)
+                self._burn_subtitles(raw_mp4, srt_path, out_mp4, manifest.caption_font_size, manifest.width, manifest.height)
                 raw_mp4.unlink(missing_ok=True)
 
         facts = verify_video(
@@ -275,10 +275,14 @@ class FilmCraftAdapter:
             warnings=warnings,
         )
 
-    def _burn_subtitles(self, in_mp4: Path, srt_path: Path, out_mp4: Path, font_size: int = 22) -> None:
-        # Escape path for FFmpeg filtergraph (portable across Linux/Windows when run with cwd=srt_path.parent)
-        ass_size = max(12, min(22, int(font_size * 0.36)))
-        style = f"FontName=DejaVu Sans,FontSize={ass_size},PrimaryColour=&H00FFFFFF,OutlineColour=&H00101420,BackColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV=16,Alignment=2"
+    def _burn_subtitles(self, in_mp4: Path, srt_path: Path, out_mp4: Path, font_size: int = 22, width: int = 1920, height: int = 1080) -> None:
+        # libass default PlayResY is 288 (scales font by height/288). Scale target pixel height by frame width so
+        # 42-char lines fit cleanly on 1-2 lines in both 16:9 (1920x1080) and 9:16 (1080x1920).
+        scale_factor = (font_size / 48.0) if font_size else 1.0
+        target_px = width * (0.032 if width >= height else 0.036) * scale_factor
+        ass_size = max(6, min(22, round(target_px / (height / 288.0))))
+        margin_v = 16 if width >= height else 24
+        style = f"FontName=DejaVu Sans,FontSize={ass_size},PrimaryColour=&H00FFFFFF,OutlineColour=&H00101420,BackColour=&H80000000,BorderStyle=3,Outline=1,Shadow=0,MarginV={margin_v},Alignment=2"
         r = subprocess.run(
             [self.ffmpeg, "-v", "error", "-y", "-i", str(in_mp4.resolve()),
              "-vf", f"subtitles={srt_path.name}:force_style='{style}'",
