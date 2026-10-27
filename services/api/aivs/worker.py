@@ -1,4 +1,4 @@
-"""Lightweight in-process worker: one background thread draining queued jobs sequentially."""
+"""Lightweight in-process worker draining queued jobs sequentially with checkpoint persistence."""
 from __future__ import annotations
 import threading, queue, traceback
 from .store import Store
@@ -6,12 +6,14 @@ from .analysis import analyze_script
 from .providers import ProviderError
 from .storyboard import store as sbstore
 from .director import DirectorError
+from .pipeline import ProductionPipeline
 
 
 class Worker:
-    def __init__(self, store_factory, director_factory=None):
+    def __init__(self, store_factory, director_factory=None, settings=None):
         self._factory = store_factory
         self._director_factory = director_factory
+        self._settings = settings
         self._q: queue.Queue[str] = queue.Queue()
         self._cancel: set[str] = set()
         self._t = threading.Thread(target=self._run, daemon=True, name="aivs-worker")
@@ -20,18 +22,19 @@ class Worker:
         self._t.start()
 
     def submit(self, job_id: str):
+        self._cancel.discard(job_id)
         self._q.put(job_id)
 
     def cancel(self, job_id: str):
         self._cancel.add(job_id)
 
     def _run(self):
-        store: Store = self._factory()  # own connection for this thread
+        store: Store = self._factory()
         while True:
             jid = self._q.get()
             try:
                 self._execute(store, jid)
-            except Exception as e:  # never let the worker die
+            except Exception as e:
                 store.update_job(jid, state="failed", error=f"{type(e).__name__}: {e}")
                 store.log(jid, "error", traceback.format_exc(limit=5))
 
@@ -55,6 +58,8 @@ class Worker:
             store.log(jid, "info", f"Analyzed {result['paragraph_count']} paragraphs, {result['total_words']} words")
         elif job["kind"] == "plan_storyboard":
             self._plan_storyboard(store, job)
+        elif job["kind"] in ("produce_video", "regenerate_scene"):
+            self._produce_video(store, job)
         else:
             raise ValueError(f"Unknown job kind '{job['kind']}'")
 
@@ -89,3 +94,16 @@ class Worker:
             store.update_job(jid, state="completed", progress_done=3, current_step="Storyboard ready (auto-approved)", checkpoint={"storyboard_revision": sb.revision})
         else:
             store.update_job(jid, state="awaiting_approval", progress_done=3, current_step="Waiting for your approval", checkpoint={"storyboard_revision": sb.revision})
+
+    def _produce_video(self, store: Store, job: dict):
+        if not self._settings:
+            from .config import load_settings
+            self._settings = load_settings()
+        pipe = ProductionPipeline(self._settings, self._director_factory)
+        ckpt = job.get("checkpoint") or {}
+        force_ids = set(ckpt.get("force_scene_ids") or ())
+        pipe.run_production(
+            store, job,
+            is_cancelled=lambda: job["id"] in self._cancel,
+            force_scene_ids=force_ids,
+        )

@@ -1,8 +1,12 @@
-"""FastAPI app: projects, jobs, health. Business logic lives in store/worker/services."""
+"""FastAPI app: projects, storyboards, production pipeline, scene review, quality reports, exports, and health."""
 from __future__ import annotations
+import json
 from contextlib import asynccontextmanager
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
+from pydantic import BaseModel, Field, ValidationError
 from .config import load_settings, Settings
 from .db import connect, migrate
 from .store import Store, TERMINAL_STATES
@@ -11,18 +15,28 @@ from .models import ProjectCreate, ScriptUpdate, RESOLUTIONS
 from .health import health
 from .director import Director
 from .storyboard import Storyboard, store as sbstore
-from pydantic import ValidationError
+
+
+class TopicRequest(BaseModel):
+    topic: str = Field(min_length=3, max_length=500)
+    target_duration_s: int = Field(default=30, ge=10, le=900)
+
+
+class SceneRegenerateRequest(BaseModel):
+    visual_correction: str | None = Field(default=None, max_length=500)
+    visual_type: str | None = None
+    visual_description: str | None = Field(default=None, max_length=900)
 
 
 def create_app(settings: Settings | None = None, director_factory=None) -> FastAPI:
     settings = settings or load_settings()
 
     if director_factory is None:
-        def director_factory():  # built lazily so the app runs without AI credentials
+        def director_factory():
             from .providers import load_model_specs, get_provider
             from .providers.base import load_config
-            spec = load_model_specs()['planning']
-            return Director(get_provider(spec.provider, settings.aws_region), spec, load_config()['director'])
+            spec = load_model_specs()["planning"]
+            return Director(get_provider(spec.provider, settings.aws_region), spec, load_config()["director"])
 
     def new_store() -> Store:
         return Store(connect(settings.db_path), settings.projects_dir)
@@ -33,16 +47,15 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         store = new_store()
         migrate(store.conn)
         store.recover_interrupted()
-        worker = Worker(new_store, director_factory)
+        worker = Worker(new_store, director_factory, settings)
         worker.start()
-        # Re-queue jobs that were queued but never started.
         for j in store.list_jobs(limit=1000):
             if j["state"] == "queued":
                 worker.submit(j["id"])
         app.state.store, app.state.worker, app.state.settings = store, worker, settings
         yield
 
-    app = FastAPI(title="AIVideoStudio API", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(title="AIVideoStudio API", version="0.2.0", lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=list(settings.cors_origins), allow_methods=["*"], allow_headers=["*"])
 
     def store() -> Store:
@@ -74,7 +87,9 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
     @app.get("/api/projects/{pid}")
     def get_project(pid: str):
         p = _project(pid)
-        p["script"] = store().workspace(pid).read_script()
+        ws = store().workspace(pid)
+        p["script"] = ws.read_script()
+        p["has_export"] = (ws.root / "renders" / "final.mp4").is_file() and (ws.root / "reports" / "quality_report.json").is_file()
         return p
 
     @app.put("/api/projects/{pid}/script")
@@ -82,6 +97,30 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         _project(pid)
         store().set_script(pid, body.script)
         return {"ok": True, "chars": len(body.script)}
+
+    @app.post("/api/projects/{pid}/generate-script")
+    def generate_script_from_topic(pid: str, body: TopicRequest):
+        _project(pid)
+        target_words = max(35, int(body.target_duration_s * 2.4))
+        try:
+            from .providers import load_model_specs, get_provider
+            spec = load_model_specs()["script"]
+            prov = get_provider(spec.provider, settings.aws_region)
+            sys_prompt = (
+                "Write a clear, concise educational narration script divided into 3 to 5 short paragraphs "
+                "(separated by blank lines). Output ONLY the spoken narration paragraphs—no headings, no bullet points, "
+                "no stage directions."
+            )
+            prompt = f"Topic: {body.topic}\nTarget length: approximately {target_words} words ({body.target_duration_s} seconds)."
+            text, usage = prov.generate_text(spec, sys_prompt, prompt)
+            script = text.strip()
+            store().workspace(pid).write_json("reports/script_generation.json", {
+                "model_id": usage.model_id, "input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens, "latency_s": usage.latency_s
+            })
+        except Exception as e:
+            raise HTTPException(503, f"Could not generate script from topic: {e}")
+        store().set_script(pid, script)
+        return {"ok": True, "script": script}
 
     @app.post("/api/projects/{pid}/jobs/analyze", status_code=202)
     def start_analysis(pid: str):
@@ -97,6 +136,65 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         app.state.worker.submit(job["id"])
         return job
 
+    @app.post("/api/projects/{pid}/jobs/produce", status_code=202)
+    def start_production(pid: str):
+        _project(pid)
+        ws = store().workspace(pid)
+        sb = sbstore.load(ws.root)
+        if sb and not sb.approved:
+            sb = sbstore.save(ws.root, sb.model_copy(update={"approved": True}), bump=False)
+        # Carry over rendered_scenes checkpoint from the most recent production job so approved scenes are reused
+        prev_ckpt: dict = {}
+        for j in store().list_jobs(pid):
+            if j["kind"] in ("produce_video", "regenerate_scene") and j.get("checkpoint"):
+                prev_ckpt = {"rendered_scenes": j["checkpoint"].get("rendered_scenes", {})}
+                break
+        job = store().create_job(pid, "produce_video")
+        if prev_ckpt:
+            store().update_job(job["id"], checkpoint=prev_ckpt)
+        app.state.worker.submit(job["id"])
+        return store().get_job(job["id"])
+
+    @app.post("/api/projects/{pid}/scenes/{scene_id}/regenerate", status_code=202)
+    def regenerate_scene(pid: str, scene_id: str, body: SceneRegenerateRequest | None = None):
+        _project(pid)
+        ws = store().workspace(pid)
+        sb = sbstore.load(ws.root)
+        if not sb:
+            raise HTTPException(404, "No storyboard exists for this project.")
+        sb_data = sb.model_dump()
+        target = next((s for s in sb_data["scenes"] if s["id"] == scene_id), None)
+        if not target:
+            raise HTTPException(404, f"Scene '{scene_id}' not found in storyboard.")
+        if body:
+            if body.visual_type:
+                target["visual_type"] = body.visual_type
+            if body.visual_description:
+                target["visual_description"] = body.visual_description
+            if body.visual_correction:
+                import re as _re
+                base_desc = _re.sub(r"\s*\[Correction:.*?\]", "", target["visual_description"]).strip()
+                target["visual_description"] = f"{base_desc} [Correction: {body.visual_correction}]"[:900]
+                dur = float(target["timing"]["narration_audio_s"] or target["estimated_duration"])
+                target["on_screen_text"] = [{"text": body.visual_correction[:80], "at": 0.2, "duration": round(max(1.0, dur - 0.4), 2)}]
+        target["status"] = "approved"
+        try:
+            sb_valid = Storyboard.model_validate(sb_data)
+        except ValidationError as e:
+            raise HTTPException(422, [{"where": ".".join(map(str, x["loc"])), "problem": x["msg"]} for x in e.errors()[:10]])
+        sbstore.save(ws.root, sb_valid, bump=True)
+
+        prev_rendered: dict = {}
+        for j in store().list_jobs(pid):
+            if j["kind"] in ("produce_video", "regenerate_scene") and j.get("checkpoint"):
+                prev_rendered = dict(j["checkpoint"].get("rendered_scenes") or {})
+                break
+        prev_rendered.pop(scene_id, None)
+        job = store().create_job(pid, "regenerate_scene")
+        store().update_job(job["id"], checkpoint={"rendered_scenes": prev_rendered, "force_scene_ids": [scene_id]})
+        app.state.worker.submit(job["id"])
+        return store().get_job(job["id"])
+
     @app.get("/api/projects/{pid}/storyboard")
     def get_storyboard(pid: str):
         _project(pid)
@@ -107,7 +205,6 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
 
     @app.put("/api/projects/{pid}/storyboard")
     def put_storyboard(pid: str, body: dict):
-        """Replace the storyboard with an edited version. Fully re-validated; revision bumps; approval resets."""
         _project(pid)
         root = store().workspace(pid).root
         cur = sbstore.load(root)
@@ -133,6 +230,32 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
             if j["kind"] == "plan_storyboard" and j["state"] == "awaiting_approval":
                 store().update_job(j["id"], state="completed", current_step="Storyboard approved")
         return sb.model_dump()
+
+    @app.get("/api/projects/{pid}/reports")
+    def get_reports(pid: str):
+        _project(pid)
+        ws = store().workspace(pid)
+        out: dict = {"workspace_path": str(ws.root)}
+        for name in ("quality_report", "director_usage", "caption_validation", "asset_discovery", "script_analysis"):
+            f = ws.root / "reports" / f"{name}.json"
+            if f.is_file():
+                out[name] = json.loads(f.read_text(encoding="utf-8"))
+        mf = ws.root / "manifest.json"
+        if mf.is_file():
+            out["manifest"] = json.loads(mf.read_text(encoding="utf-8"))
+        return out
+
+    @app.get("/api/projects/{pid}/media/{rel_path:path}")
+    def get_project_media(pid: str, rel_path: str, download: bool = False):
+        _project(pid)
+        root = store().workspace(pid).root.resolve()
+        target = (root / rel_path).resolve()
+        if not target.is_relative_to(root) or not target.is_file():
+            raise HTTPException(404, f"Media file '{rel_path}' not found")
+        headers = {"Cache-Control": "no-store"}
+        if download:
+            headers["Content-Disposition"] = f'attachment; filename="{target.name}"'
+        return FileResponse(target, headers=headers)
 
     @app.get("/api/jobs")
     def list_jobs(project_id: str | None = None):
@@ -172,5 +295,5 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
     return app
 
 
-def app_factory() -> FastAPI:  # uvicorn --factory aivs.main:app_factory
+def app_factory() -> FastAPI:
     return create_app()

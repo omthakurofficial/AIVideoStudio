@@ -15,9 +15,12 @@ export default function Dashboard() {
       try {
         const [p, j] = await Promise.all([api.projects(), api.jobs()]);
         if (live) { setProjects(p); setJobs(j); setError(null); }
-      } catch (e) { if (live) setError(`Cannot reach the API (${(e as Error).message}). Is it running? Start it with: python scripts/dev.py`); }
+      } catch (e) {
+        if (live) setError(`Cannot reach the API (${(e as Error).message}). Is it running? Start it with: python scripts/dev.py`);
+      }
     };
-    load(); api.health().then(setHealth).catch(() => {});
+    load();
+    api.health().then(setHealth).catch(() => {});
     const t = setInterval(load, 2000);
     return () => { live = false; clearInterval(t); };
   }, []);
@@ -25,6 +28,8 @@ export default function Dashboard() {
   const title = (id: string) => projects.find(p => p.id === id)?.title ?? id;
   const running = jobs.filter(j => ACTIVE.includes(j.state));
   const failed = jobs.filter(j => j.state === "failed");
+  const exportsList = projects.filter(p => p.status === "completed");
+
   return (
     <>
       <h1>Dashboard</h1>
@@ -34,21 +39,50 @@ export default function Dashboard() {
         <section className="card" aria-label="System health">
           <h2>System health</h2>
           {Object.entries(health.tools).map(([k, v]) => (
-            <span key={k} title={v.fix ?? v.detail} className={`badge ${v.ok ? "ok" : "bad"}`} style={{ marginRight: 8 }}>{k}: {v.ok ? "ok" : "missing"}</span>
+            <span key={k} title={v.fix ?? v.detail} className={`badge ${v.ok ? "ok" : "bad"}`} style={{ marginRight: 8 }}>
+              {k}: {v.ok ? "ok" : "missing"}
+            </span>
           ))}
         </section>
       )}
-      <section className="card" aria-label="Current jobs"><h2>Current jobs</h2>
+      <section className="card" aria-label="Current jobs">
+        <h2>Current jobs</h2>
         {running.length === 0 ? <p className="muted">No jobs running.</p> :
-          <ul className="plain">{running.map(j => <li key={j.id}><Link href={`/projects/${j.project_id}`}>{title(j.project_id)}</Link> — {j.kind} <span className="badge active">{j.state}</span></li>)}</ul>}
+          <ul className="plain">{running.map(j => (
+            <li key={j.id}>
+              <Link href={`/projects/${j.project_id}`}>{title(j.project_id)}</Link> — {j.kind}{" "}
+              <span className="badge active">{j.state}</span> <span className="muted">{j.current_step}</span>
+            </li>
+          ))}</ul>}
       </section>
-      <section className="card" aria-label="Failed jobs"><h2>Needs attention</h2>
+      <section className="card" aria-label="Completed exports">
+        <h2>Completed exports</h2>
+        {exportsList.length === 0 ? <p className="muted">No completed video exports yet.</p> :
+          <ul className="plain">{exportsList.map(p => (
+            <li key={p.id}>
+              <Link href={`/projects/${p.id}`}>{p.title}</Link>{" "}
+              <span className="badge ok">MP4 Ready</span>{" "}
+              <a href={api.mediaUrl(p.id, "renders/final.mp4", true)} style={{ marginLeft: 12 }}>Download MP4</a>
+            </li>
+          ))}</ul>}
+      </section>
+      <section className="card" aria-label="Failed jobs">
+        <h2>Needs attention</h2>
         {failed.length === 0 ? <p className="muted">No failed jobs.</p> :
-          <ul className="plain">{failed.map(j => <li key={j.id}><Link href={`/projects/${j.project_id}`}>{title(j.project_id)}</Link> — {j.error}</li>)}</ul>}
+          <ul className="plain">{failed.map(j => (
+            <li key={j.id}><Link href={`/projects/${j.project_id}`}>{title(j.project_id)}</Link> — {j.error}</li>
+          ))}</ul>}
       </section>
-      <section className="card" aria-label="Recent projects"><h2>Recent projects</h2>
+      <section className="card" aria-label="Recent projects">
+        <h2>Recent projects</h2>
         {projects.length === 0 ? <p className="muted">No projects yet.</p> :
-          <ul className="plain">{projects.map(p => <li key={p.id}><Link href={`/projects/${p.id}`}>{p.title}</Link> <span className="muted">· {p.settings.aspect_ratio} · {p.settings.fps} fps · {new Date(p.created_at).toLocaleString()}</span></li>)}</ul>}
+          <ul className="plain">{projects.map(p => (
+            <li key={p.id}>
+              <Link href={`/projects/${p.id}`}>{p.title}</Link>{" "}
+              <span className={`badge ${p.status === "completed" ? "ok" : ""}`}>{p.status}</span>{" "}
+              <span className="muted">· {p.settings.aspect_ratio} · {p.settings.fps} fps · {new Date(p.created_at).toLocaleString()}</span>
+            </li>
+          ))}</ul>}
       </section>
     </>
   );
