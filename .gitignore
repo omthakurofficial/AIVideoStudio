@@ -1,0 +1,19 @@
+# secrets
+.env
+.env.*
+!.env.example
+# large / generated
+tools/
+projects/
+data/
+*.mp4
+*.wav
+*.mp3
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+# node
+node_modules/
+.next/
