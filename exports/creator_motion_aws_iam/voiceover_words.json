@@ -1,0 +1,1923 @@
+{
+  "total_duration": 59.75,
+  "words": [
+    {
+      "word": "Stop",
+      "start": 0.225,
+      "end": 0.525,
+      "scene": "hook"
+    },
+    {
+      "word": "using",
+      "start": 0.525,
+      "end": 0.85,
+      "scene": "hook"
+    },
+    {
+      "word": "root",
+      "start": 0.85,
+      "end": 1.05,
+      "scene": "hook"
+    },
+    {
+      "word": "credentials",
+      "start": 1.05,
+      "end": 1.8,
+      "scene": "hook"
+    },
+    {
+      "word": "!",
+      "start": 1.8,
+      "end": 1.925,
+      "scene": "hook"
+    },
+    {
+      "word": "Seriously",
+      "start": 1.925,
+      "end": 2.85,
+      "scene": "hook"
+    },
+    {
+      "word": ".",
+      "start": 2.85,
+      "end": 2.975,
+      "scene": "hook"
+    },
+    {
+      "word": "If",
+      "start": 2.975,
+      "end": 3.125,
+      "scene": "hook"
+    },
+    {
+      "word": "that",
+      "start": 3.125,
+      "end": 3.288,
+      "scene": "hook"
+    },
+    {
+      "word": "account",
+      "start": 3.288,
+      "end": 3.587,
+      "scene": "hook"
+    },
+    {
+      "word": "is",
+      "start": 3.587,
+      "end": 3.7,
+      "scene": "hook"
+    },
+    {
+      "word": "compromised",
+      "start": 3.7,
+      "end": 4.375,
+      "scene": "hook"
+    },
+    {
+      "word": ",",
+      "start": 4.375,
+      "end": 4.435,
+      "scene": "hook"
+    },
+    {
+      "word": "your",
+      "start": 4.412,
+      "end": 4.513,
+      "scene": "hook"
+    },
+    {
+      "word": "entire",
+      "start": 4.513,
+      "end": 5.025,
+      "scene": "hook"
+    },
+    {
+      "word": "cloud",
+      "start": 5.025,
+      "end": 5.362,
+      "scene": "hook"
+    },
+    {
+      "word": "infrastructure",
+      "start": 5.362,
+      "end": 6.025,
+      "scene": "hook"
+    },
+    {
+      "word": "goes",
+      "start": 6.025,
+      "end": 6.35,
+      "scene": "hook"
+    },
+    {
+      "word": "down",
+      "start": 6.35,
+      "end": 6.9,
+      "scene": "hook"
+    },
+    {
+      "word": ".",
+      "start": 6.9,
+      "end": 7.037,
+      "scene": "hook"
+    },
+    {
+      "word": "Always",
+      "start": 7.037,
+      "end": 7.45,
+      "scene": "hook"
+    },
+    {
+      "word": "use",
+      "start": 7.45,
+      "end": 7.675,
+      "scene": "hook"
+    },
+    {
+      "word": "temporary",
+      "start": 7.675,
+      "end": 8.225,
+      "scene": "hook"
+    },
+    {
+      "word": "credentials",
+      "start": 8.225,
+      "end": 8.8,
+      "scene": "hook"
+    },
+    {
+      "word": "instead",
+      "start": 8.8,
+      "end": 9.725,
+      "scene": "hook"
+    },
+    {
+      "word": ".",
+      "start": 9.725,
+      "end": 9.9,
+      "scene": "hook"
+    },
+    {
+      "word": "Rule",
+      "start": 10.7,
+      "end": 10.937,
+      "scene": "least"
+    },
+    {
+      "word": "number",
+      "start": 10.937,
+      "end": 11.175,
+      "scene": "least"
+    },
+    {
+      "word": "one",
+      "start": 11.175,
+      "end": 11.45,
+      "scene": "least"
+    },
+    {
+      "word": ":",
+      "start": 11.45,
+      "end": 11.51,
+      "scene": "least"
+    },
+    {
+      "word": "Least",
+      "start": 11.5,
+      "end": 11.775,
+      "scene": "least"
+    },
+    {
+      "word": "privilege",
+      "start": 11.775,
+      "end": 12.525,
+      "scene": "least"
+    },
+    {
+      "word": ".",
+      "start": 12.525,
+      "end": 12.713,
+      "scene": "least"
+    },
+    {
+      "word": "Grant",
+      "start": 12.713,
+      "end": 13.012,
+      "scene": "least"
+    },
+    {
+      "word": "only",
+      "start": 13.012,
+      "end": 13.287,
+      "scene": "least"
+    },
+    {
+      "word": "what",
+      "start": 13.287,
+      "end": 13.412,
+      "scene": "least"
+    },
+    {
+      "word": "the",
+      "start": 13.412,
+      "end": 13.5,
+      "scene": "least"
+    },
+    {
+      "word": "role",
+      "start": 13.5,
+      "end": 13.775,
+      "scene": "least"
+    },
+    {
+      "word": "needs",
+      "start": 13.775,
+      "end": 14.05,
+      "scene": "least"
+    },
+    {
+      "word": "to",
+      "start": 14.05,
+      "end": 14.15,
+      "scene": "least"
+    },
+    {
+      "word": "do",
+      "start": 14.15,
+      "end": 14.325,
+      "scene": "least"
+    },
+    {
+      "word": "its",
+      "start": 14.325,
+      "end": 14.525,
+      "scene": "least"
+    },
+    {
+      "word": "job",
+      "start": 14.525,
+      "end": 14.9,
+      "scene": "least"
+    },
+    {
+      "word": ".",
+      "start": 14.9,
+      "end": 14.963,
+      "scene": "least"
+    },
+    {
+      "word": "Never",
+      "start": 14.963,
+      "end": 15.25,
+      "scene": "least"
+    },
+    {
+      "word": "more",
+      "start": 15.25,
+      "end": 15.9,
+      "scene": "least"
+    },
+    {
+      "word": ".",
+      "start": 15.9,
+      "end": 16.075,
+      "scene": "least"
+    },
+    {
+      "word": "Never",
+      "start": 16.875,
+      "end": 17.125,
+      "scene": "roles"
+    },
+    {
+      "word": "share",
+      "start": 17.125,
+      "end": 17.375,
+      "scene": "roles"
+    },
+    {
+      "word": "individual",
+      "start": 17.375,
+      "end": 17.913,
+      "scene": "roles"
+    },
+    {
+      "word": "IAM",
+      "start": 17.913,
+      "end": 18.475,
+      "scene": "roles"
+    },
+    {
+      "word": "users",
+      "start": 18.475,
+      "end": 18.825,
+      "scene": "roles"
+    },
+    {
+      "word": "across",
+      "start": 18.825,
+      "end": 19.163,
+      "scene": "roles"
+    },
+    {
+      "word": "your",
+      "start": 19.163,
+      "end": 19.275,
+      "scene": "roles"
+    },
+    {
+      "word": "team",
+      "start": 19.275,
+      "end": 19.925,
+      "scene": "roles"
+    },
+    {
+      "word": ".",
+      "start": 19.925,
+      "end": 20.063,
+      "scene": "roles"
+    },
+    {
+      "word": "Instead",
+      "start": 20.063,
+      "end": 20.75,
+      "scene": "roles"
+    },
+    {
+      "word": ",",
+      "start": 20.75,
+      "end": 20.85,
+      "scene": "roles"
+    },
+    {
+      "word": "create",
+      "start": 20.85,
+      "end": 21.213,
+      "scene": "roles"
+    },
+    {
+      "word": "IAM",
+      "start": 21.213,
+      "end": 21.775,
+      "scene": "roles"
+    },
+    {
+      "word": "roles",
+      "start": 21.775,
+      "end": 22.2,
+      "scene": "roles"
+    },
+    {
+      "word": "and",
+      "start": 22.2,
+      "end": 22.313,
+      "scene": "roles"
+    },
+    {
+      "word": "assume",
+      "start": 22.313,
+      "end": 22.7,
+      "scene": "roles"
+    },
+    {
+      "word": "them",
+      "start": 22.7,
+      "end": 22.925,
+      "scene": "roles"
+    },
+    {
+      "word": "using",
+      "start": 22.925,
+      "end": 23.237,
+      "scene": "roles"
+    },
+    {
+      "word": "AWS",
+      "start": 23.237,
+      "end": 24.088,
+      "scene": "roles"
+    },
+    {
+      "word": "STS",
+      "start": 24.088,
+      "end": 25.175,
+      "scene": "roles"
+    },
+    {
+      "word": ".",
+      "start": 25.175,
+      "end": 25.35,
+      "scene": "roles"
+    },
+    {
+      "word": "Here",
+      "start": 26.125,
+      "end": 26.312,
+      "scene": "decide"
+    },
+    {
+      "word": "is",
+      "start": 26.312,
+      "end": 26.412,
+      "scene": "decide"
+    },
+    {
+      "word": "how",
+      "start": 26.412,
+      "end": 26.575,
+      "scene": "decide"
+    },
+    {
+      "word": "policies",
+      "start": 26.575,
+      "end": 27.05,
+      "scene": "decide"
+    },
+    {
+      "word": "evaluate",
+      "start": 27.05,
+      "end": 27.775,
+      "scene": "decide"
+    },
+    {
+      "word": ":",
+      "start": 27.775,
+      "end": 27.875,
+      "scene": "decide"
+    },
+    {
+      "word": "an",
+      "start": 27.875,
+      "end": 27.975,
+      "scene": "decide"
+    },
+    {
+      "word": "explicit",
+      "start": 27.975,
+      "end": 28.525,
+      "scene": "decide"
+    },
+    {
+      "word": "Deny",
+      "start": 28.525,
+      "end": 28.875,
+      "scene": "decide"
+    },
+    {
+      "word": "always",
+      "start": 28.875,
+      "end": 29.25,
+      "scene": "decide"
+    },
+    {
+      "word": "beats",
+      "start": 29.25,
+      "end": 29.487,
+      "scene": "decide"
+    },
+    {
+      "word": "an",
+      "start": 29.487,
+      "end": 29.575,
+      "scene": "decide"
+    },
+    {
+      "word": "Allow",
+      "start": 29.575,
+      "end": 30.15,
+      "scene": "decide"
+    },
+    {
+      "word": ".",
+      "start": 30.15,
+      "end": 30.288,
+      "scene": "decide"
+    },
+    {
+      "word": "Every",
+      "start": 30.288,
+      "end": 30.613,
+      "scene": "decide"
+    },
+    {
+      "word": "single",
+      "start": 30.613,
+      "end": 30.95,
+      "scene": "decide"
+    },
+    {
+      "word": "time",
+      "start": 30.95,
+      "end": 31.7,
+      "scene": "decide"
+    },
+    {
+      "word": ".",
+      "start": 31.7,
+      "end": 31.875,
+      "scene": "decide"
+    },
+    {
+      "word": "Avoid",
+      "start": 32.65,
+      "end": 32.912,
+      "scene": "wild"
+    },
+    {
+      "word": "the",
+      "start": 32.912,
+      "end": 33.0,
+      "scene": "wild"
+    },
+    {
+      "word": "dangerous",
+      "start": 33.0,
+      "end": 33.538,
+      "scene": "wild"
+    },
+    {
+      "word": "asterisk",
+      "start": 33.538,
+      "end": 34.075,
+      "scene": "wild"
+    },
+    {
+      "word": "wildcard",
+      "start": 34.075,
+      "end": 34.875,
+      "scene": "wild"
+    },
+    {
+      "word": ".",
+      "start": 34.875,
+      "end": 35.012,
+      "scene": "wild"
+    },
+    {
+      "word": "Always",
+      "start": 35.012,
+      "end": 35.375,
+      "scene": "wild"
+    },
+    {
+      "word": "scope",
+      "start": 35.375,
+      "end": 35.675,
+      "scene": "wild"
+    },
+    {
+      "word": "down",
+      "start": 35.675,
+      "end": 35.963,
+      "scene": "wild"
+    },
+    {
+      "word": "actions",
+      "start": 35.963,
+      "end": 36.412,
+      "scene": "wild"
+    },
+    {
+      "word": "and",
+      "start": 36.412,
+      "end": 36.525,
+      "scene": "wild"
+    },
+    {
+      "word": "resources",
+      "start": 36.525,
+      "end": 37.125,
+      "scene": "wild"
+    },
+    {
+      "word": "specifically",
+      "start": 37.125,
+      "end": 38.175,
+      "scene": "wild"
+    },
+    {
+      "word": ".",
+      "start": 38.175,
+      "end": 38.325,
+      "scene": "wild"
+    },
+    {
+      "word": "Here",
+      "start": 39.1,
+      "end": 39.263,
+      "scene": "metric"
+    },
+    {
+      "word": "is",
+      "start": 39.263,
+      "end": 39.362,
+      "scene": "metric"
+    },
+    {
+      "word": "a",
+      "start": 39.362,
+      "end": 39.463,
+      "scene": "metric"
+    },
+    {
+      "word": "shocking",
+      "start": 39.463,
+      "end": 39.9,
+      "scene": "metric"
+    },
+    {
+      "word": "stat",
+      "start": 39.9,
+      "end": 40.475,
+      "scene": "metric"
+    },
+    {
+      "word": ":",
+      "start": 40.475,
+      "end": 40.613,
+      "scene": "metric"
+    },
+    {
+      "word": "ninety-nine",
+      "start": 40.613,
+      "end": 41.2,
+      "scene": "metric"
+    },
+    {
+      "word": "percent",
+      "start": 41.2,
+      "end": 41.538,
+      "scene": "metric"
+    },
+    {
+      "word": "of",
+      "start": 41.538,
+      "end": 41.625,
+      "scene": "metric"
+    },
+    {
+      "word": "cloud",
+      "start": 41.625,
+      "end": 41.925,
+      "scene": "metric"
+    },
+    {
+      "word": "breaches",
+      "start": 41.925,
+      "end": 42.462,
+      "scene": "metric"
+    },
+    {
+      "word": "stem",
+      "start": 42.462,
+      "end": 42.775,
+      "scene": "metric"
+    },
+    {
+      "word": "directly",
+      "start": 42.775,
+      "end": 43.3,
+      "scene": "metric"
+    },
+    {
+      "word": "from",
+      "start": 43.3,
+      "end": 43.45,
+      "scene": "metric"
+    },
+    {
+      "word": "human",
+      "start": 43.45,
+      "end": 43.775,
+      "scene": "metric"
+    },
+    {
+      "word": "misconfigurations",
+      "start": 43.775,
+      "end": 45.225,
+      "scene": "metric"
+    },
+    {
+      "word": ".",
+      "start": 45.225,
+      "end": 45.4,
+      "scene": "metric"
+    },
+    {
+      "word": "Leaving",
+      "start": 46.2,
+      "end": 46.5,
+      "scene": "wrong"
+    },
+    {
+      "word": "open",
+      "start": 46.5,
+      "end": 46.837,
+      "scene": "wrong"
+    },
+    {
+      "word": "admin",
+      "start": 46.837,
+      "end": 47.212,
+      "scene": "wrong"
+    },
+    {
+      "word": "access",
+      "start": 47.212,
+      "end": 47.7,
+      "scene": "wrong"
+    },
+    {
+      "word": "is",
+      "start": 47.7,
+      "end": 47.825,
+      "scene": "wrong"
+    },
+    {
+      "word": "not",
+      "start": 47.825,
+      "end": 48.05,
+      "scene": "wrong"
+    },
+    {
+      "word": "just",
+      "start": 48.05,
+      "end": 48.275,
+      "scene": "wrong"
+    },
+    {
+      "word": "risky",
+      "start": 48.275,
+      "end": 48.9,
+      "scene": "wrong"
+    },
+    {
+      "word": ".",
+      "start": 48.9,
+      "end": 49.025,
+      "scene": "wrong"
+    },
+    {
+      "word": "It",
+      "start": 49.025,
+      "end": 49.175,
+      "scene": "wrong"
+    },
+    {
+      "word": "is",
+      "start": 49.175,
+      "end": 49.287,
+      "scene": "wrong"
+    },
+    {
+      "word": "a",
+      "start": 49.287,
+      "end": 49.388,
+      "scene": "wrong"
+    },
+    {
+      "word": "fatal",
+      "start": 49.388,
+      "end": 49.738,
+      "scene": "wrong"
+    },
+    {
+      "word": "mistake",
+      "start": 49.738,
+      "end": 50.55,
+      "scene": "wrong"
+    },
+    {
+      "word": ".",
+      "start": 50.55,
+      "end": 50.725,
+      "scene": "wrong"
+    },
+    {
+      "word": "The",
+      "start": 51.5,
+      "end": 51.575,
+      "scene": "take"
+    },
+    {
+      "word": "bottom",
+      "start": 51.575,
+      "end": 51.925,
+      "scene": "take"
+    },
+    {
+      "word": "line",
+      "start": 51.925,
+      "end": 52.325,
+      "scene": "take"
+    },
+    {
+      "word": "?",
+      "start": 52.325,
+      "end": 52.4,
+      "scene": "take"
+    },
+    {
+      "word": "Practice",
+      "start": 52.4,
+      "end": 52.8,
+      "scene": "take"
+    },
+    {
+      "word": "Zero",
+      "start": 52.8,
+      "end": 53.15,
+      "scene": "take"
+    },
+    {
+      "word": "Trust",
+      "start": 53.15,
+      "end": 53.725,
+      "scene": "take"
+    },
+    {
+      "word": ".",
+      "start": 53.725,
+      "end": 53.887,
+      "scene": "take"
+    },
+    {
+      "word": "Verify",
+      "start": 53.887,
+      "end": 54.325,
+      "scene": "take"
+    },
+    {
+      "word": "every",
+      "start": 54.325,
+      "end": 54.637,
+      "scene": "take"
+    },
+    {
+      "word": "single",
+      "start": 54.637,
+      "end": 54.987,
+      "scene": "take"
+    },
+    {
+      "word": "service",
+      "start": 54.987,
+      "end": 55.4,
+      "scene": "take"
+    },
+    {
+      "word": ",",
+      "start": 55.4,
+      "end": 55.46,
+      "scene": "take"
+    },
+    {
+      "word": "every",
+      "start": 55.45,
+      "end": 55.762,
+      "scene": "take"
+    },
+    {
+      "word": "single",
+      "start": 55.762,
+      "end": 56.075,
+      "scene": "take"
+    },
+    {
+      "word": "request",
+      "start": 56.075,
+      "end": 56.675,
+      "scene": "take"
+    },
+    {
+      "word": ".",
+      "start": 56.675,
+      "end": 56.762,
+      "scene": "take"
+    },
+    {
+      "word": "Lock",
+      "start": 56.762,
+      "end": 57.05,
+      "scene": "take"
+    },
+    {
+      "word": "down",
+      "start": 57.05,
+      "end": 57.288,
+      "scene": "take"
+    },
+    {
+      "word": "your",
+      "start": 57.288,
+      "end": 57.4,
+      "scene": "take"
+    },
+    {
+      "word": "cloud",
+      "start": 57.4,
+      "end": 57.775,
+      "scene": "take"
+    },
+    {
+      "word": "vault",
+      "start": 57.775,
+      "end": 58.475,
+      "scene": "take"
+    },
+    {
+      "word": ".",
+      "start": 58.475,
+      "end": 58.65,
+      "scene": "take"
+    }
+  ],
+  "scenes": {
+    "hook": {
+      "start": 0.0,
+      "duration": 10.0,
+      "end": 10.0,
+      "words": [
+        {
+          "word": "Stop",
+          "start": 0.225,
+          "end": 0.525,
+          "scene": "hook"
+        },
+        {
+          "word": "using",
+          "start": 0.525,
+          "end": 0.85,
+          "scene": "hook"
+        },
+        {
+          "word": "root",
+          "start": 0.85,
+          "end": 1.05,
+          "scene": "hook"
+        },
+        {
+          "word": "credentials",
+          "start": 1.05,
+          "end": 1.8,
+          "scene": "hook"
+        },
+        {
+          "word": "!",
+          "start": 1.8,
+          "end": 1.925,
+          "scene": "hook"
+        },
+        {
+          "word": "Seriously",
+          "start": 1.925,
+          "end": 2.85,
+          "scene": "hook"
+        },
+        {
+          "word": ".",
+          "start": 2.85,
+          "end": 2.975,
+          "scene": "hook"
+        },
+        {
+          "word": "If",
+          "start": 2.975,
+          "end": 3.125,
+          "scene": "hook"
+        },
+        {
+          "word": "that",
+          "start": 3.125,
+          "end": 3.288,
+          "scene": "hook"
+        },
+        {
+          "word": "account",
+          "start": 3.288,
+          "end": 3.587,
+          "scene": "hook"
+        },
+        {
+          "word": "is",
+          "start": 3.587,
+          "end": 3.7,
+          "scene": "hook"
+        },
+        {
+          "word": "compromised",
+          "start": 3.7,
+          "end": 4.375,
+          "scene": "hook"
+        },
+        {
+          "word": ",",
+          "start": 4.375,
+          "end": 4.435,
+          "scene": "hook"
+        },
+        {
+          "word": "your",
+          "start": 4.412,
+          "end": 4.513,
+          "scene": "hook"
+        },
+        {
+          "word": "entire",
+          "start": 4.513,
+          "end": 5.025,
+          "scene": "hook"
+        },
+        {
+          "word": "cloud",
+          "start": 5.025,
+          "end": 5.362,
+          "scene": "hook"
+        },
+        {
+          "word": "infrastructure",
+          "start": 5.362,
+          "end": 6.025,
+          "scene": "hook"
+        },
+        {
+          "word": "goes",
+          "start": 6.025,
+          "end": 6.35,
+          "scene": "hook"
+        },
+        {
+          "word": "down",
+          "start": 6.35,
+          "end": 6.9,
+          "scene": "hook"
+        },
+        {
+          "word": ".",
+          "start": 6.9,
+          "end": 7.037,
+          "scene": "hook"
+        },
+        {
+          "word": "Always",
+          "start": 7.037,
+          "end": 7.45,
+          "scene": "hook"
+        },
+        {
+          "word": "use",
+          "start": 7.45,
+          "end": 7.675,
+          "scene": "hook"
+        },
+        {
+          "word": "temporary",
+          "start": 7.675,
+          "end": 8.225,
+          "scene": "hook"
+        },
+        {
+          "word": "credentials",
+          "start": 8.225,
+          "end": 8.8,
+          "scene": "hook"
+        },
+        {
+          "word": "instead",
+          "start": 8.8,
+          "end": 9.725,
+          "scene": "hook"
+        },
+        {
+          "word": ".",
+          "start": 9.725,
+          "end": 9.9,
+          "scene": "hook"
+        }
+      ]
+    },
+    "least": {
+      "start": 10.45,
+      "duration": 5.725,
+      "end": 16.175,
+      "words": [
+        {
+          "word": "Rule",
+          "start": 10.7,
+          "end": 10.937,
+          "scene": "least"
+        },
+        {
+          "word": "number",
+          "start": 10.937,
+          "end": 11.175,
+          "scene": "least"
+        },
+        {
+          "word": "one",
+          "start": 11.175,
+          "end": 11.45,
+          "scene": "least"
+        },
+        {
+          "word": ":",
+          "start": 11.45,
+          "end": 11.51,
+          "scene": "least"
+        },
+        {
+          "word": "Least",
+          "start": 11.5,
+          "end": 11.775,
+          "scene": "least"
+        },
+        {
+          "word": "privilege",
+          "start": 11.775,
+          "end": 12.525,
+          "scene": "least"
+        },
+        {
+          "word": ".",
+          "start": 12.525,
+          "end": 12.713,
+          "scene": "least"
+        },
+        {
+          "word": "Grant",
+          "start": 12.713,
+          "end": 13.012,
+          "scene": "least"
+        },
+        {
+          "word": "only",
+          "start": 13.012,
+          "end": 13.287,
+          "scene": "least"
+        },
+        {
+          "word": "what",
+          "start": 13.287,
+          "end": 13.412,
+          "scene": "least"
+        },
+        {
+          "word": "the",
+          "start": 13.412,
+          "end": 13.5,
+          "scene": "least"
+        },
+        {
+          "word": "role",
+          "start": 13.5,
+          "end": 13.775,
+          "scene": "least"
+        },
+        {
+          "word": "needs",
+          "start": 13.775,
+          "end": 14.05,
+          "scene": "least"
+        },
+        {
+          "word": "to",
+          "start": 14.05,
+          "end": 14.15,
+          "scene": "least"
+        },
+        {
+          "word": "do",
+          "start": 14.15,
+          "end": 14.325,
+          "scene": "least"
+        },
+        {
+          "word": "its",
+          "start": 14.325,
+          "end": 14.525,
+          "scene": "least"
+        },
+        {
+          "word": "job",
+          "start": 14.525,
+          "end": 14.9,
+          "scene": "least"
+        },
+        {
+          "word": ".",
+          "start": 14.9,
+          "end": 14.963,
+          "scene": "least"
+        },
+        {
+          "word": "Never",
+          "start": 14.963,
+          "end": 15.25,
+          "scene": "least"
+        },
+        {
+          "word": "more",
+          "start": 15.25,
+          "end": 15.9,
+          "scene": "least"
+        },
+        {
+          "word": ".",
+          "start": 15.9,
+          "end": 16.075,
+          "scene": "least"
+        }
+      ]
+    },
+    "roles": {
+      "start": 16.625,
+      "duration": 8.825,
+      "end": 25.45,
+      "words": [
+        {
+          "word": "Never",
+          "start": 16.875,
+          "end": 17.125,
+          "scene": "roles"
+        },
+        {
+          "word": "share",
+          "start": 17.125,
+          "end": 17.375,
+          "scene": "roles"
+        },
+        {
+          "word": "individual",
+          "start": 17.375,
+          "end": 17.913,
+          "scene": "roles"
+        },
+        {
+          "word": "IAM",
+          "start": 17.913,
+          "end": 18.475,
+          "scene": "roles"
+        },
+        {
+          "word": "users",
+          "start": 18.475,
+          "end": 18.825,
+          "scene": "roles"
+        },
+        {
+          "word": "across",
+          "start": 18.825,
+          "end": 19.163,
+          "scene": "roles"
+        },
+        {
+          "word": "your",
+          "start": 19.163,
+          "end": 19.275,
+          "scene": "roles"
+        },
+        {
+          "word": "team",
+          "start": 19.275,
+          "end": 19.925,
+          "scene": "roles"
+        },
+        {
+          "word": ".",
+          "start": 19.925,
+          "end": 20.063,
+          "scene": "roles"
+        },
+        {
+          "word": "Instead",
+          "start": 20.063,
+          "end": 20.75,
+          "scene": "roles"
+        },
+        {
+          "word": ",",
+          "start": 20.75,
+          "end": 20.85,
+          "scene": "roles"
+        },
+        {
+          "word": "create",
+          "start": 20.85,
+          "end": 21.213,
+          "scene": "roles"
+        },
+        {
+          "word": "IAM",
+          "start": 21.213,
+          "end": 21.775,
+          "scene": "roles"
+        },
+        {
+          "word": "roles",
+          "start": 21.775,
+          "end": 22.2,
+          "scene": "roles"
+        },
+        {
+          "word": "and",
+          "start": 22.2,
+          "end": 22.313,
+          "scene": "roles"
+        },
+        {
+          "word": "assume",
+          "start": 22.313,
+          "end": 22.7,
+          "scene": "roles"
+        },
+        {
+          "word": "them",
+          "start": 22.7,
+          "end": 22.925,
+          "scene": "roles"
+        },
+        {
+          "word": "using",
+          "start": 22.925,
+          "end": 23.237,
+          "scene": "roles"
+        },
+        {
+          "word": "AWS",
+          "start": 23.237,
+          "end": 24.088,
+          "scene": "roles"
+        },
+        {
+          "word": "STS",
+          "start": 24.088,
+          "end": 25.175,
+          "scene": "roles"
+        },
+        {
+          "word": ".",
+          "start": 25.175,
+          "end": 25.35,
+          "scene": "roles"
+        }
+      ]
+    },
+    "decide": {
+      "start": 25.9,
+      "duration": 6.075,
+      "end": 31.975,
+      "words": [
+        {
+          "word": "Here",
+          "start": 26.125,
+          "end": 26.312,
+          "scene": "decide"
+        },
+        {
+          "word": "is",
+          "start": 26.312,
+          "end": 26.412,
+          "scene": "decide"
+        },
+        {
+          "word": "how",
+          "start": 26.412,
+          "end": 26.575,
+          "scene": "decide"
+        },
+        {
+          "word": "policies",
+          "start": 26.575,
+          "end": 27.05,
+          "scene": "decide"
+        },
+        {
+          "word": "evaluate",
+          "start": 27.05,
+          "end": 27.775,
+          "scene": "decide"
+        },
+        {
+          "word": ":",
+          "start": 27.775,
+          "end": 27.875,
+          "scene": "decide"
+        },
+        {
+          "word": "an",
+          "start": 27.875,
+          "end": 27.975,
+          "scene": "decide"
+        },
+        {
+          "word": "explicit",
+          "start": 27.975,
+          "end": 28.525,
+          "scene": "decide"
+        },
+        {
+          "word": "Deny",
+          "start": 28.525,
+          "end": 28.875,
+          "scene": "decide"
+        },
+        {
+          "word": "always",
+          "start": 28.875,
+          "end": 29.25,
+          "scene": "decide"
+        },
+        {
+          "word": "beats",
+          "start": 29.25,
+          "end": 29.487,
+          "scene": "decide"
+        },
+        {
+          "word": "an",
+          "start": 29.487,
+          "end": 29.575,
+          "scene": "decide"
+        },
+        {
+          "word": "Allow",
+          "start": 29.575,
+          "end": 30.15,
+          "scene": "decide"
+        },
+        {
+          "word": ".",
+          "start": 30.15,
+          "end": 30.288,
+          "scene": "decide"
+        },
+        {
+          "word": "Every",
+          "start": 30.288,
+          "end": 30.613,
+          "scene": "decide"
+        },
+        {
+          "word": "single",
+          "start": 30.613,
+          "end": 30.95,
+          "scene": "decide"
+        },
+        {
+          "word": "time",
+          "start": 30.95,
+          "end": 31.7,
+          "scene": "decide"
+        },
+        {
+          "word": ".",
+          "start": 31.7,
+          "end": 31.875,
+          "scene": "decide"
+        }
+      ]
+    },
+    "wild": {
+      "start": 32.425,
+      "duration": 6.0,
+      "end": 38.425,
+      "words": [
+        {
+          "word": "Avoid",
+          "start": 32.65,
+          "end": 32.912,
+          "scene": "wild"
+        },
+        {
+          "word": "the",
+          "start": 32.912,
+          "end": 33.0,
+          "scene": "wild"
+        },
+        {
+          "word": "dangerous",
+          "start": 33.0,
+          "end": 33.538,
+          "scene": "wild"
+        },
+        {
+          "word": "asterisk",
+          "start": 33.538,
+          "end": 34.075,
+          "scene": "wild"
+        },
+        {
+          "word": "wildcard",
+          "start": 34.075,
+          "end": 34.875,
+          "scene": "wild"
+        },
+        {
+          "word": ".",
+          "start": 34.875,
+          "end": 35.012,
+          "scene": "wild"
+        },
+        {
+          "word": "Always",
+          "start": 35.012,
+          "end": 35.375,
+          "scene": "wild"
+        },
+        {
+          "word": "scope",
+          "start": 35.375,
+          "end": 35.675,
+          "scene": "wild"
+        },
+        {
+          "word": "down",
+          "start": 35.675,
+          "end": 35.963,
+          "scene": "wild"
+        },
+        {
+          "word": "actions",
+          "start": 35.963,
+          "end": 36.412,
+          "scene": "wild"
+        },
+        {
+          "word": "and",
+          "start": 36.412,
+          "end": 36.525,
+          "scene": "wild"
+        },
+        {
+          "word": "resources",
+          "start": 36.525,
+          "end": 37.125,
+          "scene": "wild"
+        },
+        {
+          "word": "specifically",
+          "start": 37.125,
+          "end": 38.175,
+          "scene": "wild"
+        },
+        {
+          "word": ".",
+          "start": 38.175,
+          "end": 38.325,
+          "scene": "wild"
+        }
+      ]
+    },
+    "metric": {
+      "start": 38.875,
+      "duration": 6.625,
+      "end": 45.5,
+      "words": [
+        {
+          "word": "Here",
+          "start": 39.1,
+          "end": 39.263,
+          "scene": "metric"
+        },
+        {
+          "word": "is",
+          "start": 39.263,
+          "end": 39.362,
+          "scene": "metric"
+        },
+        {
+          "word": "a",
+          "start": 39.362,
+          "end": 39.463,
+          "scene": "metric"
+        },
+        {
+          "word": "shocking",
+          "start": 39.463,
+          "end": 39.9,
+          "scene": "metric"
+        },
+        {
+          "word": "stat",
+          "start": 39.9,
+          "end": 40.475,
+          "scene": "metric"
+        },
+        {
+          "word": ":",
+          "start": 40.475,
+          "end": 40.613,
+          "scene": "metric"
+        },
+        {
+          "word": "ninety-nine",
+          "start": 40.613,
+          "end": 41.2,
+          "scene": "metric"
+        },
+        {
+          "word": "percent",
+          "start": 41.2,
+          "end": 41.538,
+          "scene": "metric"
+        },
+        {
+          "word": "of",
+          "start": 41.538,
+          "end": 41.625,
+          "scene": "metric"
+        },
+        {
+          "word": "cloud",
+          "start": 41.625,
+          "end": 41.925,
+          "scene": "metric"
+        },
+        {
+          "word": "breaches",
+          "start": 41.925,
+          "end": 42.462,
+          "scene": "metric"
+        },
+        {
+          "word": "stem",
+          "start": 42.462,
+          "end": 42.775,
+          "scene": "metric"
+        },
+        {
+          "word": "directly",
+          "start": 42.775,
+          "end": 43.3,
+          "scene": "metric"
+        },
+        {
+          "word": "from",
+          "start": 43.3,
+          "end": 43.45,
+          "scene": "metric"
+        },
+        {
+          "word": "human",
+          "start": 43.45,
+          "end": 43.775,
+          "scene": "metric"
+        },
+        {
+          "word": "misconfigurations",
+          "start": 43.775,
+          "end": 45.225,
+          "scene": "metric"
+        },
+        {
+          "word": ".",
+          "start": 45.225,
+          "end": 45.4,
+          "scene": "metric"
+        }
+      ]
+    },
+    "wrong": {
+      "start": 45.95,
+      "duration": 4.875,
+      "end": 50.825,
+      "words": [
+        {
+          "word": "Leaving",
+          "start": 46.2,
+          "end": 46.5,
+          "scene": "wrong"
+        },
+        {
+          "word": "open",
+          "start": 46.5,
+          "end": 46.837,
+          "scene": "wrong"
+        },
+        {
+          "word": "admin",
+          "start": 46.837,
+          "end": 47.212,
+          "scene": "wrong"
+        },
+        {
+          "word": "access",
+          "start": 47.212,
+          "end": 47.7,
+          "scene": "wrong"
+        },
+        {
+          "word": "is",
+          "start": 47.7,
+          "end": 47.825,
+          "scene": "wrong"
+        },
+        {
+          "word": "not",
+          "start": 47.825,
+          "end": 48.05,
+          "scene": "wrong"
+        },
+        {
+          "word": "just",
+          "start": 48.05,
+          "end": 48.275,
+          "scene": "wrong"
+        },
+        {
+          "word": "risky",
+          "start": 48.275,
+          "end": 48.9,
+          "scene": "wrong"
+        },
+        {
+          "word": ".",
+          "start": 48.9,
+          "end": 49.025,
+          "scene": "wrong"
+        },
+        {
+          "word": "It",
+          "start": 49.025,
+          "end": 49.175,
+          "scene": "wrong"
+        },
+        {
+          "word": "is",
+          "start": 49.175,
+          "end": 49.287,
+          "scene": "wrong"
+        },
+        {
+          "word": "a",
+          "start": 49.287,
+          "end": 49.388,
+          "scene": "wrong"
+        },
+        {
+          "word": "fatal",
+          "start": 49.388,
+          "end": 49.738,
+          "scene": "wrong"
+        },
+        {
+          "word": "mistake",
+          "start": 49.738,
+          "end": 50.55,
+          "scene": "wrong"
+        },
+        {
+          "word": ".",
+          "start": 50.55,
+          "end": 50.725,
+          "scene": "wrong"
+        }
+      ]
+    },
+    "take": {
+      "start": 51.275,
+      "duration": 7.475,
+      "end": 58.75,
+      "words": [
+        {
+          "word": "The",
+          "start": 51.5,
+          "end": 51.575,
+          "scene": "take"
+        },
+        {
+          "word": "bottom",
+          "start": 51.575,
+          "end": 51.925,
+          "scene": "take"
+        },
+        {
+          "word": "line",
+          "start": 51.925,
+          "end": 52.325,
+          "scene": "take"
+        },
+        {
+          "word": "?",
+          "start": 52.325,
+          "end": 52.4,
+          "scene": "take"
+        },
+        {
+          "word": "Practice",
+          "start": 52.4,
+          "end": 52.8,
+          "scene": "take"
+        },
+        {
+          "word": "Zero",
+          "start": 52.8,
+          "end": 53.15,
+          "scene": "take"
+        },
+        {
+          "word": "Trust",
+          "start": 53.15,
+          "end": 53.725,
+          "scene": "take"
+        },
+        {
+          "word": ".",
+          "start": 53.725,
+          "end": 53.887,
+          "scene": "take"
+        },
+        {
+          "word": "Verify",
+          "start": 53.887,
+          "end": 54.325,
+          "scene": "take"
+        },
+        {
+          "word": "every",
+          "start": 54.325,
+          "end": 54.637,
+          "scene": "take"
+        },
+        {
+          "word": "single",
+          "start": 54.637,
+          "end": 54.987,
+          "scene": "take"
+        },
+        {
+          "word": "service",
+          "start": 54.987,
+          "end": 55.4,
+          "scene": "take"
+        },
+        {
+          "word": ",",
+          "start": 55.4,
+          "end": 55.46,
+          "scene": "take"
+        },
+        {
+          "word": "every",
+          "start": 55.45,
+          "end": 55.762,
+          "scene": "take"
+        },
+        {
+          "word": "single",
+          "start": 55.762,
+          "end": 56.075,
+          "scene": "take"
+        },
+        {
+          "word": "request",
+          "start": 56.075,
+          "end": 56.675,
+          "scene": "take"
+        },
+        {
+          "word": ".",
+          "start": 56.675,
+          "end": 56.762,
+          "scene": "take"
+        },
+        {
+          "word": "Lock",
+          "start": 56.762,
+          "end": 57.05,
+          "scene": "take"
+        },
+        {
+          "word": "down",
+          "start": 57.05,
+          "end": 57.288,
+          "scene": "take"
+        },
+        {
+          "word": "your",
+          "start": 57.288,
+          "end": 57.4,
+          "scene": "take"
+        },
+        {
+          "word": "cloud",
+          "start": 57.4,
+          "end": 57.775,
+          "scene": "take"
+        },
+        {
+          "word": "vault",
+          "start": 57.775,
+          "end": 58.475,
+          "scene": "take"
+        },
+        {
+          "word": ".",
+          "start": 58.475,
+          "end": 58.65,
+          "scene": "take"
+        }
+      ]
+    }
+  }
+}

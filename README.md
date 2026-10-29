@@ -83,6 +83,29 @@ The built-in responsive layout engine produces mobile-optimized vertical videos 
 
 ---
 
+### ⚡ Creator Motion Graphics Engine (Nafay 3D Kinetic Type Style)
+
+A high-energy, business-creator kinetic typography style with word-by-word expo-eased slams, Instrument Serif italic yellow accents, 3D perspective mockups (`drawYaw`), rolling counters with white flashes, and red rubber stamps. Available in both **16:9 Landscape Social** and **9:16 Vertical Shorts/Reels**.
+
+<div align="center">
+
+| Scene 01 · High-Stakes Hook | Scene 03 · 3D Console Perspective | Scene 05 · Rolling Counter & Flash | Scene 06 · Rejection Rubber Stamp |
+|:---:|:---:|:---:|:---:|
+| <img src="docs/screenshots/snap_16x9_hook.jpg" width="100%" alt="Scene 1: High Stakes Hook" /> | <img src="docs/screenshots/snap_16x9_roles.jpg" width="100%" alt="Scene 3: 3D Console" /> | <img src="docs/screenshots/snap_9x16_breach99.jpg" width="100%" alt="Scene 5: 99% Breach Counter" /> | <img src="docs/screenshots/frame_least_privilege.jpg" width="100%" alt="Scene 6: Rejection Stamp" /> |
+| **Beat**: Immediate Hook ($\le 2\text{s}$)<br/>*Anton caps slam in with blur, Instrument Serif italic yellow accent, and camera punch zoom.* | **Beat**: 3D Dashboard Mockup<br/>*Browser console swinging in with 3D tilt (`drawYaw`), popping permission pills, and subtle vignette.* | **Beat**: 99% Rolling Stat<br/>*Glowing green rolling counter locking at 99% with white flash, boom SFX, and light leaks.* | **Beat**: Hard Rejection<br/>*Red strike-through and tactile rubber stamp rejection for zero-trust principle.* |
+
+</div>
+
+#### 🎮 Interactive Standalone HTML Players & Dual Social Exports
+
+The entire kinetic motion graphics engine renders frame-by-frame via headless Chrome/Playwright or directly in any modern browser:
+
+- **16:9 Landscape Player**: [`exports/creator_motion_aws_iam/aws_iam_16x9_social.html`](exports/creator_motion_aws_iam/aws_iam_16x9_social.html) — Full 1280x720 canvas player with scrubber, embedded Base64 neural voice narration, and ducked 122 BPM tech beat.
+- **9:16 Vertical Shorts Player**: [`exports/creator_motion_aws_iam/aws_iam_9x16_shorts.html`](exports/creator_motion_aws_iam/aws_iam_9x16_shorts.html) — Mobile 1080x1920 player with vertical safe margins and eye-level karaoke captions.
+- **Render Script**: `python scripts/render_social_videos.py` — Auto-muxes 30 FPS video frames, Web Audio SFX, and neural voiceover with Python DSP sidechain compression.
+
+---
+
 ## 🖥️ Studio Dashboard & User Interface
 
 AIVideoStudio includes a dark-themed, 10-page production suite built with Next.js 14, TailwindCSS, and Lucide icons.
