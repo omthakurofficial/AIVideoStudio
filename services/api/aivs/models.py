@@ -14,7 +14,7 @@ class NarrationSettings(BaseModel):
 
 class CaptionSettings(BaseModel):
     enabled: bool = False
-    font_size: int = Field(default=48, ge=12, le=200)
+    font_size: int = Field(default=38, ge=12, le=200)
 
 
 class ProjectSettings(BaseModel):
@@ -27,6 +27,8 @@ class ProjectSettings(BaseModel):
     captions: CaptionSettings = CaptionSettings()
     topic: str | None = None
     reference_description: str | None = None
+    ai_model: str | None = None
+    niche_category: str | None = None
 
 
 class ProjectCreate(BaseModel):

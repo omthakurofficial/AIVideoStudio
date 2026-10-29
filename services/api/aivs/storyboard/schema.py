@@ -17,7 +17,7 @@ SCHEMA_VERSION = 1
 
 VisualType = Literal["animated_diagram", "architecture", "map", "chart", "timeline", "icons_labels", "footage",
                      "screenshot", "ui_demo", "layered_motion", "hybrid"]
-ElementKind = Literal["node", "service_node", "icon", "label", "callout", "box", "group", "arrow", "route", "packet",
+ElementKind = Literal["node", "service_node", "icon", "label", "callout", "card", "title_card", "box", "group", "arrow", "route", "packet",
                       "chart_bar", "chart_line", "map_region", "map_marker", "timeline_marker", "text", "image", "footage"]
 RelKind = Literal["connects", "contains", "flows_to", "compares", "depends_on", "precedes"]
 AnimAction = Literal["appear", "disappear", "fade_in", "fade_out", "move", "highlight", "pulse", "draw", "flow",

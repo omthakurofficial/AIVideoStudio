@@ -11,7 +11,7 @@ PNPM = "pnpm.cmd" if os.name == "nt" else "pnpm"
 
 def main() -> int:
     py = str(VENV_PY) if VENV_PY.exists() else sys.executable
-    api = subprocess.Popen([py, "-m", "uvicorn", "--factory", "aivs.main:app_factory", "--host", "127.0.0.1", "--port", "8000"],
+    api = subprocess.Popen([py, "-m", "uvicorn", "--reload", "--factory", "aivs.main:app_factory", "--host", "127.0.0.1", "--port", "8000"],
                            cwd=ROOT / "services" / "api")
     web = subprocess.Popen([PNPM, "dev"], cwd=ROOT / "apps" / "web")
     print("\nAPI: http://127.0.0.1:8000/docs   UI: http://localhost:3000   (Ctrl+C to stop)\n")

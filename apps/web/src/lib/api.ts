@@ -10,6 +10,91 @@ export type Settings = {
   captions: { enabled: boolean; font_size: number };
   topic: string | null;
   reference_description: string | null;
+  ai_model?: string | null;
+  niche_category?: string | null;
+};
+
+export type NicheCategory = {
+  id: string;
+  name: string;
+  badge: string;
+  reference_style: string;
+  default_visual_style: string;
+  default_aspect_ratio: "16:9" | "9:16";
+  description: string;
+  director_rules: string;
+  sample_title: string;
+  sample_topic: string;
+  sample_script: string;
+};
+
+export type ArchitectureLayer = {
+  layer: number;
+  title: string;
+  description: string;
+  options: { id: string; name: string; cost: string; mode: string }[];
+};
+
+export type ModelCatalogItem = {
+  model_id: string;
+  label: string;
+  vendor: string;
+  family: string;
+  region_scope: string;
+  input_per_1m_usd: number;
+  output_per_1m_usd: number;
+  official_pricing_url: string;
+  supports_tool_use: boolean;
+  recommended_for: string[];
+};
+
+export type OfficialPricingLink = {
+  name: string;
+  url: string;
+  note: string;
+};
+
+export type VoiceOption = {
+  id: string;
+  label: string;
+  provider: string;
+  cost_usd: number;
+};
+
+export type TokenCallRecord = {
+  stage: string;
+  provider: string;
+  model_id: string;
+  model_label: string;
+  vendor: string;
+  attempts: number;
+  latency_s: number;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  input_rate_per_1m_usd: number;
+  output_rate_per_1m_usd: number;
+  input_cost_usd: number;
+  output_cost_usd: number;
+  total_cost_usd: number;
+  official_pricing_url: string;
+  bedrock_pricing_url: string;
+  ts?: string;
+};
+
+export type TokenUsageReport = {
+  used_api_tokens: boolean;
+  provider: string;
+  primary_model_id: string | null;
+  primary_model_label: string | null;
+  calls: TokenCallRecord[];
+  total_input_tokens: number;
+  total_output_tokens: number;
+  total_tokens: number;
+  total_cost_usd: number;
+  tts_cost_usd: number;
+  rendering_cost_usd: number;
+  official_pricing_links: OfficialPricingLink[];
 };
 
 export type ScriptAnalysis = {
@@ -36,7 +121,8 @@ export type ScriptAnalysis = {
 export type SampleScript = {
   id: string;
   title: string;
-  file: string;
+  file?: string;
+  niche_category?: string;
   aspect_ratio: "16:9" | "9:16";
   visual_style: string;
   category: string;
@@ -64,6 +150,7 @@ export type Project = {
   has_export?: boolean;
   thumbnail?: string | null;
   script_analysis?: ScriptAnalysis;
+  token_usage?: TokenUsageReport;
 };
 
 export type Job = {
@@ -148,6 +235,18 @@ export type AppSettingsResponse = {
     caption_style: string;
   };
   models: Record<string, { provider: string; model_id: string; max_tokens?: number; temperature?: number }>;
+  model_catalog?: ModelCatalogItem[];
+  niche_categories?: NicheCategory[];
+  architecture_layers?: ArchitectureLayer[];
+  official_pricing_links?: OfficialPricingLink[];
+  available_voices?: VoiceOption[];
+  stock_media?: {
+    pexels_configured: boolean;
+    pexels_masked: string;
+    pixabay_configured: boolean;
+    pixabay_masked: string;
+    wikimedia_enabled: boolean;
+  };
   director: Record<string, any>;
   storage: { projects_dir: string; data_dir: string; db_path: string };
   engines: { effectcraft_cli: string; filmcraft_cli: string; ffmpeg: string; ffprobe: string; aws_region: string };
@@ -232,6 +331,20 @@ export type ProjectReports = {
     limitations: string[];
   };
   director_usage?: { model_id: string; input_tokens: number; output_tokens: number; latency_s: number; attempts: number };
+  token_usage?: TokenUsageReport;
+  asset_discovery?: {
+    assets: {
+      req_id: string;
+      scene_id: string;
+      status: string;
+      local_rel_path: string | null;
+      provider: string | null;
+      external_id: string | null;
+      source_url: string | null;
+      licence: string | null;
+      note: string;
+    }[];
+  };
   caption_validation?: { ok: boolean; caption_count: number; issues: string[] };
   manifest?: { version: number; assets: { path: string; kind: string; created_at: string; provenance: Record<string, any> }[] };
 };

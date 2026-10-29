@@ -6,6 +6,7 @@
 tools/
 projects/
 data/
+scratch/
 *.mp4
 *.wav
 *.mp3

@@ -47,11 +47,18 @@ class AudioPlacement(_M):
     duration_s: float = Field(gt=0)
 
 
+class CaptionWord(_M):
+    word: str
+    start_s: float = Field(ge=0)
+    end_s: float = Field(gt=0)
+
+
 class CaptionEntry(_M):
     index: int = Field(ge=1)
     start_s: float = Field(ge=0)
     end_s: float = Field(gt=0)
     text: str = Field(min_length=1, max_length=200)
+    words: list[CaptionWord] = Field(default_factory=list)
 
 
 class TimelineManifest(_M):
@@ -104,6 +111,14 @@ def _fmt_srt_time(seconds: float) -> str:
     return f"{h:02d}:{m:02d}:{s:02d},{ms:03d}"
 
 
+def _fmt_ass_time(seconds: float) -> str:
+    cs = int(round(max(0.0, seconds) * 100))
+    h, rem = divmod(cs, 360_000)
+    m, rem = divmod(rem, 6_000)
+    s, cs = divmod(rem, 100)
+    return f"{h:d}:{m:02d}:{s:02d}.{cs:02d}"
+
+
 def write_srt(captions: list[CaptionEntry], out_srt: Path) -> Path:
     out_srt.parent.mkdir(parents=True, exist_ok=True)
     blocks = []
@@ -111,6 +126,69 @@ def write_srt(captions: list[CaptionEntry], out_srt: Path) -> Path:
         blocks.append(f"{i}\n{_fmt_srt_time(c.start_s)} --> {_fmt_srt_time(c.end_s)}\n{c.text.strip()}\n")
     out_srt.write_text("\n".join(blocks), encoding="utf-8")
     return out_srt
+
+
+def write_ass_highlighted(
+    captions: list[CaptionEntry], out_ass: Path, width: int = 1920, height: int = 1080, font_size: int = 44
+) -> Path:
+    """Writes an Advanced SubStation Alpha (.ass) subtitle file with word-by-word active gold highlighting."""
+    out_ass.parent.mkdir(parents=True, exist_ok=True)
+    scale_factor = (font_size / 44.0) if font_size else 1.0
+    if width >= height:
+        # Landscape 16:9: sleek compact broadcast 30-34px font, non-intrusive, crisp & readable
+        actual_font_px = max(22, min(36, round(width * 0.017 * scale_factor)))
+        margin_v = round(height * 0.060)
+    else:
+        # Vertical 9:16: sleek 32-36px font placed safely above YouTube Shorts / Reels bottom UI
+        actual_font_px = max(24, min(40, round(width * 0.030 * scale_factor)))
+        margin_v = round(height * 0.14)
+    header = (
+        "[Script Info]\n"
+        "ScriptType: v4.00+\n"
+        f"PlayResX: {width}\n"
+        f"PlayResY: {height}\n"
+        "WrapStyle: 0\n"
+        "ScaledBorderAndShadow: yes\n\n"
+        "[V4+ Styles]\n"
+        "Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, "
+        "Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, "
+        "Alignment, MarginL, MarginR, MarginV, Encoding\n"
+        f"Style: Default,DejaVu Sans,{actual_font_px},&H00FFFFFF,&H0000D7FF,&H000A0E1A,&H80000000,"
+        f"-1,0,0,0,100,100,0,0,1,2.5,1.2,2,30,30,{margin_v},1\n\n"
+        "[Events]\n"
+        "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n"
+    )
+    events: list[str] = []
+    for c in captions:
+        wlist = c.words
+        if not wlist:
+            tokens = c.text.replace("\n", " ").split()
+            if not tokens:
+                continue
+            step = max(0.08, (c.end_s - c.start_s) / len(tokens))
+            wlist = [
+                CaptionWord(word=t, start_s=round(c.start_s + i * step, 3), end_s=round(c.start_s + (i + 1) * step, 3))
+                for i, t in enumerate(tokens)
+            ]
+        # Build contiguous non-overlapping slices across [c.start_s, c.end_s] so the phrase stays smoothly on screen
+        # while the active spoken word is highlighted in vibrant gold (&H0000D7FF& = #FFD700)
+        n = len(wlist)
+        for k in range(n):
+            seg_start = c.start_s if k == 0 else max(c.start_s, wlist[k].start_s)
+            seg_end = c.end_s if k == n - 1 else min(c.end_s, max(seg_start + 0.04, wlist[k + 1].start_s))
+            if seg_end <= seg_start + 0.01:
+                continue
+            parts: list[str] = []
+            for j, wobj in enumerate(wlist):
+                safe_w = wobj.word.replace("{", "").replace("}", "")
+                if j == k:
+                    parts.append(r"{\c&H0000D7FF&\fscx108\fscy108}" + safe_w + r"{\c&H00FFFFFF&\fscx100\fscy100}")
+                else:
+                    parts.append(safe_w)
+            line_txt = " ".join(parts)
+            events.append(f"Dialogue: 0,{_fmt_ass_time(seg_start)},{_fmt_ass_time(seg_end)},Default,,0,0,0,,{line_txt}")
+    out_ass.write_text(header + "\n".join(events) + "\n", encoding="utf-8")
+    return out_ass
 
 
 class FilmCraftAdapter:
@@ -180,25 +258,64 @@ class FilmCraftAdapter:
 
         with MCPClient([self.cli, "mcp"], "filmcraft", timeout=self.timeout, cwd=str(workspace_root)) as c:
             c.call("command_run", id="file.newProject", params={"name": manifest.title})
-            c.call("command_run", id="file.newSequence", params={
-                "name": "Main",
+
+            # Create professional folder bins matching NLE studio standards
+            b_seq = c.call("command_run", id="file.newBin", params={"name": "Sequences"})
+            b_footage = c.call("command_run", id="file.newBin", params={"name": "Footage"})
+            b_audio = c.call("command_run", id="file.newBin", params={"name": "Audio"})
+            b_graphics = c.call("command_run", id="file.newBin", params={"name": "Graphics"})
+
+            seq = c.call("command_run", id="file.newSequence", params={
+                "name": "Main Edit",
                 "width": manifest.width,
                 "height": manifest.height,
                 "fps": manifest.fps,
                 "sampleRate": manifest.sample_rate,
-                "video": 2,
-                "audio": 2,
+                "video": 3,
+                "audio": 3,
             })
-            imp = c.call("command_run", id="file.import", params={"paths": all_paths})
-            items = imp.get("items", []) if isinstance(imp, dict) else []
-            if len(items) != len(all_paths):
-                raise EngineError(f"FilmCraft imported {len(items)}/{len(all_paths)} media items: {imp}")
+            if isinstance(seq, dict) and "sequence" in seq and isinstance(b_seq, dict) and "bin" in b_seq:
+                c.call("command_run", id="project.moveToBin", params={"items": [seq["sequence"]], "bin": b_seq["bin"]})
 
-            v_items = items[:len(video_sources)]
-            a_items = items[len(video_sources):]
+            # Separate video sources into Footage (V1 base) vs Graphics (V2 overlays/callouts)
+            footage_bin_id = b_footage.get("bin") if isinstance(b_footage, dict) else None
+            graphics_bin_id = b_graphics.get("bin") if isinstance(b_graphics, dict) else None
+            audio_bin_id = b_audio.get("bin") if isinstance(b_audio, dict) else None
+
+            v_footage_sources = [(clip, p) for clip, p in video_sources if clip.track == "V1"]
+            v_graphics_sources = [(clip, p) for clip, p in video_sources if clip.track != "V1"]
+
+            v_items_map: dict[str, int] = {}
+            if v_footage_sources:
+                paths = [str(p) for _, p in v_footage_sources]
+                res = c.call("command_run", id="file.import", params={"paths": paths, "bin": footage_bin_id} if footage_bin_id else {"paths": paths})
+                for (clip, p), item_id in zip(v_footage_sources, res.get("items", [])):
+                    v_items_map[str(p)] = item_id
+                    c.call("command_run", id="clip.rename", params={"item": item_id, "name": f"Scene {clip.scene_id.upper()}"})
+
+            if v_graphics_sources:
+                paths = [str(p) for _, p in v_graphics_sources]
+                res = c.call("command_run", id="file.import", params={"paths": paths, "bin": graphics_bin_id} if graphics_bin_id else {"paths": paths})
+                for (clip, p), item_id in zip(v_graphics_sources, res.get("items", [])):
+                    v_items_map[str(p)] = item_id
+                    c.call("command_run", id="clip.rename", params={"item": item_id, "name": f"Overlay {clip.scene_id.upper()}"})
+
+            a_paths = [str(p) for _, p in audio_sources]
+            imp_a = c.call("command_run", id="file.import", params={"paths": a_paths, "bin": audio_bin_id} if audio_bin_id else {"paths": a_paths})
+            a_items = imp_a.get("items", []) if isinstance(imp_a, dict) else []
+
+            for (aclip, p), item_id in zip(audio_sources, a_items):
+                if aclip.track == "A2" or "ambient" in str(p).lower() or "score" in str(p).lower() or "music" in str(p).lower():
+                    clean_name = f"Music Bed – {aclip.id}"
+                else:
+                    clean_name = f"Voiceover – {aclip.id}"
+                c.call("command_run", id="clip.rename", params={"item": item_id, "name": clean_name})
 
             steps: list[dict] = []
-            for (clip, _), item_id in zip(video_sources, v_items):
+            for clip, p in video_sources:
+                item_id = v_items_map.get(str(p))
+                if item_id is None:
+                    continue
                 steps.append({
                     "id": "timeline.place",
                     "params": {
@@ -251,9 +368,16 @@ class FilmCraftAdapter:
         srt_path: Path | None = None
         if manifest.captions:
             srt_path = write_srt(manifest.captions, workspace_root / "captions" / "captions.srt")
+            ass_path = write_ass_highlighted(
+                manifest.captions,
+                workspace_root / "captions" / "captions.ass",
+                manifest.width,
+                manifest.height,
+                manifest.caption_font_size,
+            )
             if manifest.burn_captions:
-                warnings.append("FilmCraft caption tracks are not burned into video frames by file.exportMedia; burned in via FFmpeg subtitles filter.")
-                self._burn_subtitles(raw_mp4, srt_path, out_mp4, manifest.caption_font_size, manifest.width, manifest.height)
+                warnings.append("FilmCraft caption tracks are not burned into video frames by file.exportMedia; burned word-highlighted ASS captions via FFmpeg.")
+                self._burn_subtitles(raw_mp4, ass_path, out_mp4, manifest.caption_font_size, manifest.width, manifest.height)
                 raw_mp4.unlink(missing_ok=True)
 
         facts = verify_video(
@@ -275,23 +399,25 @@ class FilmCraftAdapter:
             warnings=warnings,
         )
 
-    def _burn_subtitles(self, in_mp4: Path, srt_path: Path, out_mp4: Path, font_size: int = 22, width: int = 1920, height: int = 1080) -> None:
-        # libass default PlayResY is 288 (scales font by height/288). Scale target pixel height by frame width so
-        # punchy 2-4 word captions pop cleanly with crisp dark outline + drop shadow (BorderStyle=1, no opaque box).
-        scale_factor = (font_size / 44.0) if font_size else 1.0
-        target_px = width * (0.036 if width >= height else 0.046) * scale_factor
-        ass_size = max(8, min(24, round(target_px / (height / 288.0))))
-        margin_v = 26 if width >= height else 38
-        style = (
-            f"FontName=DejaVu Sans,FontSize={ass_size},Bold=1,"
-            f"PrimaryColour=&H00FFFFFF,OutlineColour=&H000A0E1A,BackColour=&H60000000,"
-            f"BorderStyle=1,Outline=2,Shadow=2,MarginV={margin_v},Alignment=2"
-        )
+    def _burn_subtitles(self, in_mp4: Path, sub_path: Path, out_mp4: Path, font_size: int = 22, width: int = 1920, height: int = 1080) -> None:
+        if sub_path.suffix.lower() == ".ass":
+            vf = f"ass={sub_path.name}"
+        else:
+            scale_factor = (font_size / 44.0) if font_size else 1.0
+            target_px = width * (0.036 if width >= height else 0.046) * scale_factor
+            ass_size = max(8, min(24, round(target_px / (height / 288.0))))
+            margin_v = 26 if width >= height else 38
+            style = (
+                f"FontName=DejaVu Sans,FontSize={ass_size},Bold=1,"
+                f"PrimaryColour=&H00FFFFFF,OutlineColour=&H000A0E1A,BackColour=&H60000000,"
+                f"BorderStyle=1,Outline=2,Shadow=2,MarginV={margin_v},Alignment=2"
+            )
+            vf = f"subtitles={sub_path.name}:force_style='{style}'"
         r = subprocess.run(
             [self.ffmpeg, "-v", "error", "-y", "-i", str(in_mp4.resolve()),
-             "-vf", f"subtitles={srt_path.name}:force_style='{style}'",
+             "-vf", vf,
              "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "18", "-c:a", "copy", str(out_mp4.resolve())],
-            cwd=str(srt_path.parent),
+            cwd=str(sub_path.parent),
             capture_output=True, text=True, timeout=300,
         )
         if r.returncode != 0 or not out_mp4.is_file():

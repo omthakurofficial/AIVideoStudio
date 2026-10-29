@@ -1,11 +1,12 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { api, ACTIVE, API, type Health, type Job, type Project } from "@/lib/api";
+import { api, ACTIVE, API, type Health, type Job, type NicheCategory, type Project } from "@/lib/api";
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
+  const [skills, setSkills] = useState<NicheCategory[]>([]);
   const [health, setHealth] = useState<Health | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,6 +29,9 @@ export default function Dashboard() {
     };
     load();
     api.health(true).then(setHealth).catch(() => {});
+    api.getSettings().then(res => {
+      if (res.niche_categories && live) setSkills(res.niche_categories);
+    }).catch(() => {});
     const t = setInterval(load, 2000);
     return () => {
       live = false;
@@ -89,6 +93,66 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {skills.length > 0 && (
+        <section className="card" aria-label="Production Archetype Skills" style={{ marginBottom: 20 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: "1.15rem" }}>⚡ Production Archetype Skills</h2>
+              <p className="muted" style={{ margin: "2px 0 0", fontSize: ".82rem" }}>
+                Locked cinematic rule sets (`SKILL.md`) driving AI Director storyboard typography, camera clamping, and vector layer rendering.
+              </p>
+            </div>
+            <Link href="/projects/new" className="badge ok" style={{ textDecoration: "none" }}>
+              {skills.length} Skills Active →
+            </Link>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))", gap: 10 }}>
+            {skills.map(sk => (
+              <div
+                key={sk.id}
+                style={{
+                  background: "var(--panel-alt)",
+                  border: "1px solid var(--line)",
+                  borderRadius: 10,
+                  padding: "10px 12px",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                }}
+              >
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                    <span className="badge ok" style={{ fontSize: ".72rem" }}>{sk.badge}</span>
+                    <span className="muted" style={{ fontSize: ".72rem" }}>{sk.default_aspect_ratio}</span>
+                  </div>
+                  <div style={{ fontWeight: 600, fontSize: ".88rem", marginBottom: 3 }}>{sk.name}</div>
+                  <div className="muted" style={{ fontSize: ".76rem", marginBottom: 6 }}>{sk.reference_style}</div>
+                  <p className="muted" style={{ fontSize: ".76rem", margin: "0 0 10px", lineHeight: 1.35, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                    {sk.description}
+                  </p>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <Link
+                    href={`/projects/new?skill=${sk.id}&sample=1`}
+                    className="btn secondary"
+                    style={{ flex: 1, textAlign: "center", fontSize: ".76rem", padding: "5px 8px" }}
+                  >
+                    Sample
+                  </Link>
+                  <Link
+                    href={`/projects/new?skill=${sk.id}`}
+                    className="btn"
+                    style={{ flex: 1, textAlign: "center", fontSize: ".76rem", padding: "5px 8px" }}
+                  >
+                    Use Skill
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       <div className="grid-2">
         <div>
           <section className="card" aria-label="Recent projects">
@@ -129,9 +193,14 @@ export default function Dashboard() {
                           <span className={`badge ${p.status === "completed" ? "ok" : ACTIVE.includes(p.status) ? "active" : ""}`}>
                             {p.status}
                           </span>
+                          {p.token_usage?.used_api_tokens && (
+                            <span className="badge ok" title={`Model: ${p.token_usage.primary_model_id} (${p.token_usage.total_input_tokens} in / ${p.token_usage.total_output_tokens} out)`}>
+                              🪙 {p.token_usage.total_tokens.toLocaleString()} tok · ${p.token_usage.total_cost_usd.toFixed(4)}
+                            </span>
+                          )}
                         </div>
                         <div className="muted" style={{ fontSize: "0.79rem", marginTop: 2 }}>
-                          {p.settings.aspect_ratio} · {p.settings.fps} fps · ~{p.settings.target_duration_s}s · {new Date(p.created_at).toLocaleString()}
+                          {p.settings.aspect_ratio} · {p.settings.fps} fps · ~{p.settings.target_duration_s}s · {p.settings.narration?.voice || "kokoro:am_michael"} · {new Date(p.created_at).toLocaleString()}
                         </div>
                       </div>
                     </div>
@@ -165,6 +234,9 @@ export default function Dashboard() {
                     <div>
                       <Link href={`/projects/${p.id}`} style={{ fontWeight: 600 }}>{p.title}</Link>{" "}
                       <span className="badge ok">MP4 Ready</span>{" "}
+                      {p.token_usage?.used_api_tokens && (
+                        <span className="badge">${p.token_usage.total_cost_usd.toFixed(4)} USD ({p.token_usage.total_tokens.toLocaleString()} tok)</span>
+                      )}{" "}
                       <span className="muted" style={{ fontSize: "0.8rem" }}>({p.settings.aspect_ratio})</span>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>

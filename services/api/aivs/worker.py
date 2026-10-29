@@ -7,6 +7,7 @@ from .providers import ProviderError
 from .storyboard import store as sbstore
 from .director import DirectorError
 from .pipeline import ProductionPipeline
+from .pricing import record_token_usage
 
 
 class Worker:
@@ -89,6 +90,7 @@ class Worker:
             sb = sb.model_copy(update={"approved": True})
         sb = sbstore.save(ws.root, sb, bump=True)
         ws.write_json("reports/director_usage.json", {**rep.__dict__, "outcome": "ok", "revision": sb.revision})
+        record_token_usage(ws.root, "storyboard_planning", rep.model_id, rep.input_tokens, rep.output_tokens, rep.latency_s, rep.attempts)
         store.log(jid, "info", f"Storyboard r{sb.revision}: {len(sb.scenes)} scenes; tokens in/out {rep.input_tokens}/{rep.output_tokens}; {rep.attempts} attempt(s)")
         if sb.approved:
             store.update_job(jid, state="completed", progress_done=3, current_step="Storyboard ready (auto-approved)", checkpoint={"storyboard_revision": sb.revision})

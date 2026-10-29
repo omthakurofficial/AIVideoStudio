@@ -28,6 +28,14 @@ SUPPORTED_SCRIPT_FORMATS = [
 
 SAMPLE_SCRIPTS_META = [
     {
+        "id": "nepal_flood_documentary",
+        "title": "Recent Nepal Monsoon Floods: 2D Map & River Basin Documentary",
+        "file": "examples/nepal_flood_documentary.md",
+        "aspect_ratio": "16:9",
+        "visual_style": "warm-documentary",
+        "category": "16:9 Non-Tech 2D Map & Stock Media Documentary",
+    },
+    {
         "id": "zero_trust_9x16",
         "title": "Zero-Trust mTLS Security (9:16 Vertical Short)",
         "file": "examples/zero_trust_9x16.md",
@@ -162,8 +170,8 @@ def analyze_script(script: str) -> dict:
         "auto_settings": {
             "target_duration_s": auto_target_s,
             "aspect_ratio": rec_aspect,
-            "narration": {"mode": "generate", "voice": "en-US-GuyNeural"},
-            "captions": {"enabled": True, "font_size": 48},
+            "narration": {"mode": "generate", "voice": "kokoro:am_michael"},
+            "captions": {"enabled": True, "font_size": 38},
             "approval_mode": "automatic",
         },
         "supported_formats": SUPPORTED_SCRIPT_FORMATS,
@@ -171,7 +179,27 @@ def analyze_script(script: str) -> dict:
 
 
 def load_sample_scripts(repo_root: Path) -> list[dict]:
+    from .niches import list_niches
     items: list[dict] = []
+    for niche in list_niches():
+        raw = niche["sample_script"]
+        analysis = analyze_script(raw)
+        items.append({
+            "id": f"niche_{niche['id']}",
+            "title": niche["sample_title"],
+            "niche_category": niche["id"],
+            "aspect_ratio": niche["default_aspect_ratio"],
+            "visual_style": niche["default_visual_style"],
+            "category": f"{niche['badge']} • {niche['name']}",
+            "script": raw,
+            "analysis": {
+                "scene_count": analysis["paragraph_count"],
+                "total_words": analysis["total_words"],
+                "estimated_seconds": analysis["estimated_seconds"],
+                "recommended_target_duration_s": analysis["recommended_target_duration_s"],
+                "detected_format": analysis["detected_format"],
+            },
+        })
     for meta in SAMPLE_SCRIPTS_META:
         fpath = repo_root / meta["file"]
         if not fpath.is_file():

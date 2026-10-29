@@ -17,6 +17,9 @@ from .health import health, verify_engines_mcp
 from .director import Director
 from .storyboard import Storyboard, store as sbstore
 from .analysis import analyze_script, load_sample_scripts, SUPPORTED_SCRIPT_FORMATS
+from .pricing import ARCHITECTURE_LAYERS, BEDROCK_MODEL_CATALOG, OFFICIAL_PRICING_LINKS, record_token_usage, get_project_token_report
+from .niches import list_niches
+from .engines.narration import AVAILABLE_VOICES
 
 
 class TopicRequest(BaseModel):
@@ -48,7 +51,7 @@ DEFAULT_USER_SETTINGS = {
     "default_fps": 30,
     "default_visual_style": "clean-technical",
     "default_approval_mode": "automatic",
-    "default_voice": "en-US-GuyNeural",
+    "default_voice": "kokoro:am_michael",
     "captions_enabled": True,
     "caption_font_size": 44,
     "caption_style": "pop_words",
@@ -129,11 +132,26 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
 
     @app.get("/api/settings")
     def get_app_settings():
+        import os
         from .providers.base import load_config
         cfg = load_config()
+        px_key = os.environ.get("PEXELS_API_KEY", "").strip()
+        pb_key = os.environ.get("PIXABAY_API_KEY", "").strip()
         return {
             "preferences": _load_user_settings(),
             "models": cfg.get("tasks", {}),
+            "model_catalog": BEDROCK_MODEL_CATALOG,
+            "architecture_layers": ARCHITECTURE_LAYERS,
+            "niche_categories": list_niches(),
+            "official_pricing_links": OFFICIAL_PRICING_LINKS,
+            "available_voices": AVAILABLE_VOICES,
+            "stock_media": {
+                "pexels_configured": bool(px_key),
+                "pexels_masked": (f"{px_key[:4]}••••••••{px_key[-4:]}" if len(px_key) >= 8 else ("••••" if px_key else "")),
+                "pixabay_configured": bool(pb_key),
+                "pixabay_masked": (f"{pb_key[:4]}••••••••{pb_key[-4:]}" if len(pb_key) >= 8 else ("••••" if pb_key else "")),
+                "wikimedia_enabled": True,
+            },
             "director": cfg.get("director", {}),
             "storage": {
                 "projects_dir": str(settings.projects_dir),
@@ -152,11 +170,38 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
 
     @app.put("/api/settings")
     def update_app_settings(body: dict):
+        import os
+        from .providers.base import load_config, CONFIG_FILE
         cur = _load_user_settings()
         for k in DEFAULT_USER_SETTINGS:
             if k in body:
                 cur[k] = body[k]
         _user_settings_path().write_text(json.dumps(cur, indent=2), encoding="utf-8")
+
+        # Update task AI models in config/models.json if requested
+        if isinstance(body.get("task_models"), dict):
+            cfg = load_config()
+            valid_ids = {m["model_id"] for m in BEDROCK_MODEL_CATALOG}
+            for task_name, model_id in body["task_models"].items():
+                if task_name in cfg.get("tasks", {}) and model_id in valid_ids:
+                    cfg["tasks"][task_name]["model_id"] = model_id
+            CONFIG_FILE.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
+
+        # Update Pexels / Pixabay API keys in .env and os.environ if provided
+        env_path = REPO_ROOT / ".env"
+        env_lines = env_path.read_text(encoding="utf-8").splitlines() if env_path.is_file() else []
+        env_updated = False
+        for key_field, env_name in (("pexels_api_key", "PEXELS_API_KEY"), ("pixabay_api_key", "PIXABAY_API_KEY")):
+            if key_field in body and isinstance(body[key_field], str):
+                val = body[key_field].strip()
+                if val and "•" not in val:
+                    os.environ[env_name] = val
+                    env_lines = [ln for ln in env_lines if not ln.strip().startswith(f"{env_name}=")]
+                    env_lines.append(f"{env_name}={val}")
+                    env_updated = True
+        if env_updated:
+            env_path.write_text("\n".join(env_lines) + "\n", encoding="utf-8")
+
         return {"ok": True, "preferences": cur}
 
     @app.get("/api/scripts/samples")
@@ -186,6 +231,7 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
             p["has_export"] = (ws_root / "renders" / "final.mp4").is_file() and (ws_root / "reports" / "quality_report.json").is_file()
             prevs = sorted((ws_root / "renders" / "previews").glob("*.png")) if (ws_root / "renders" / "previews").is_dir() else []
             p["thumbnail"] = f"/api/projects/{p['id']}/media/renders/previews/{prevs[0].name}" if prevs else None
+            p["token_usage"] = get_project_token_report(ws_root)
         return projs
 
     def _project(pid: str) -> dict:
@@ -203,6 +249,7 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         p["script"] = ws.read_script()
         p["has_export"] = (ws.root / "renders" / "final.mp4").is_file() and (ws.root / "reports" / "quality_report.json").is_file()
         p["script_analysis"] = analyze_script(p["script"])
+        p["token_usage"] = get_project_token_report(ws.root)
         return p
 
     @app.put("/api/projects/{pid}/script")
@@ -227,9 +274,11 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
             prompt = f"Topic: {body.topic}\nTarget length: approximately {target_words} words ({body.target_duration_s} seconds)."
             text, usage = prov.generate_text(spec, sys_prompt, prompt)
             script = text.strip()
-            store().workspace(pid).write_json("reports/script_generation.json", {
+            ws = store().workspace(pid)
+            ws.write_json("reports/script_generation.json", {
                 "model_id": usage.model_id, "input_tokens": usage.input_tokens, "output_tokens": usage.output_tokens, "latency_s": usage.latency_s
             })
+            record_token_usage(ws.root, "script_generation", usage.model_id, usage.input_tokens, usage.output_tokens, usage.latency_s, 1)
         except Exception as e:
             raise HTTPException(503, f"Could not generate script from topic: {e}")
         store().set_script(pid, script)
@@ -370,7 +419,7 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
     def get_reports(pid: str):
         _project(pid)
         ws = store().workspace(pid)
-        out: dict = {"workspace_path": str(ws.root)}
+        out: dict = {"workspace_path": str(ws.root), "token_usage": get_project_token_report(ws.root)}
         for name in ("quality_report", "director_usage", "caption_validation", "asset_discovery", "script_analysis"):
             f = ws.root / "reports" / f"{name}.json"
             if f.is_file():

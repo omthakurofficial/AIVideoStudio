@@ -8,6 +8,8 @@ from .providers import LLMProvider, ModelSpec, ProviderError
 from .storyboard import Storyboard, DirectorOutput
 from .storyboard.schema import words
 from .analysis import analyze_script
+from .niches import detect_niche_from_text, get_niche
+from .skills import get_skill, check_against_skill
 
 PRIMITIVES_GUIDE = """Available visual building blocks (the renderer maps these to verified motion-graphics operations):
  element kinds: node, service_node, icon, label, callout, box, group, arrow, route, packet, chart_bar, chart_line, map_region,
@@ -25,8 +27,8 @@ Rules:
 2. `narration_text` of all scenes, concatenated in order, must reproduce the ENTIRE script verbatim. Never paraphrase, add, drop or reorder narration. Visual instructions go in visual fields, never in narration.
 3. For each scene state the learning objective and key message, then choose the visual technique by meaning: explain a process with an animated diagram showing the action, not a heading plus paragraph. Vary treatments across scenes; do not force one template.
 4. Define visual_elements with unique snake_case ids, relationships between them, and an animation_sequence whose steps reference those ids and reveal things in the order the narration mentions them. All times are seconds relative to the scene start and must fit inside the scene duration.
-5. Keep on-screen text short (labels, key terms), never a paragraph. Keep at most ~10 elements per scene so it stays legible.
-6. Stock footage only when real-world imagery adds information animation cannot. If used, add an asset_requirement with a justification and a precise search query. Animation is the default; do not use footage to fill time.
+5. Keep on-screen text short (labels, key terms), never a paragraph. Keep at most ~10 elements per scene so it stays legible. Every visual element (except arrows and packets) MUST have a meaningful, non-empty `label` (e.g. 'Route 53', 'AWS Lambda', 'Amazon RDS'). Never leave `label` empty.
+6. For geographical, environmental, or real-world documentary scenes (e.g. Nepal floods, rivers, cities, climate), use `visual_type: "map"` with `map_region` and `map_marker` elements (which render on a 2D cartographic map canvas with terrain, rivers, graticule grid, and compass rose), plus `icon` elements (which render multi-shape 2D vector illustrations for rain, flood waves, mountains, rescue, warnings, cities, shields, and servers), and add a `stock_image` or `stock_video` entry in `asset_requirements` with a clear search query so real Pexels/Wikimedia documentary imagery is composited onto the scene.
 7. Choose a transition for each scene boundary and note in director_notes how the scene connects to its neighbours.
 8. Scene ids are s01, s02, ... in order. quality_checks list what must be visible in the final scene.
 9. Every `arrow` or `route` element MUST carry props {{"from": <element id>, "to": <element id>}} naming two non-connector elements of the same scene (these are what get drawn). Also list the semantic link in element_relationships. A `flow` animation targets `packet` elements and MUST set params {{"route": <arrow/route element id>}}; `draw` reveals an arrow/route.
@@ -90,15 +92,27 @@ class Director:
         self.provider, self.spec, self.cfg = provider, spec, cfg
 
     def plan(self, project_id: str, script: str, settings: dict, log=lambda m: None) -> tuple[Storyboard, DirectorReport]:
-        rep = DirectorReport(model_id=self.spec.model_id)
+        active_spec = self.spec
+        override_model = (settings or {}).get("ai_model")
+        if override_model and isinstance(override_model, str) and override_model.strip():
+            from dataclasses import replace
+            active_spec = replace(self.spec, model_id=override_model.strip())
+        rep = DirectorReport(model_id=active_spec.model_id)
         parsed = analyze_script(script)
         clean_script = parsed["clean_narration"] or script.strip()
         hints_block = ("\nAuthor per-scene visual guidance (use for visual_description/elements, DO NOT include in narration_text):\n- "
                        + "\n- ".join(parsed["visual_hints"]) + "\n") if parsed["visual_hints"] else ""
         target_s = float(settings.get("target_duration_s") or parsed["recommended_target_duration_s"])
+        niche_id = settings.get("niche_category") or detect_niche_from_text(clean_script, settings.get("visual_style", ""))
+        niche = get_niche(niche_id)
+        skill = get_skill(niche["id"])
+        niche_block = f"\n{skill.director_brief() if skill else niche['director_rules']}\n"
+        log(f"Director skill: {niche['id']} ({niche.get('skill_path') or 'built-in'})")
         brief = (f"Title: (derive from script)\nOutput: {settings['aspect_ratio']} at {settings['fps']} fps. Visual style: {settings['visual_style']}.\n"
+                 f"Selected Niche Category Plugin: {niche['name']} ({niche['id']})\n"
                  f"Target total duration: about {target_s:.0f} seconds.\n"
                  + (f"Reference/style notes: {settings['reference_description']}\n" if settings.get("reference_description") else "")
+                 + niche_block
                  + hints_block
                  + f"\nSCRIPT (reproduce verbatim across scenes):\n<script>\n{clean_script}\n</script>")
         messages = [{"role": "user", "content": [{"text": brief}]}]
@@ -106,21 +120,29 @@ class Director:
         last_problems: list[str] = []
         for attempt in range(1, self.cfg["max_repair_attempts"] + 2):
             rep.attempts = attempt
-            log(f"Director attempt {attempt} with {self.spec.model_id}")
-            res = self.provider.generate_structured(self.spec, SYSTEM, messages, schema, "submit_storyboard",
+            log(f"Director attempt {attempt} with {active_spec.model_id}")
+            res = self.provider.generate_structured(active_spec, SYSTEM, messages, schema, "submit_storyboard",
                                                     "Submit the complete scene-by-scene storyboard.")
             rep.input_tokens += res.input_tokens; rep.output_tokens += res.output_tokens; rep.latency_s += res.latency_s
             problems: list[str] = []
             out = None
             try:
+                if isinstance(res.data, dict) and "scenes" in res.data:
+                    for sc_dict in res.data.get("scenes", []):
+                        for el_dict in sc_dict.get("visual_elements", []):
+                            if el_dict.get("kind") not in ("arrow", "route", "packet") and not (el_dict.get("label") or "").strip():
+                                el_dict["label"] = el_dict.get("id", "item").replace("_", " ").title()
                 out = DirectorOutput.model_validate(res.data)
                 problems = check_output(clean_script, out, target_s, self.cfg)
+                if skill:
+                    problems += check_against_skill(skill, out.scenes)
             except ValidationError as e:
                 problems = [f"{'.'.join(map(str, err['loc']))}: {err['msg']}" for err in e.errors()[:12]]
             rep.problems_by_attempt.append(problems)
             if not problems and out:
                 sb = Storyboard(project_id=project_id, title=out.title, scenes=out.scenes,
-                                created_by={"provider": self.provider.name, "model_id": self.spec.model_id, "attempts": attempt})
+                                created_by={"provider": self.provider.name, "model_id": active_spec.model_id, "attempts": attempt,
+                                            "skill_id": niche["id"], "skill_fingerprint": skill.fingerprint() if skill else None})
                 return sb, rep
             last_problems = problems
             log(f"Attempt {attempt} rejected: {len(problems)} problem(s): {problems[0][:160]}")

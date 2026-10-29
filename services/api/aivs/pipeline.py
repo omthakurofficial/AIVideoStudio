@@ -10,19 +10,37 @@ from .storyboard.timeline import scene_starts
 from .engines.effectcraft import EffectCraftAdapter
 from .engines.scene_renderer import render_scene
 from .engines.filmcraft import (
-    FilmCraftAdapter, TimelineManifest, ClipPlacement, AudioPlacement, CaptionEntry, write_srt
+    FilmCraftAdapter, TimelineManifest, ClipPlacement, AudioPlacement, CaptionEntry, write_srt, write_ass_highlighted
 )
 from .engines.assets import AssetManager
 from .engines.narration import (
     synthesize_scene_narration, revise_storyboard_with_audio, build_synchronized_captions, validate_captions, SceneAudio
 )
 from .qc import inspect_rendered_scene, repair_scene_for_retry, inspect_final_video, SceneQCResult
+from .pricing import record_token_usage
+from .skills import get_skill, Skill
+from .niches import detect_niche_from_text
 
 
-def _scene_visual_hash(scene: Scene, width: int, height: int, fps: float, style: str) -> str:
+def _scene_visual_hash(scene: Scene, width: int, height: int, fps: float, style: str, skill_fp: str | None = None) -> str:
     payload = scene.model_dump(exclude={"status", "quality_checks"})
-    raw = json.dumps({"s": payload, "w": width, "h": height, "fps": fps, "style": style}, sort_keys=True)
+    blob = {"s": payload, "w": width, "h": height, "fps": fps, "style": style}
+    if skill_fp:
+        blob["skill"] = skill_fp
+    raw = json.dumps(blob, sort_keys=True)
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+
+def resolve_project_skill(pset: dict, sb: Storyboard | None, script: str = "") -> Skill | None:
+    """Skill precedence: explicit project setting > skill recorded by the Director > trigger detection on the script."""
+    sid = pset.get("niche_category") or ((sb.created_by or {}).get("skill_id") if sb else None)
+    if not sid:
+        text = script or (" ".join(s.narration_text for s in sb.scenes) if sb else "")
+        sid = detect_niche_from_text(text, pset.get("visual_style", ""))
+    try:
+        return get_skill(sid)
+    except Exception:
+        return None
 
 
 def _next_scene_version(ws_root: Path, scene_id: str) -> int:
@@ -80,11 +98,17 @@ class ProductionPipeline:
                 sb = sb.model_copy(update={"approved": True})
             sb = sbstore.save(ws.root, sb, bump=True)
             ws.write_json("reports/director_usage.json", {**rep.__dict__, "outcome": "ok", "revision": sb.revision})
+            record_token_usage(ws.root, "storyboard_planning", rep.model_id, rep.input_tokens, rep.output_tokens, rep.latency_s, rep.attempts)
             if not sb.approved:
                 store.update_job(jid, state="awaiting_approval", current_step="Review and approve storyboard before rendering", progress_done=1, progress_total=6, checkpoint=ckpt)
                 store.log(jid, "info", "Storyboard planned; awaiting user approval before rendering.")
                 return
 
+        skill = resolve_project_skill(pset, sb)
+        profile = skill.render.model_dump() if skill else None
+        skill_fp = skill.fingerprint() if skill else None
+        if skill:
+            store.log(jid, "info", f"Skill locked: {skill.id} ({skill.path}) fp={skill_fp}")
         n_scenes = len(sb.scenes)
         total_steps = n_scenes + 4  # assets + narration/captions + N scenes + assembly + QC
 
@@ -111,17 +135,23 @@ class ProductionPipeline:
                 sa = synthesize_scene_narration(sc, ws, voice=voice, mode=nar_mode, ffmpeg=self.settings.ffmpeg, ffprobe=self.settings.ffprobe, log=lambda m: store.log(jid, "info", m))
                 scene_audios[sc.id] = sa
                 store.log(jid, "info", f"Narration {sc.id}: {sa.duration_s:.2f}s ({'reused cache' if sa.reused_cache else sa.provider})")
-            sb = revise_storyboard_with_audio(sb, scene_audios)
+            sb = revise_storyboard_with_audio(sb, scene_audios, lead_s=(profile or {}).get("reveal", {}).get("lead_s", 0.10))
             sb = sbstore.save(ws.root, sb, bump=False)
 
+        cap_font = pset.get("captions", {}).get("font_size") or ((profile or {}).get("captions", {}).get("font_size") or 48)
         captions: list[CaptionEntry] = []
         if cap_enabled or nar_mode in ("generate", "user_audio"):
             captions = build_synchronized_captions(sb, scene_audios)
             srt_file = write_srt(captions, ws.root / "captions" / "captions.srt")
+            ass_file = write_ass_highlighted(
+                captions, ws.root / "captions" / "captions.ass",
+                width=width, height=height, font_size=cap_font,
+            )
             ws.add_asset("captions/captions.srt", "captions_srt", {"segments": len(captions)})
+            ws.add_asset("captions/captions.ass", "captions_ass_highlighted", {"segments": len(captions), "highlight": "active_word_gold"})
             cap_val = validate_captions(captions, sb, sum(s.duration for s in sb.scenes))
             ws.write_json("reports/caption_validation.json", cap_val.__dict__)
-            store.log(jid, "info", f"Captions synchronized: {len(captions)} segments (valid={cap_val.ok})")
+            store.log(jid, "info", f"Captions synchronized with active-word highlighting: {len(captions)} segments (valid={cap_val.ok})")
 
         ckpt["narration_done"] = True
         store.update_job(jid, checkpoint=ckpt)
@@ -135,7 +165,7 @@ class ProductionPipeline:
                 store.update_job(jid, state="cancelled", current_step="Cancelled", checkpoint=ckpt)
                 return
             step_num = 2 + idx + 1
-            vhash = _scene_visual_hash(sc, width, height, fps, style)
+            vhash = _scene_visual_hash(sc, width, height, fps, style, skill_fp)
             prev_info = rendered_map.get(sc.id)
 
             # Check if we can reuse an existing verified render for this scene
@@ -155,7 +185,7 @@ class ProductionPipeline:
             sdir = ws.root / "scenes" / f"{sc.id}_v{ver}"
 
             qc_res = self._render_and_inspect_with_repair(
-                store, jid, ws, sc, sdir, ver, width, height, fps, style, repairs
+                store, jid, ws, sc, sdir, ver, width, height, fps, style, repairs, profile
             )
             scene_qc_results.append(qc_res)
             if not qc_res.ok:
@@ -179,7 +209,7 @@ class ProductionPipeline:
                 "mp4": qc_res.mp4_path,
                 "preview": qc_res.preview_png,
                 "version": qc_res.version,
-                "hash": _scene_visual_hash(sb.scenes[idx], width, height, fps, style),
+                "hash": _scene_visual_hash(sb.scenes[idx], width, height, fps, style, skill_fp),
             }
             ws.add_asset(qc_res.mp4_path, "scene_render", {"scene_id": sc.id, "version": qc_res.version, "engine": "effectcraft"})
             ws.add_asset(f"{rel_sdir}/scene.ecproj", "effectcraft_project", {"scene_id": sc.id, "version": qc_res.version})
@@ -226,7 +256,7 @@ class ProductionPipeline:
             audio_clips=audio_clips,
             captions=captions,
             burn_captions=cap_enabled and len(captions) > 0,
-            caption_font_size=pset.get("captions", {}).get("font_size", 48),
+            caption_font_size=cap_font,
         )
         final_mp4 = ws.root / "renders" / "final.mp4"
         fcproj = ws.root / "assembly" / "project.fcproj"
@@ -248,18 +278,18 @@ class ProductionPipeline:
 
         ckpt["final_mp4"] = "renders/final.mp4"
         ckpt["quality_report"] = "reports/quality_report.json"
-        store.conn.execute("UPDATE projects SET status='completed', updated_at=datetime('now') WHERE id=?", (pid,))
+        store.set_project_status(pid, "completed")
         store.update_job(jid, state="completed", current_step="Export ready & verified", progress_done=total_steps, progress_total=total_steps, checkpoint=ckpt)
         store.log(jid, "info", f"Production completed: renders/final.mp4 ({asm.facts.width}x{asm.facts.height} @ {asm.facts.fps:.0f}fps, {asm.facts.duration:.2f}s)")
 
     def _render_and_inspect_with_repair(
         self, store: Store, jid: str, ws, sc: Scene, sdir: Path, ver: int,
-        width: int, height: int, fps: float, style: str, repairs: list[dict],
+        width: int, height: int, fps: float, style: str, repairs: list[dict], profile: dict | None = None,
     ) -> SceneQCResult:
         err_msg = ""
         cat: str | None = None
         try:
-            r = render_scene(self.ec, sc, sdir, width, height, fps, style, self.settings.ffprobe)
+            r = render_scene(self.ec, sc, sdir, width, height, fps, style, self.settings.ffprobe, profile=profile)
             for w in r.warnings:
                 store.log(jid, "info", f"Scene {sc.id} note: {w}")
             qc = inspect_rendered_scene(sc, sdir, ws.root, width, height, fps, ver, self.settings.ffmpeg, self.settings.ffprobe)
@@ -286,7 +316,7 @@ class ProductionPipeline:
 
         ver2 = ver + 1
         sdir2 = ws.root / "scenes" / f"{sc.id}_v{ver2}"
-        render_scene(self.ec, repaired_scene, sdir2, width, height, fps, style, self.settings.ffprobe)
+        render_scene(self.ec, repaired_scene, sdir2, width, height, fps, style, self.settings.ffprobe, profile=profile)
         qc2 = inspect_rendered_scene(repaired_scene, sdir2, ws.root, width, height, fps, ver2, self.settings.ffmpeg, self.settings.ffprobe)
         repairs.append({
             "scene_id": sc.id,
