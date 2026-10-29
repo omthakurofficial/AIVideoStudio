@@ -20,28 +20,39 @@ from playwright.sync_api import sync_playwright
 OUT_DIR = "/home/omthakur/Downloads/AIVideoStudio/exports/creator_motion_aws_iam"
 VOICEOVER_JSON = os.path.join(OUT_DIR, "voiceover_words.json")
 VOICEOVER_WAV = os.path.join(OUT_DIR, "voiceover_narration.wav")
-VOICEOVER_MP3 = os.path.join(OUT_DIR, "voiceover_narration.mp3")
+MASTER_AUDIO_MP3 = os.path.join(OUT_DIR, "master_audio_ducked.mp3")
 
 with open(VOICEOVER_JSON) as f:
     raw_words = json.load(f)["words"]
 
-with open(VOICEOVER_MP3, "rb") as f:
-    vo_b64 = base64.b64encode(f.read()).decode("ascii")
+with open(MASTER_AUDIO_MP3, "rb") as f:
+    master_audio_b64 = base64.b64encode(f.read()).decode("ascii")
+
+# Merge trailing punctuation into previous words for clean display
+clean_words = []
+for w in raw_words:
+    txt = w["word"].strip()
+    if not txt:
+        continue
+    if txt in [".", "!", "?", ",", ":", ";"] and clean_words:
+        clean_words[-1]["word"] += txt
+        clean_words[-1]["end"] = max(clean_words[-1]["end"], w["end"])
+    else:
+        clean_words.append(dict(w))
 
 # Group words into natural caption chunks (2 to 4 words per group)
 caption_groups = []
 current_chunk = []
-for i, w in enumerate(raw_words):
+for i, w in enumerate(clean_words):
     current_chunk.append(w)
-    # Natural break points
     is_punct = w["word"].endswith((".", "?", "!", ":"))
     is_chunk_full = len(current_chunk) >= 4
     is_next_pause = False
-    if i < len(raw_words) - 1:
-        if raw_words[i+1]["start"] - w["end"] > 0.35:
+    if i < len(clean_words) - 1:
+        if clean_words[i+1]["start"] - w["end"] > 0.35:
             is_next_pause = True
 
-    if is_punct or is_chunk_full or is_next_pause or i == len(raw_words) - 1:
+    if is_punct or is_chunk_full or is_next_pause or i == len(clean_words) - 1:
         caption_groups.append({
             "start": current_chunk[0]["start"],
             "end": current_chunk[-1]["end"],
@@ -49,7 +60,7 @@ for i, w in enumerate(raw_words):
         })
         current_chunk = []
 
-print(f"Generated {len(caption_groups)} natural caption groups.")
+print(f"Generated {len(caption_groups)} natural caption groups from {len(clean_words)} clean words.")
 
 # Generate HTML players for 16:9 and 9:16
 def generate_html(is_vertical=False):
@@ -133,8 +144,8 @@ def generate_html(is_vertical=False):
   </div>
   <div class="bar">
     <button id="play" type="button">Play</button>
-    <input id="scrub" type="range" min="0" max="38.5" step="0.01" value="0" aria-label="Scrub timeline">
-    <span id="time">0.00 / 38.50</span>
+    <input id="scrub" type="range" min="0" max="59.0" step="0.01" value="0" aria-label="Scrub timeline">
+    <span id="time">0.00 / 59.00</span>
     <button id="sound" type="button" aria-pressed="true">Sound on</button>
     <button id="loop" type="button" aria-pressed="true">Loop</button>
   </div>
@@ -143,7 +154,7 @@ def generate_html(is_vertical=False):
 <script>
 const IS_VERTICAL = {str(is_vertical).lower()};
 const W = {width}, HH = {height};
-const DURATION = 38.5;
+const DURATION = 59.0;
 
 // Embedded Captions Data
 const CAPTIONS = {captions_json_str};
@@ -315,48 +326,48 @@ const C = {{ bg: '#09090a', ink: '#f4f1ea', dim: '#8e8d94', mute: '#3b3b41', pan
 const F = {{ disp: '"Anton", "Bebas Neue", Impact, sans-serif', body: '"Inter", system-ui, sans-serif', serif: '"Instrument Serif", Georgia, serif' }};
 const disp = (px) => `${{px}}px ${{F.disp}}`, inter = (px, w = 600) => `${{w}} ${{px}}px ${{F.body}}`, serif = (px) => `italic ${{px}}px ${{F.serif}}`;
 
-// Timeline Synchronized with Voiceover Audio Timings
+// Timeline Synchronized with Expressive Kokoro Neural Explainer
 const TL = {{
-  D: 38.5,
-  hook: {{ w1: [0.09, 0.51], w2: [0.81, 1.00], strike: 1.70, shift: 2.10, use: 2.40, temp: 2.74, cred: 3.28, under: 3.45 }},
-  least: {{ pill: 4.55, w: [4.72, 5.01, 5.25], rule: [5.47, 5.72], chips: [6.10, 6.35, 6.60], drop: 7.10, pick: 7.30, ring: 7.60, only: 6.95, arrow: 8.00 }},
-  roles: {{ pill: 9.15, w1: [9.35, 9.72, 10.05, 10.38], strike1: 10.90, w2: [11.59, 12.19], br: 10.50, hl: 12.19, sub: 12.58, click: 13.08 }},
-  decide: {{ pill: 14.50, w: [14.72, 15.27, 15.95], stack: [15.20, 15.70, 16.20], ring: 16.62, note: 16.62 }},
-  wild: {{ w: [19.08, 19.48, 20.00, 20.48], ed: 19.10, type: [19.45, 19.85], strike: [19.85, 20.15], scoped: 21.78, warn: 21.78 }},
-  metric: {{ w: [23.82, 24.35, 24.78, 25.37], cnt: [24.10, 25.00], lock: 25.00, sub1: 25.85, sub2: 26.48 }},
-  wrong: {{ w1: [27.66, 28.08], w2: [28.59, 28.88], strike: [29.35, 29.50], stamp: 30.48 }},
-  take: {{ zero: 32.06, hl: 32.30, w2: [33.69, 33.98, 34.51, 34.74], sub: 35.86, gold: 36.66 }},
+  D: 59.0,
+  hook: {{ w1: [0.23, 0.53], w2: [0.85, 1.05], strike: 1.85, shift: 2.10, use: 7.20, temp: 7.67, cred: 8.22, under: 8.40 }},
+  least: {{ pill: 10.35, w: [10.45, 10.75, 11.00], rule: [11.50, 11.78], chips: [12.00, 12.30, 12.60], drop: 12.80, pick: 13.10, ring: 13.60, only: 12.71, arrow: 14.00 }},
+  roles: {{ pill: 16.50, w1: [16.88, 17.12, 17.80, 18.48], strike1: 18.90, w2: [21.77, 22.40], br: 20.80, hl: 22.40, sub: 23.00, click: 24.09 }},
+  decide: {{ pill: 25.75, w: [28.52, 29.25, 29.57], stack: [26.50, 27.20, 27.90], ring: 29.20, note: 29.20 }},
+  wild: {{ w: [33.54, 34.08, 35.38, 35.80], ed: 32.50, type: [33.00, 33.80], strike: [34.20, 34.60], scoped: 35.38, warn: 35.38 }},
+  metric: {{ w: [40.61, 41.20, 41.92, 42.60], cnt: [39.00, 41.20], lock: 41.20, sub1: 42.50, sub2: 43.50 }},
+  wrong: {{ w1: [46.00, 46.50], w2: [49.39, 49.74], strike: [48.00, 48.50], stamp: 49.60 }},
+  take: {{ zero: 52.80, hl: 53.15, w2: [54.20, 54.80, 55.40, 56.00], sub: 56.76, gold: 57.77 }},
 }};
 
 const CUTS = [
-  {{ t: 4.40, d: 0.28, type: 'whip', dir: 1 }},
-  {{ t: 8.95, d: 0.24, type: 'glitch' }},
-  {{ t: 14.30, d: 0.26, type: 'whipV', dir: 1 }},
-  {{ t: 18.65, d: 0.16, type: 'flash' }},
-  {{ t: 23.40, d: 0.22, type: 'whip', dir: 1 }},
-  {{ t: 27.25, d: 0.22, type: 'glitch' }},
-  {{ t: 31.65, d: 0.26, type: 'whip', dir: -1 }},
+  {{ t: 10.20, d: 0.28, type: 'whip', dir: 1 }},
+  {{ t: 16.40, d: 0.24, type: 'glitch' }},
+  {{ t: 25.65, d: 0.26, type: 'whipV', dir: 1 }},
+  {{ t: 32.20, d: 0.16, type: 'flash' }},
+  {{ t: 38.65, d: 0.22, type: 'whip', dir: 1 }},
+  {{ t: 45.70, d: 0.22, type: 'glitch' }},
+  {{ t: 51.05, d: 0.26, type: 'whip', dir: -1 }},
 ];
 
 const PUNCH = [
-  {{ t: 0.09, a: 0.03 }}, {{ t: 0.81, a: 0.08 }}, {{ t: 2.74, a: 0.08 }},
-  {{ t: 5.47, a: 0.05 }}, {{ t: 7.30, a: 0.06 }},
-  {{ t: 11.59, a: 0.04 }}, {{ t: 12.19, a: 0.06 }}, {{ t: 13.08, a: 0.05 }},
-  {{ t: 15.95, a: 0.04 }}, {{ t: 16.62, a: 0.08 }},
-  {{ t: 19.48, a: 0.05 }}, {{ t: 21.78, a: 0.06 }},
-  {{ t: 25.00, a: 0.15, k: 1.6 }},
-  {{ t: 30.48, a: 0.10 }}, {{ t: 32.06, a: 0.11 }}, {{ t: 34.74, a: 0.05 }}
+  {{ t: 0.23, a: 0.03 }}, {{ t: 0.85, a: 0.08 }}, {{ t: 7.67, a: 0.08 }},
+  {{ t: 11.50, a: 0.05 }}, {{ t: 13.10, a: 0.06 }},
+  {{ t: 18.48, a: 0.04 }}, {{ t: 21.77, a: 0.06 }}, {{ t: 24.09, a: 0.05 }},
+  {{ t: 28.52, a: 0.04 }}, {{ t: 29.57, a: 0.08 }},
+  {{ t: 34.08, a: 0.05 }}, {{ t: 35.38, a: 0.06 }},
+  {{ t: 41.20, a: 0.15, k: 1.6 }},
+  {{ t: 49.60, a: 0.10 }}, {{ t: 52.80, a: 0.11 }}, {{ t: 57.77, a: 0.05 }}
 ];
 const SHAKE = [
-  {{ t: 0.81, a: 9 }}, {{ t: 2.74, a: 8 }}, {{ t: 7.30, a: 6 }}, {{ t: 13.08, a: 5 }},
-  {{ t: 16.62, a: 7 }}, {{ t: 21.78, a: 7 }}, {{ t: 25.00, a: 20, k: 6 }},
-  {{ t: 30.48, a: 17 }}, {{ t: 32.06, a: 13 }}
+  {{ t: 0.85, a: 9 }}, {{ t: 7.67, a: 8 }}, {{ t: 13.10, a: 6 }}, {{ t: 24.09, a: 5 }},
+  {{ t: 29.57, a: 7 }}, {{ t: 35.38, a: 7 }}, {{ t: 41.20, a: 20, k: 6 }},
+  {{ t: 49.60, a: 17 }}, {{ t: 52.80, a: 13 }}
 ];
 const FLASH = [
-  {{ t: 0.81, a: 0.18 }}, {{ t: 18.65, a: 0.85 }}, {{ t: 25.00, a: 0.60, col: '61,255,143' }},
-  {{ t: 30.48, a: 0.35, col: '255,59,48' }}, {{ t: 32.06, a: 0.25 }}
+  {{ t: 0.85, a: 0.18 }}, {{ t: 32.20, a: 0.85 }}, {{ t: 41.20, a: 0.60, col: '61,255,143' }},
+  {{ t: 49.60, a: 0.35, col: '255,59,48' }}, {{ t: 52.80, a: 0.25 }}
 ];
-const LEAK = [0.81, 25.00, 32.06];
+const LEAK = [0.85, 41.20, 52.80];
 
 const percentCount = (t) => Math.round(99 * ez.out3(span(t, TL.metric.cnt[0], TL.metric.cnt[1])));
 
@@ -493,7 +504,7 @@ function finishing(c, t) {{
 
 // Chrome: Clean Non-Overlapping Header
 function chrome(c, t) {{
-  const a = span(t, 4.4, 4.7) * (1 - span(t, 31.5, 31.7));
+  const a = span(t, 10.2, 10.5) * (1 - span(t, 51.0, 51.3));
   if (a <= 0) return;
   c.save(); c.globalAlpha = a;
   const topY = IS_VERTICAL ? 180 : 48;
@@ -1090,9 +1101,9 @@ const ui = {{
   loop: document.getElementById('loop')
 }};
 
-let T = 0, playing = false, last = 0, soundOn = true, loopOn = true, stopSound = null;
-const voAudio = new Audio('data:audio/mp3;base64,{vo_b64}');
-voAudio.volume = 1.0;
+let T = 0, playing = false, last = 0, soundOn = true, loopOn = true;
+const masterAudio = new Audio('data:audio/mp3;base64,{master_audio_b64}');
+masterAudio.volume = 1.0;
 
 const fmt = (t) => t.toFixed(2) + ' / ' + DURATION.toFixed(2);
 function draw() {{ window.seek(T); ui.scrub.value = T; ui.time.textContent = fmt(T); }}
@@ -1100,17 +1111,15 @@ function draw() {{ window.seek(T); ui.scrub.value = T; ui.time.textContent = fmt
 function startAudio() {{
   stopAudio(); if (!playing) return;
   if (soundOn) {{
-    stopSound = SFX.live(scoreSound, T, {{ voiceover: true }});
     try {{
-      voAudio.currentTime = T;
-      const p = voAudio.play();
+      masterAudio.currentTime = Math.min(T, DURATION - 0.05);
+      const p = masterAudio.play();
       if (p !== undefined) p.catch(() => {{}});
     }} catch (e) {{}}
   }}
 }}
 function stopAudio() {{
-  if (stopSound) {{ stopSound(); stopSound = null; }}
-  try {{ voAudio.pause(); }} catch (e) {{}}
+  try {{ masterAudio.pause(); }} catch (e) {{}}
 }}
 function setPlaying(p) {{
   playing = p; ui.play.textContent = p ? 'Pause' : 'Play';
@@ -1120,7 +1129,12 @@ function setPlaying(p) {{
 
 function tick(now) {{
   if (playing) {{
-    T += (now - last) / 1000; last = now;
+    if (!masterAudio.paused && Math.abs(masterAudio.currentTime - T) > 0.08) {{
+      T = masterAudio.currentTime;
+    }} else {{
+      T += (now - last) / 1000;
+    }}
+    last = now;
     if (T >= DURATION) {{
       if (loopOn) {{ T = 0; startAudio(); }}
       else {{ T = DURATION; setPlaying(false); }}
@@ -1138,10 +1152,17 @@ ui.play.addEventListener('click', () => {{
   }}
   setPlaying(!playing);
 }});
-ui.scrub.addEventListener('input', () => {{ T = parseFloat(ui.scrub.value); draw(); if (playing) startAudio(); }});
+ui.scrub.addEventListener('input', () => {{
+  T = parseFloat(ui.scrub.value);
+  draw();
+  try {{ masterAudio.currentTime = Math.min(T, DURATION - 0.05); }} catch (e) {{}}
+  if (playing) startAudio();
+}});
 ui.sound.addEventListener('click', () => {{
   soundOn = !soundOn; ui.sound.setAttribute('aria-pressed', soundOn);
-  ui.sound.textContent = soundOn ? 'Sound on' : 'Sound off'; if (playing) startAudio();
+  ui.sound.textContent = soundOn ? 'Sound on' : 'Sound off';
+  masterAudio.muted = !soundOn;
+  if (playing) startAudio();
 }});
 ui.loop.addEventListener('click', () => {{ loopOn = !loopOn; ui.loop.setAttribute('aria-pressed', loopOn); }});
 
@@ -1150,7 +1171,7 @@ ui.loop.addEventListener('click', () => {{ loopOn = !loopOn; ui.loop.setAttribut
     await Promise.all(['60px "Anton"', 'italic 60px "Instrument Serif"', '600 30px "Inter"', '700 30px "Inter"', '800 30px "Inter"'].map((f) => document.fonts.load(f, 'AaZz09')));
     await document.fonts.ready;
   }} catch (e) {{}}
-  T = 0.81; draw();
+  T = 1.05; draw();
   requestAnimationFrame((n) => {{ last = n; tick(n); }});
 }})();
 </script>

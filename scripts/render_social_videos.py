@@ -68,17 +68,18 @@ def render_variant(html_filename, mp4_filename, sfx_wav_filename, width, height)
             wf.writeframes(pcm16.tobytes())
         print(f"SFX audio saved: {sfx_wav_path}")
 
-        # 2. Setup FFmpeg Pipeline with Dual Audio Muxing (SFX + Voiceover)
+        # 2. Setup FFmpeg Pipeline with Dual Audio Muxing (Master Ducked Beat/VO + Web Audio SFX)
         print("🎥 Piping frames to FFmpeg with dual audio muxing...")
+        MASTER_WAV = os.path.join(OUT_DIR, "master_audio_ducked.wav")
         ffmpeg_cmd = [
             "ffmpeg", "-y",
             "-f", "image2pipe",
             "-vcodec", "mjpeg",
             "-r", str(FPS),
             "-i", "-",
+            "-i", MASTER_WAV,
             "-i", sfx_wav_path,
-            "-i", VO_WAV,
-            "-filter_complex", "[2:a]volume=2.2,acompressor=threshold=-14dB:ratio=3.5:attack=5:release=60[vo]; [1:a]volume=0.25[sfx]; [vo][sfx]amix=inputs=2:duration=longest:dropout_transition=0:normalize=0[aout]; [aout]alimiter=limit=0.98:attack=5:release=50[final]",
+            "-filter_complex", "[1:a]volume=1.0[master]; [2:a]volume=0.35[sfx]; [master][sfx]amix=inputs=2:duration=first:normalize=0[aout]; [aout]alimiter=limit=0.98[final]",
             "-map", "0:v",
             "-map", "[final]",
             "-c:v", "libx264",
