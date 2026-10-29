@@ -10,14 +10,14 @@
 <style>
 :root {
   color-scheme: dark;
-  --bg: #0b0b0e;
-  --panel: #141418;
-  --ink: #f2f0ea;
+  --bg: #09090b;
+  --panel: #131316;
+  --ink: #f4f1ea;
   --dim: #8e8d94;
   --line: #26262e;
   --accent: #ffd60a;
   --green: #30d158;
-  --red: #ff453a;
+  --red: #ff3b30;
   --display: "Anton", Impact, sans-serif;
   --body: "Inter", system-ui, sans-serif;
   --serif: "Instrument Serif", Georgia, serif;
@@ -34,41 +34,41 @@ body {
   min-height: 100vh;
   padding: 16px;
 }
-.container {
+.wrap {
   width: 100%;
-  max-width: 480px;
+  max-width: 460px;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
-.header {
+.top {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
 }
-.title {
+.name {
   font-family: var(--display);
-  font-size: clamp(20px, 3vw, 28px);
+  font-size: clamp(20px, 3.5vw, 30px);
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
-.title em {
+.name em {
   font-family: var(--serif);
   font-style: italic;
   color: var(--accent);
 }
 .badge {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #ff9900;
-  background: rgba(255, 153, 0, 0.15);
-  border: 1px solid rgba(255, 153, 0, 0.35);
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
   padding: 4px 10px;
   border-radius: 999px;
 }
-.viewport {
+.stage {
   position: relative;
   width: 100%;
   aspect-ratio: 9 / 16;
@@ -76,16 +76,16 @@ body {
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid var(--line);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.7);
 }
-.viewport canvas {
+.stage canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   display: block;
 }
-.controls {
+.bar {
   background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 10px;
@@ -98,9 +98,7 @@ button.btn {
   background: #202026;
   border: 1px solid #33333e;
   color: #fff;
-  font-family: var(--body);
-  font-weight: 600;
-  font-size: 13px;
+  font: 600 13px var(--body);
   padding: 6px 14px;
   border-radius: 6px;
   cursor: pointer;
@@ -111,7 +109,7 @@ button.btn:hover { background: #2a2a34; }
   -webkit-appearance: none;
   height: 6px;
   border-radius: 3px;
-  background: #2a2a34;
+  background: #26262e;
   outline: none;
   cursor: pointer;
 }
@@ -132,17 +130,17 @@ button.btn:hover { background: #2a2a34; }
 </head>
 <body>
 
-<div class="container">
-  <div class="header">
-    <div class="title">Docker Containers <em>Edition</em></div>
-    <div class="badge">9:16 Shorts / Reels</div>
+<div class="wrap">
+  <div class="top">
+    <h1 class="name">Docker <em>Architecture</em> Masterclass</h1>
+    <span class="badge">9:16 Shorts / Reels</span>
   </div>
 
-  <div class="viewport">
+  <div class="stage">
     <canvas id="stage" width="1080" height="1920"></canvas>
   </div>
 
-  <div class="controls">
+  <div class="bar">
     <button class="btn" id="playBtn">Play</button>
     <input type="range" class="scrub" id="scrubber" min="0" max="32.65" step="0.01" value="0">
     <div class="time" id="timeDisp">00:00 / 00:32</div>
@@ -155,8 +153,8 @@ button.btn:hover { background: #2a2a34; }
 const DURATION = 32.65;
 const IS_VERTICAL = true;
 const W = 1080;
-const H = 1920;
-const CAPTIONS = [{"start": 0.25, "end": 1.475, "text": "Stop deploying entire", "words": [{"word": "Stop", "start": 0.25, "end": 0.537}, {"word": "deploying", "start": 0.537, "end": 0.95}, {"word": "entire", "start": 0.95, "end": 1.475}]}, {"start": 1.475, "end": 2.575, "text": "virtual machines just", "words": [{"word": "virtual", "start": 1.475, "end": 1.788}, {"word": "machines", "start": 1.788, "end": 2.325}, {"word": "just", "start": 2.325, "end": 2.575}]}, {"start": 2.575, "end": 2.962, "text": "to run a", "words": [{"word": "to", "start": 2.575, "end": 2.675}, {"word": "run", "start": 2.675, "end": 2.862}, {"word": "a", "start": 2.862, "end": 2.962}]}, {"start": 2.962, "end": 4.725, "text": "single service Traditional", "words": [{"word": "single", "start": 2.962, "end": 3.312}, {"word": "service", "start": 3.312, "end": 4.1}, {"word": "Traditional", "start": 4.237, "end": 4.725}]}, {"start": 4.725, "end": 5.775, "text": "VMs carry full", "words": [{"word": "VMs", "start": 4.725, "end": 5.25}, {"word": "carry", "start": 5.25, "end": 5.537}, {"word": "full", "start": 5.537, "end": 5.775}]}, {"start": 5.775, "end": 7.3, "text": "guest operating systems", "words": [{"word": "guest", "start": 5.775, "end": 6.05}, {"word": "operating", "start": 6.05, "end": 6.625}, {"word": "systems", "start": 6.625, "end": 7.3}]}, {"start": 7.412, "end": 8.775, "text": "massive memory overhead", "words": [{"word": "massive", "start": 7.412, "end": 7.875}, {"word": "memory", "start": 7.875, "end": 8.25}, {"word": "overhead", "start": 8.25, "end": 8.775}]}, {"start": 8.85, "end": 9.863, "text": "and minute-long cold", "words": [{"word": "and", "start": 8.85, "end": 8.975}, {"word": "minute-long", "start": 8.975, "end": 9.488}, {"word": "cold", "start": 9.488, "end": 9.863}]}, {"start": 9.863, "end": 11.5, "text": "boots Docker changes", "words": [{"word": "boots", "start": 9.863, "end": 10.6}, {"word": "Docker", "start": 10.738, "end": 11.125}, {"word": "changes", "start": 11.125, "end": 11.5}]}, {"start": 11.5, "end": 12.387, "text": "everything by sharing", "words": [{"word": "everything", "start": 11.5, "end": 11.875}, {"word": "by", "start": 11.875, "end": 12.062}, {"word": "sharing", "start": 12.062, "end": 12.387}]}, {"start": 12.387, "end": 13.1, "text": "the host Linux", "words": [{"word": "the", "start": 12.387, "end": 12.475}, {"word": "host", "start": 12.475, "end": 12.775}, {"word": "Linux", "start": 12.775, "end": 13.1}]}, {"start": 13.1, "end": 14.3, "text": "kernel through namespaces", "words": [{"word": "kernel", "start": 13.1, "end": 13.425}, {"word": "through", "start": 13.425, "end": 13.625}, {"word": "namespaces", "start": 13.625, "end": 14.3}]}, {"start": 14.3, "end": 16.075, "text": "and cgroups Processes", "words": [{"word": "and", "start": 14.3, "end": 14.438}, {"word": "cgroups", "start": 14.438, "end": 15.3}, {"word": "Processes", "start": 15.438, "end": 16.075}]}, {"start": 16.075, "end": 17.025, "text": "run isolated in", "words": [{"word": "run", "start": 16.075, "end": 16.312}, {"word": "isolated", "start": 16.312, "end": 16.913}, {"word": "in", "start": 16.913, "end": 17.025}]}, {"start": 17.025, "end": 18.113, "text": "lightweight containers that", "words": [{"word": "lightweight", "start": 17.025, "end": 17.4}, {"word": "containers", "start": 17.4, "end": 17.95}, {"word": "that", "start": 17.95, "end": 18.113}]}, {"start": 18.113, "end": 18.613, "text": "spin up in", "words": [{"word": "spin", "start": 18.113, "end": 18.387}, {"word": "up", "start": 18.387, "end": 18.538}, {"word": "in", "start": 18.538, "end": 18.613}]}, {"start": 18.613, "end": 19.225, "text": "under one hundred", "words": [{"word": "under", "start": 18.613, "end": 18.8}, {"word": "one", "start": 18.8, "end": 18.938}, {"word": "hundred", "start": 18.938, "end": 19.225}]}, {"start": 19.225, "end": 21.2, "text": "milliseconds Ninety percent", "words": [{"word": "milliseconds", "start": 19.225, "end": 20.3}, {"word": "Ninety", "start": 20.462, "end": 20.85}, {"word": "percent", "start": 20.85, "end": 21.2}]}, {"start": 21.2, "end": 22.475, "text": "less memory overhead", "words": [{"word": "less", "start": 21.2, "end": 21.425}, {"word": "memory", "start": 21.425, "end": 21.8}, {"word": "overhead", "start": 21.8, "end": 22.475}]}, {"start": 22.613, "end": 23.738, "text": "zero guest OS", "words": [{"word": "zero", "start": 22.613, "end": 23.0}, {"word": "guest", "start": 23.0, "end": 23.312}, {"word": "OS", "start": 23.312, "end": 23.738}]}, {"start": 23.738, "end": 25.038, "text": "bloat and identical", "words": [{"word": "bloat", "start": 23.738, "end": 24.3}, {"word": "and", "start": 24.4, "end": 24.538}, {"word": "identical", "start": 24.538, "end": 25.038}]}, {"start": 25.038, "end": 26.137, "text": "environments from local", "words": [{"word": "environments", "start": 25.038, "end": 25.625}, {"word": "from", "start": 25.625, "end": 25.8}, {"word": "local", "start": 25.8, "end": 26.137}]}, {"start": 26.137, "end": 27.575, "text": "dev to production", "words": [{"word": "dev", "start": 26.137, "end": 26.475}, {"word": "to", "start": 26.475, "end": 26.575}, {"word": "production", "start": 26.575, "end": 27.575}]}, {"start": 28.125, "end": 29.35, "text": "Stop running monolithic", "words": [{"word": "Stop", "start": 28.125, "end": 28.425}, {"word": "running", "start": 28.425, "end": 28.725}, {"word": "monolithic", "start": 28.725, "end": 29.35}]}, {"start": 29.35, "end": 31.2, "text": "infrastructure Containerize your", "words": [{"word": "infrastructure", "start": 29.35, "end": 30.275}, {"word": "Containerize", "start": 30.4, "end": 31.088}, {"word": "your", "start": 31.088, "end": 31.2}]}, {"start": 31.2, "end": 32.325, "text": "stack today", "words": [{"word": "stack", "start": 31.2, "end": 31.55}, {"word": "today", "start": 31.55, "end": 32.325}]}];
+const HH = 1920;
+const CAPTIONS = [{"start": 0.25, "end": 1.475, "words": [{"word": "STOP", "start": 0.25, "end": 0.537}, {"word": "DEPLOYING", "start": 0.537, "end": 0.95}, {"word": "ENTIRE", "start": 0.95, "end": 1.475}]}, {"start": 1.475, "end": 2.575, "words": [{"word": "VIRTUAL", "start": 1.475, "end": 1.788}, {"word": "MACHINES", "start": 1.788, "end": 2.325}, {"word": "JUST", "start": 2.325, "end": 2.575}]}, {"start": 2.575, "end": 2.962, "words": [{"word": "TO", "start": 2.575, "end": 2.675}, {"word": "RUN", "start": 2.675, "end": 2.862}, {"word": "A", "start": 2.862, "end": 2.962}]}, {"start": 2.962, "end": 4.725, "words": [{"word": "SINGLE", "start": 2.962, "end": 3.312}, {"word": "SERVICE", "start": 3.312, "end": 4.1}, {"word": "TRADITIONAL", "start": 4.237, "end": 4.725}]}, {"start": 4.725, "end": 5.775, "words": [{"word": "VMS", "start": 4.725, "end": 5.25}, {"word": "CARRY", "start": 5.25, "end": 5.537}, {"word": "FULL", "start": 5.537, "end": 5.775}]}, {"start": 5.775, "end": 7.3, "words": [{"word": "GUEST", "start": 5.775, "end": 6.05}, {"word": "OPERATING", "start": 6.05, "end": 6.625}, {"word": "SYSTEMS", "start": 6.625, "end": 7.3}]}, {"start": 7.412, "end": 8.775, "words": [{"word": "MASSIVE", "start": 7.412, "end": 7.875}, {"word": "MEMORY", "start": 7.875, "end": 8.25}, {"word": "OVERHEAD", "start": 8.25, "end": 8.775}]}, {"start": 8.85, "end": 9.863, "words": [{"word": "AND", "start": 8.85, "end": 8.975}, {"word": "MINUTE-LONG", "start": 8.975, "end": 9.488}, {"word": "COLD", "start": 9.488, "end": 9.863}]}, {"start": 9.863, "end": 11.5, "words": [{"word": "BOOTS", "start": 9.863, "end": 10.6}, {"word": "DOCKER", "start": 10.738, "end": 11.125}, {"word": "CHANGES", "start": 11.125, "end": 11.5}]}, {"start": 11.5, "end": 12.387, "words": [{"word": "EVERYTHING", "start": 11.5, "end": 11.875}, {"word": "BY", "start": 11.875, "end": 12.062}, {"word": "SHARING", "start": 12.062, "end": 12.387}]}, {"start": 12.387, "end": 13.1, "words": [{"word": "THE", "start": 12.387, "end": 12.475}, {"word": "HOST", "start": 12.475, "end": 12.775}, {"word": "LINUX", "start": 12.775, "end": 13.1}]}, {"start": 13.1, "end": 14.3, "words": [{"word": "KERNEL", "start": 13.1, "end": 13.425}, {"word": "THROUGH", "start": 13.425, "end": 13.625}, {"word": "NAMESPACES", "start": 13.625, "end": 14.3}]}, {"start": 14.3, "end": 16.075, "words": [{"word": "AND", "start": 14.3, "end": 14.438}, {"word": "CGROUPS", "start": 14.438, "end": 15.3}, {"word": "PROCESSES", "start": 15.438, "end": 16.075}]}, {"start": 16.075, "end": 17.025, "words": [{"word": "RUN", "start": 16.075, "end": 16.312}, {"word": "ISOLATED", "start": 16.312, "end": 16.913}, {"word": "IN", "start": 16.913, "end": 17.025}]}, {"start": 17.025, "end": 18.113, "words": [{"word": "LIGHTWEIGHT", "start": 17.025, "end": 17.4}, {"word": "CONTAINERS", "start": 17.4, "end": 17.95}, {"word": "THAT", "start": 17.95, "end": 18.113}]}, {"start": 18.113, "end": 18.613, "words": [{"word": "SPIN", "start": 18.113, "end": 18.387}, {"word": "UP", "start": 18.387, "end": 18.538}, {"word": "IN", "start": 18.538, "end": 18.613}]}, {"start": 18.613, "end": 19.225, "words": [{"word": "UNDER", "start": 18.613, "end": 18.8}, {"word": "ONE", "start": 18.8, "end": 18.938}, {"word": "HUNDRED", "start": 18.938, "end": 19.225}]}, {"start": 19.225, "end": 21.2, "words": [{"word": "MILLISECONDS", "start": 19.225, "end": 20.3}, {"word": "NINETY", "start": 20.462, "end": 20.85}, {"word": "PERCENT", "start": 20.85, "end": 21.2}]}, {"start": 21.2, "end": 22.475, "words": [{"word": "LESS", "start": 21.2, "end": 21.425}, {"word": "MEMORY", "start": 21.425, "end": 21.8}, {"word": "OVERHEAD", "start": 21.8, "end": 22.475}]}, {"start": 22.613, "end": 23.738, "words": [{"word": "ZERO", "start": 22.613, "end": 23.0}, {"word": "GUEST", "start": 23.0, "end": 23.312}, {"word": "OS", "start": 23.312, "end": 23.738}]}, {"start": 23.738, "end": 25.038, "words": [{"word": "BLOAT", "start": 23.738, "end": 24.3}, {"word": "AND", "start": 24.4, "end": 24.538}, {"word": "IDENTICAL", "start": 24.538, "end": 25.038}]}, {"start": 25.038, "end": 26.137, "words": [{"word": "ENVIRONMENTS", "start": 25.038, "end": 25.625}, {"word": "FROM", "start": 25.625, "end": 25.8}, {"word": "LOCAL", "start": 25.8, "end": 26.137}]}, {"start": 26.137, "end": 27.575, "words": [{"word": "DEV", "start": 26.137, "end": 26.475}, {"word": "TO", "start": 26.475, "end": 26.575}, {"word": "PRODUCTION", "start": 26.575, "end": 27.575}]}, {"start": 28.125, "end": 29.35, "words": [{"word": "STOP", "start": 28.125, "end": 28.425}, {"word": "RUNNING", "start": 28.425, "end": 28.725}, {"word": "MONOLITHIC", "start": 28.725, "end": 29.35}]}, {"start": 29.35, "end": 31.2, "words": [{"word": "INFRASTRUCTURE", "start": 29.35, "end": 30.275}, {"word": "CONTAINERIZE", "start": 30.4, "end": 31.088}, {"word": "YOUR", "start": 31.088, "end": 31.2}]}, {"start": 31.2, "end": 32.325, "words": [{"word": "STACK", "start": 31.2, "end": 31.55}, {"word": "TODAY", "start": 31.55, "end": 32.325}]}];
 
 const cv = document.getElementById('stage');
 const cx = cv.getContext('2d');
@@ -165,179 +163,696 @@ const playBtn = document.getElementById('playBtn');
 const scrubber = document.getElementById('scrubber');
 const timeDisp = document.getElementById('timeDisp');
 
-// Kinetic Math & Drawing Utilities
+// =================================== MATH HELPERS ===================================
 const CM = {
-  clamp(x, a, b) { return Math.max(a, Math.min(b, x)); },
-  smooth(x) { x = CM.clamp(x, 0, 1); return x * x * (3 - 2 * x); },
-  easeOutExpo(x) { return x >= 1 ? 1 : 1 - Math.pow(2, -10 * x); },
-  easeOutBack(x, c = 1.70158) { return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); },
+  clamp(x, a = 0, b = 1) { return Math.max(a, Math.min(b, x)); },
+  lerp(a, b, t) { return a + (b - a) * t; },
+  span(t, a, b) { return a === b ? (t >= a ? 1 : 0) : CM.clamp((t - a) / (b - a)); },
+  ez: {
+    out3(x) { x = CM.clamp(x); return 1 - Math.pow(1 - x, 3); },
+    inout3(x) { x = CM.clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; },
+    outExpo(x) { return x >= 1 ? 1 : 1 - Math.pow(2, -10 * x); },
+    outBack(x, c = 1.70158) { return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); }
+  },
   rng(seed) {
-    let s = (seed >>> 0) || 1;
+    let s = (typeof seed === 'string' ? seed.split('').reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0) : seed) >>> 0 || 1;
     s = (s ^ (s << 13)) >>> 0;
     s = (s ^ (s >>> 17)) >>> 0;
     s = (s ^ (s << 5)) >>> 0;
-    return (s >>> 0) / 4294967296;
+    const f = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+    f.in = (a, b) => a + (b - a) * f();
+    return f;
   },
   noise1(seed) {
-    const i = Math.floor(seed);
-    const f = seed - i;
-    const u = f * f * (3 - 2 * f);
-    return (1 - u) * (CM.rng(i) * 2 - 1) + u * (CM.rng(i + 1) * 2 - 1);
+    const r = CM.rng(seed);
+    const table = Array.from({ length: 256 }, () => r() * 2 - 1);
+    return (x) => {
+      const i = Math.floor(x) & 255, f = x - Math.floor(x), u = f * f * (3 - 2 * f);
+      return (1 - u) * table[i] + u * table[(i + 1) & 255];
+    };
+  },
+  layer(w, h) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    return c;
   }
 };
 
-// Visual Components
-function drawBackground(c, t) {
-  c.fillStyle = '#0a0a0d';
-  c.fillRect(0, 0, W, H);
+const { clamp, lerp, span, rng, noise1, ez } = CM;
+const C = {
+  bg: '#09090b',
+  ink: '#f4f1ea',
+  dim: '#8e8d94',
+  panel: '#151518',
+  line: '#26262e',
+  accent: '#ffd60a',
+  green: '#30d158',
+  red: '#ff3b30',
+  cyan: '#38bdf8',
+  orange: '#ff9900'
+};
 
-  // Subtle drifting grid
-  c.strokeStyle = 'rgba(255, 255, 255, 0.025)';
-  c.lineWidth = 1;
-  const gridStep = IS_VERTICAL ? 72 : 80;
-  const offY = (t * 12) % gridStep;
-  for (let y = -gridStep + offY; y < H + gridStep; y += gridStep) {
-    c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke();
-  }
-  for (let x = 0; x < W; x += gridStep) {
-    c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke();
-  }
+const disp = (px) => `${px}px "Anton", Impact, sans-serif`;
+const inter = (px, w = 600) => `${w} ${px}px "Inter", sans-serif`;
+const serif = (px) => `italic ${px}px "Instrument Serif", Georgia, serif`;
 
-  // Atmospheric glows
-  const g1 = c.createRadialGradient(W * 0.25, H * 0.25, 0, W * 0.25, H * 0.25, W * 0.7);
-  g1.addColorStop(0, 'rgba(255, 214, 10, 0.05)');
-  g1.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  c.fillStyle = g1;
-  c.fillRect(0, 0, W, H);
+// =================================== TIMELINES & CUTS ===================================
+const TL = {
+  hook: { w1: [0.25, 0.54], w2: [0.95, 1.48], strike: 1.90, shift: 2.10, single: 2.50, service: 3.31 },
+  stack: { pill: 4.50, app: 5.20, os: 6.20, bloat: 7.20, boot: 8.50 },
+  engine: { pill: 10.90, daemon: 11.40, pid: 12.00, net: 13.00, cgroups: 14.00 },
+  speed: { pill: 15.60, timer: 16.00, c1: 17.00, c2: 17.80, c3: 18.60 },
+  metric: { roll: [20.60, 22.80], lock: 22.80, label: 23.20, swipe: 24.50 },
+  stamp: { mono: 27.80, strike: 28.50, stamp: 28.85 },
+  take: { check1: 30.40, check2: 30.90, check3: 31.40, gold: 31.90 }
+};
 
-  const g2 = c.createRadialGradient(W * 0.75, H * 0.8, 0, W * 0.75, H * 0.8, W * 0.6);
-  g2.addColorStop(0, 'rgba(48, 209, 88, 0.04)');
-  g2.addColorStop(1, 'rgba(0, 0, 0, 0)');
-  c.fillStyle = g2;
-  c.fillRect(0, 0, W, H);
+const CUTS = [
+  { t: 4.20, d: 0.28, type: 'whip', dir: 1 },
+  { t: 10.70, d: 0.24, type: 'glitch' },
+  { t: 15.40, d: 0.26, type: 'whipV', dir: 1 },
+  { t: 20.40, d: 0.16, type: 'flash' },
+  { t: 27.60, d: 0.24, type: 'glitch' },
+  { t: 30.30, d: 0.26, type: 'whip', dir: -1 }
+];
+
+const PUNCH = [
+  { t: 0.25, a: 0.04 }, { t: 1.48, a: 0.09 }, { t: 3.31, a: 0.05 },
+  { t: 7.20, a: 0.06 }, { t: 12.00, a: 0.05 }, { t: 16.00, a: 0.05 },
+  { t: 22.80, a: 0.18, k: 1.6 }, { t: 28.85, a: 0.12 }, { t: 31.90, a: 0.08 }
+];
+
+const SHAKE = [
+  { t: 1.48, a: 8 }, { t: 7.20, a: 7 }, { t: 22.80, a: 22, k: 6 },
+  { t: 28.85, a: 18 }, { t: 31.90, a: 9 }
+];
+
+// =================================== DRAWING PRIMITIVES ===================================
+const word = (s, t, font, color, extra) => Object.assign({ s, t, font, color: color || C.ink }, extra || {});
+function measure(c, it) { c.font = it.font; return c.measureText(it.s).width; }
+function row(c, items, x, y, gap, align = 'center') {
+  let tot = 0; items.forEach((it) => { it.w = measure(c, it); tot += it.w; }); tot += gap * (items.length - 1);
+  let cxCoord = align === 'center' ? x - tot / 2 : x;
+  items.forEach((it) => { it.x = cxCoord; it.cx = cxCoord + it.w / 2; it.y = y; cxCoord += it.w + gap; });
+  return { x0: align === 'center' ? x - tot / 2 : x, w: tot };
 }
 
-function drawFinishing(c, t) {
-  // Cinematic vignette
-  const vig = c.createRadialGradient(W / 2, H / 2, Math.min(W, H) * 0.45, W / 2, H / 2, Math.max(W, H) * 0.85);
+function slam(c, it, t, o = {}) {
+  if (t < it.t) return;
+  const u = span(t, it.t, it.t + (o.dur || 0.2)), e = ez.outExpo(u), s = lerp(o.from || 1.45, 1, e);
+  c.save(); c.translate(it.cx, it.y); c.scale(s, s);
+  c.globalAlpha = (o.alpha == null ? 1 : o.alpha) * Math.min(1, u * 3.5);
+  if (u < 1 && !o.noBlur) { const b = (1 - e) * 8; if (b > 0.5) c.filter = `blur(${b.toFixed(1)}px)`; }
+  c.font = it.font; c.textAlign = 'center'; c.textBaseline = it.base || 'middle';
+  if (o.glow) { c.shadowColor = o.glow; c.shadowBlur = o.glowBlur || 35; }
+  c.fillStyle = o.color || it.color; c.fillText(it.s, 0, 0);
+  c.restore();
+}
+
+function strike(c, x0, x1, y, p, col = C.red, w = 14) {
+  if (p <= 0) return; const e = ez.out3(clamp(p)), x = lerp(x0, x1, e);
+  c.save(); c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.shadowColor = col; c.shadowBlur = 12;
+  c.beginPath(); c.moveTo(x0, y); c.lineTo(x, y - 6); c.stroke(); c.restore();
+}
+
+function rr(c, x, y, w, h, r) { c.beginPath(); c.roundRect(x, y, w, h, r); }
+
+function drawYaw(c, src, cxCoord, cyCoord, w, h, yaw, alpha) {
+  const f = 1500, cs = Math.cos(yaw), sn = Math.sin(yaw);
+  const proj = (x) => { const X = x * cs, Z = x * sn, k = f / (f + Z); return { x: cxCoord + X * k, k }; };
+  const L = proj(-w / 2), R = proj(w / 2);
+  c.save(); c.globalAlpha = alpha;
+  const sw = 4;
+  for (let sx = 0; sx < src.width; sx += sw) {
+    const p0 = proj((sx / src.width - 0.5) * w), p1 = proj(((sx + sw) / src.width - 0.5) * w), hh = (h * (p0.k + p1.k)) / 2;
+    c.drawImage(src, sx, 0, sw, src.height, p0.x, cyCoord - hh / 2, p1.x - p0.x + 0.8, hh);
+  }
+  c.restore();
+}
+
+let STAMP = null;
+function stampLayer(text, color) {
+  if (STAMP) return STAMP;
+  STAMP = CM.layer(420, 200); const x = STAMP.getContext('2d');
+  x.strokeStyle = color; x.lineWidth = 12; rr(x, 10, 10, 400, 180, 20); x.stroke();
+  x.fillStyle = color; x.font = disp(110); x.textAlign = 'center'; x.textBaseline = 'middle'; x.letterSpacing = '5px';
+  x.fillText(text, 210, 105);
+  x.globalCompositeOperation = 'destination-out'; const r = rng('stamp' + text);
+  for (let i = 0; i < 400; i++) { x.globalAlpha = r.in(0.3, 1); x.beginPath(); x.arc(r() * 420, r() * 200, r.in(0.8, 3.0), 0, 7); x.fill(); }
+  return STAMP;
+}
+
+// =================================== BACKGROUND & FINISHING ===================================
+function background(c, t) {
+  c.fillStyle = C.bg; c.fillRect(0, 0, W, HH);
+  const glow = (x, y, r, col) => { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(0, 0, W, HH); };
+  glow(W * 0.25, HH * 0.25, 650, 'rgba(56, 189, 248, 0.05)');
+  glow(W * 0.8, HH * 0.75, 650, 'rgba(48, 209, 88, 0.045)');
+
+  // Grid
+  c.save(); c.strokeStyle = 'rgba(244,241,234,0.025)'; c.lineWidth = 1; c.beginPath();
+  const off = (t * 10) % 80;
+  for (let x = -off; x < W; x += 80) { c.moveTo(x, 0); c.lineTo(x, HH); }
+  for (let y = -off * 0.5; y < HH; y += 80) { c.moveTo(0, y); c.lineTo(W, y); }
+  c.stroke(); c.restore();
+}
+
+function finishing(c, t) {
+  // Vignette
+  const vig = c.createRadialGradient(W / 2, HH / 2, Math.min(W, HH) * 0.45, W / 2, HH / 2, Math.max(W, HH) * 0.85);
   vig.addColorStop(0, 'rgba(0,0,0,0)');
   vig.addColorStop(1, 'rgba(0,0,0,0.65)');
   c.fillStyle = vig;
-  c.fillRect(0, 0, W, H);
+  c.fillRect(0, 0, W, HH);
 }
 
-function drawKaraokeCaptions(c, t) {
-  let curr = null;
-  for (let i = 0; i < CAPTIONS.length; i++) {
-    if (t >= CAPTIONS[i].start && t <= CAPTIONS[i].end) {
-      curr = CAPTIONS[i];
-      break;
-    }
-  }
-  if (!curr) return;
+function chrome(c, t) {
+  const a = span(t, 4.3, 4.7) * (1 - span(t, 30.1, 30.5));
+  if (a <= 0) return;
+  c.save(); c.globalAlpha = a;
+  const topY = IS_VERTICAL ? 180 : 48;
+  const leftX = IS_VERTICAL ? 70 : 64;
+  c.fillStyle = C.cyan; c.fillRect(leftX, topY, 10, 10);
+  c.font = inter(IS_VERTICAL ? 24 : 26, 700); c.letterSpacing = '3px'; c.fillStyle = C.dim; c.textBaseline = 'middle';
+  c.fillText('DOCKER · CONTAINER ARCHITECTURE', leftX + 22, topY + 6);
+  c.restore();
+}
 
-  const fontPx = IS_VERTICAL ? 42 : 36;
-  c.font = '800 ' + fontPx + 'px Inter, sans-serif';
+function drawCaptions(c, t) {
+  const group = CAPTIONS.find(g => t >= g.start - 0.05 && t <= g.end + 0.35);
+  if (!group) return;
+
+  const y = IS_VERTICAL ? HH * 0.74 : HH - 65;
+  const fontSize = IS_VERTICAL ? 46 : 34;
+  const gap = IS_VERTICAL ? 14 : 12;
+
+  c.save();
+  c.font = `800 ${fontSize}px "Inter", sans-serif`;
   c.textBaseline = 'middle';
 
   let totalW = 0;
-  const wordMetrics = curr.words.map(w => {
-    const width = c.measureText(w.word.toUpperCase() + ' ').width;
-    totalW += width;
-    return { word: w.word.toUpperCase(), width: width, start: w.start, end: w.end };
+  group.words.forEach(w => {
+    w.w = c.measureText(w.word).width;
+    totalW += w.w;
   });
+  totalW += gap * (group.words.length - 1);
 
-  const boxPadX = 26;
-  const boxPadY = 16;
-  const boxW = totalW + boxPadX * 2;
-  const boxH = fontPx + boxPadY * 2;
-  const boxX = (W - boxW) / 2;
-  const boxY = IS_VERTICAL ? H * 0.78 : H * 0.86;
-
-  // Badge background
-  c.save();
+  const padX = IS_VERTICAL ? 28 : 22, padY = IS_VERTICAL ? 14 : 10;
+  const pillH = fontSize + padY * 2;
+  const pillW = totalW + padX * 2;
   c.fillStyle = 'rgba(12, 12, 16, 0.88)';
-  c.strokeStyle = 'rgba(255, 255, 255, 0.12)';
-  c.lineWidth = 2;
-  c.beginPath();
-  c.roundRect(boxX, boxY, boxW, boxH, 14);
-  c.fill();
-  c.stroke();
+  c.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  c.lineWidth = 1.5;
+  rr(c, W / 2 - pillW / 2, y - pillH / 2, pillW, pillH, 16);
+  c.fill(); c.stroke();
 
-  // Words pop-in
-  let curX = boxX + boxPadX;
-  const textY = boxY + boxH / 2;
-  wordMetrics.forEach(m => {
-    const isActive = t >= m.start && t <= m.end;
+  let curX = W / 2 - totalW / 2;
+  group.words.forEach(w => {
+    const isActive = t >= w.start && t <= w.end;
+    const wasActive = t > w.end;
+
+    c.save();
+    c.translate(curX + w.w / 2, y);
     if (isActive) {
+      c.scale(1.15, 1.15);
       c.fillStyle = '#ffd60a';
       c.shadowColor = 'rgba(255, 214, 10, 0.7)';
-      c.shadowBlur = 14;
-    } else if (t > m.end) {
-      c.fillStyle = '#f2f0ea';
-      c.shadowBlur = 0;
+      c.shadowBlur = 18;
+    } else if (wasActive) {
+      c.fillStyle = '#f4f1ea';
     } else {
-      c.fillStyle = '#6e6e76';
-      c.shadowBlur = 0;
+      c.fillStyle = 'rgba(244, 241, 234, 0.5)';
     }
-    c.fillText(m.word, curX, textY);
-    curX += m.width;
+    c.textAlign = 'center';
+    c.fillText(w.word, 0, 0);
+    c.restore();
+
+    curX += w.w + gap;
   });
   c.restore();
 }
 
-// 3D Tilt perspective transform
-function drawYaw(c, yawDeg, pitchDeg, cxCoord, cyCoord, drawFn) {
-  c.save();
-  c.translate(cxCoord, cyCoord);
-  const yawRad = yawDeg * Math.PI / 180;
-  const pitchRad = pitchDeg * Math.PI / 180;
-  const cosYaw = Math.cos(yawRad);
-  const sinYaw = Math.sin(yawRad);
-  const cosPitch = Math.cos(pitchRad);
-  c.transform(cosYaw, sinYaw * 0.25, 0, cosPitch, 0, 0);
-  drawFn();
-  c.restore();
+// =================================== SCENE DEFINITIONS ===================================
+
+// Scene 0: Hook (0.00s - 4.20s)
+function sceneHook(c, t) {
+  const H = TL.hook;
+  const sy = IS_VERTICAL ? 520 : 200;
+  const gapY = IS_VERTICAL ? 140 : 110;
+  const sh = lerp(0, -40, ez.inout3(span(t, H.shift, H.shift + 0.3)));
+
+  const r1 = [word('STOP', H.w1[0], disp(IS_VERTICAL ? 120 : 110), C.ink), word('DEPLOYING', H.w1[1], disp(IS_VERTICAL ? 120 : 110), C.ink)];
+  const r2 = [word('VIRTUAL', H.w2[0], disp(IS_VERTICAL ? 150 : 140), C.red), word('MACHINES.', H.w2[1], disp(IS_VERTICAL ? 150 : 140), C.ink)];
+  row(c, r1, W / 2, sy + sh, 24);
+  const b2 = row(c, r2, W / 2, sy + gapY + sh, 26);
+
+  const dimA = 1 - 0.6 * span(t, H.strike, H.strike + 0.18);
+  r1.forEach(it => slam(c, it, t, { alpha: dimA }));
+  r2.forEach(it => slam(c, it, t, { alpha: dimA, from: 1.6 }));
+  strike(c, b2.x0 - 24, b2.x0 + b2.w + 24, sy + gapY + sh, span(t, H.strike, H.strike + 0.16), C.red, 16);
+
+  if (t >= H.single) {
+    const r3 = [
+      word('just for a', H.single, inter(IS_VERTICAL ? 40 : 36, 600), C.dim, { base: 'alphabetic' }),
+      word('single service.', H.service, serif(IS_VERTICAL ? 104 : 92), C.accent, { base: 'alphabetic' })
+    ];
+    row(c, r3, W / 2, sy + gapY * 2.1, 20);
+    slam(c, r3[0], t, { from: 1.15 });
+    slam(c, r3[1], t, { from: 1.6, glow: 'rgba(255,214,10,0.4)', glowBlur: 40 });
+  }
 }
 
-// Render Frame Pure Function
+// Scene 1: VM Stack Diagram (4.20s - 10.70s)
+let VM_CARD = null;
+function getVMCard() {
+  if (VM_CARD) return VM_CARD;
+  VM_CARD = CM.layer(IS_VERTICAL ? 740 : 700, IS_VERTICAL ? 540 : 420);
+  const x = VM_CARD.getContext('2d');
+  const w = VM_CARD.width, h = VM_CARD.height;
+
+  // Background
+  x.fillStyle = 'rgba(18, 18, 22, 0.95)';
+  x.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+  x.lineWidth = 2;
+  rr(x, 10, 10, w - 20, h - 20, 18);
+  x.fill(); x.stroke();
+
+  // Architecture Layers Stack
+  const layers = [
+    { name: 'Application & Runtime', col: '#38bdf8', sub: 'Single Process' },
+    { name: 'GUEST OPERATING SYSTEM', col: '#ff3b30', sub: '4 GB RAM Bloat · Full Kernel · Daemons' },
+    { name: 'Hypervisor (Type-2 / VM)', col: '#8e8d94', sub: 'Virtualization Layer' },
+    { name: 'Host Hardware & OS', col: '#484852', sub: 'Physical Server' }
+  ];
+
+  let curY = 32;
+  const lh = (h - 64) / 4 - 8;
+  layers.forEach((l, i) => {
+    x.fillStyle = (i === 1) ? 'rgba(255, 59, 48, 0.18)' : 'rgba(255, 255, 255, 0.04)';
+    x.strokeStyle = l.col;
+    x.lineWidth = (i === 1) ? 2.5 : 1.5;
+    rr(x, 30, curY, w - 60, lh, 10);
+    x.fill(); x.stroke();
+
+    x.fillStyle = l.col;
+    x.font = '800 22px "Inter", sans-serif';
+    x.fillText(l.name, 50, curY + lh / 2 - 4);
+
+    x.fillStyle = '#8e8d94';
+    x.font = '600 14px "Inter", sans-serif';
+    x.fillText(l.sub, 50, curY + lh / 2 + 18);
+
+    curY += lh + 8;
+  });
+  return VM_CARD;
+}
+
+function sceneVMStack(c, t) {
+  const cy = IS_VERTICAL ? HH * 0.42 : HH * 0.48;
+  const yaw = lerp(0.18, -0.05, ez.out3(span(t, 4.2, 10.7)));
+  const card = getVMCard();
+  drawYaw(c, card, W / 2, cy, card.width, card.height, yaw, 1.0);
+
+  // Red Bloat Badge Warning
+  if (t >= TL.stack.bloat) {
+    const u = span(t, TL.stack.bloat, TL.stack.bloat + 0.25);
+    const s = ez.outBack(u);
+    c.save();
+    c.translate(W / 2 + (IS_VERTICAL ? 0 : 260), cy + (IS_VERTICAL ? 320 : -120));
+    c.scale(s, s);
+    c.fillStyle = 'rgba(255, 59, 48, 0.95)';
+    rr(c, -160, -28, 320, 56, 12);
+    c.fill();
+    c.fillStyle = '#ffffff';
+    c.font = '800 18px "Inter", sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText('⚠ 4096 MB MEMORY OVERHEAD', 0, 0);
+    c.restore();
+  }
+
+  // 60-Second Cold Boot Pill
+  if (t >= TL.stack.boot) {
+    const u = span(t, TL.stack.boot, TL.stack.boot + 0.25);
+    const s = ez.outBack(u);
+    c.save();
+    c.translate(W / 2 - (IS_VERTICAL ? 0 : 260), cy + (IS_VERTICAL ? 390 : 120));
+    c.scale(s, s);
+    c.fillStyle = 'rgba(20, 20, 26, 0.92)';
+    c.strokeStyle = '#ff3b30';
+    c.lineWidth = 2;
+    rr(c, -150, -26, 300, 52, 12);
+    c.fill(); c.stroke();
+    c.fillStyle = '#ff3b30';
+    c.font = '800 18px "Inter", sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText('⏱ COLD BOOT: 60 SECONDS', 0, 0);
+    c.restore();
+  }
+}
+
+// Scene 2: Docker Shared Kernel (10.70s - 15.40s)
+let DOCKER_ENGINE = null;
+function getDockerEngine() {
+  if (DOCKER_ENGINE) return DOCKER_ENGINE;
+  DOCKER_ENGINE = CM.layer(IS_VERTICAL ? 740 : 720, IS_VERTICAL ? 540 : 420);
+  const x = DOCKER_ENGINE.getContext('2d');
+  const w = DOCKER_ENGINE.width, h = DOCKER_ENGINE.height;
+
+  // Window frame
+  x.fillStyle = 'rgba(18, 18, 24, 0.95)';
+  x.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+  x.lineWidth = 2;
+  rr(x, 10, 10, w - 20, h - 20, 18);
+  x.fill(); x.stroke();
+
+  // Traffic lights
+  x.fillStyle = '#ff5f56'; x.beginPath(); x.arc(36, 34, 7, 0, 7); x.fill();
+  x.fillStyle = '#ffbd2e'; x.beginPath(); x.arc(58, 34, 7, 0, 7); x.fill();
+  x.fillStyle = '#27c93f'; x.beginPath(); x.arc(80, 34, 7, 0, 7); x.fill();
+
+  x.fillStyle = '#8e8d94';
+  x.font = '600 14px "Inter", sans-serif';
+  x.fillText('docker://daemon/namespaces-control-plane', 115, 38);
+
+  // 3 Isolated Namespace Pills
+  const ns = [
+    { title: 'PID Namespace', desc: 'Process tree isolation (PID 1)' },
+    { title: 'NET Namespace', desc: 'Virtual network bridge interface' },
+    { title: 'cgroups (Control Groups)', desc: 'Strict CPU & RAM hardware limits' }
+  ];
+
+  let curY = 80;
+  const nh = (h - 180) / 3;
+  ns.forEach(item => {
+    x.fillStyle = 'rgba(56, 189, 248, 0.08)';
+    x.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+    x.lineWidth = 1.5;
+    rr(x, 30, curY, w - 60, nh, 12);
+    x.fill(); x.stroke();
+
+    x.fillStyle = '#38bdf8';
+    x.font = '800 20px "Inter", sans-serif';
+    x.fillText('⚡ ' + item.title, 50, curY + nh / 2 - 4);
+
+    x.fillStyle = '#f4f1ea';
+    x.font = '500 14px "Inter", sans-serif';
+    x.fillText(item.desc, 50, curY + nh / 2 + 18);
+    curY += nh + 10;
+  });
+
+  // Shared Base Host Kernel
+  x.fillStyle = 'rgba(48, 209, 88, 0.15)';
+  x.strokeStyle = '#30d158';
+  x.lineWidth = 2;
+  rr(x, 30, h - 68, w - 60, 48, 10);
+  x.fill(); x.stroke();
+  x.fillStyle = '#30d158';
+  x.font = '800 17px "Inter", sans-serif';
+  x.textAlign = 'center';
+  x.fillText('✓ SHARED HOST LINUX KERNEL (ZERO GUEST OS OVERHEAD)', w / 2, h - 38);
+
+  return DOCKER_ENGINE;
+}
+
+function sceneKernelSharing(c, t) {
+  const cy = IS_VERTICAL ? HH * 0.42 : HH * 0.48;
+  const yaw = lerp(-0.15, 0.08, ez.out3(span(t, 10.7, 15.4)));
+  const card = getDockerEngine();
+  drawYaw(c, card, W / 2, cy, card.width, card.height, yaw, 1.0);
+}
+
+// Scene 3: Fast Containers Sub-100ms (15.40s - 20.40s)
+function sceneFastContainers(c, t) {
+  const sy = IS_VERTICAL ? 420 : 180;
+
+  // Header Title
+  const r1 = [word('LIGHTWEIGHT', 15.4, disp(IS_VERTICAL ? 96 : 84), C.cyan), word('CONTAINERS', 15.7, disp(IS_VERTICAL ? 96 : 84), C.ink)];
+  row(c, r1, W / 2, sy, 20);
+  r1.forEach(it => slam(c, it, t));
+
+  // Rolling Millisecond Speedometer
+  const tProg = ez.out3(span(t, 16.0, 18.2));
+  const ms = Math.round(lerp(0, 85, tProg));
+
+  const cy = sy + (IS_VERTICAL ? 220 : 150);
+  c.save();
+  c.translate(W / 2, cy);
+  c.font = '900 ' + (IS_VERTICAL ? 120 : 100) + 'px "Anton", sans-serif';
+  c.fillStyle = C.green;
+  c.shadowColor = 'rgba(48, 209, 88, 0.6)';
+  c.shadowBlur = 30;
+  c.textAlign = 'center';
+  c.fillText(ms + ' MS', 0, 0);
+
+  c.font = 'italic 700 ' + (IS_VERTICAL ? 42 : 36) + 'px "Instrument Serif", serif';
+  c.fillStyle = C.accent;
+  c.fillText('Cold Spin-Up Speed', 0, IS_VERTICAL ? 65 : 55);
+  c.restore();
+
+  // 3 Popping Container Cards
+  const cards = [
+    { name: 'nginx:alpine', t: 17.0, time: '12ms' },
+    { name: 'node:api', t: 17.8, time: '45ms' },
+    { name: 'redis:cache', t: 18.6, time: '28ms' }
+  ];
+
+  const cardW = IS_VERTICAL ? 700 : 260;
+  const cardH = IS_VERTICAL ? 68 : 90;
+  const startY = cy + (IS_VERTICAL ? 160 : 120);
+
+  cards.forEach((cd, i) => {
+    if (t < cd.t) return;
+    const u = span(t, cd.t, cd.t + 0.25);
+    const s = ez.outBack(u);
+
+    const cxC = IS_VERTICAL ? W / 2 : (W / 2 - 290 + i * 290);
+    const cyC = IS_VERTICAL ? startY + i * 86 : startY;
+
+    c.save();
+    c.translate(cxC, cyC);
+    c.scale(s, s);
+
+    c.fillStyle = 'rgba(20, 20, 26, 0.95)';
+    c.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+    c.lineWidth = 1.5;
+    rr(c, -cardW / 2, -cardH / 2, cardW, cardH, 12);
+    c.fill(); c.stroke();
+
+    c.fillStyle = '#38bdf8';
+    c.font = '800 20px "Inter", sans-serif';
+    c.textAlign = 'center';
+    c.fillText('📦 ' + cd.name, 0, -8);
+
+    c.fillStyle = '#30d158';
+    c.font = '700 15px "Inter", sans-serif';
+    c.fillText('Active · ' + cd.time, 0, 16);
+    c.restore();
+  });
+}
+
+// Scene 4: 90% Rolling Counter & White Flash (20.40s - 27.60s)
+function sceneRollingStat(c, t) {
+  const sy = IS_VERTICAL ? 460 : 200;
+
+  const prog = ez.out3(span(t, TL.metric.roll[0], TL.metric.roll[1]));
+  const count = Math.round(90 * prog);
+
+  c.save();
+  c.translate(W / 2, sy);
+  c.font = '900 ' + (IS_VERTICAL ? 220 : 180) + 'px "Anton", sans-serif';
+  c.fillStyle = C.green;
+  c.shadowColor = 'rgba(48, 209, 88, 0.65)';
+  c.shadowBlur = 45;
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  c.fillText(count + '%', 0, 0);
+  c.restore();
+
+  // Accent Line
+  const r1 = [word('LESS', 22.8, disp(IS_VERTICAL ? 88 : 78), C.ink), word('MEMORY', 23.1, disp(IS_VERTICAL ? 88 : 78), C.ink), word('OVERHEAD', 23.4, disp(IS_VERTICAL ? 88 : 78), C.accent)];
+  row(c, r1, W / 2, sy + (IS_VERTICAL ? 160 : 130), 20);
+  r1.forEach(it => slam(c, it, t));
+
+  // Dev to Prod Parity Badge
+  if (t >= 24.5) {
+    const u = span(t, 24.5, 24.8);
+    const s = ez.outBack(u);
+    c.save();
+    c.translate(W / 2, sy + (IS_VERTICAL ? 280 : 220));
+    c.scale(s, s);
+    c.fillStyle = 'rgba(255, 214, 10, 0.15)';
+    c.strokeStyle = '#ffd60a';
+    c.lineWidth = 2;
+    rr(c, -200, -30, 400, 60, 14);
+    c.fill(); c.stroke();
+    c.fillStyle = '#ffd60a';
+    c.font = '800 22px "Inter", sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText('⚡ DEV TO PROD PARITY', 0, 0);
+    c.restore();
+  }
+}
+
+// Scene 5: Monolithic Stamp Rejection (27.60s - 30.30s)
+function sceneMonolithStamp(c, t) {
+  const sy = IS_VERTICAL ? 520 : 240;
+
+  const r1 = [word('MONOLITHIC', 27.8, disp(IS_VERTICAL ? 120 : 110), C.red), word('INFRASTRUCTURE', 28.1, disp(IS_VERTICAL ? 120 : 110), C.ink)];
+  const b = row(c, r1, W / 2, sy, 22);
+  r1.forEach(it => slam(c, it, t));
+  strike(c, b.x0 - 20, b.x0 + b.w + 20, sy, span(t, 28.4, 28.6), C.red, 18);
+
+  // Big tactile rubber stamp slamming down
+  if (t >= TL.stamp.stamp) {
+    const u = span(t, TL.stamp.stamp, TL.stamp.stamp + 0.16);
+    const s = lerp(2.2, 1.0, ez.outExpo(u));
+    const stamp = stampLayer('DEPRECATED', C.red);
+    c.save();
+    c.translate(W / 2, sy + 30);
+    c.rotate(-0.16);
+    c.scale(s, s);
+    c.globalAlpha = Math.min(1, u * 4);
+    c.drawImage(stamp, -stamp.width / 2, -stamp.height / 2);
+    c.restore();
+  }
+}
+
+// Scene 6: Creator Takeaway (30.30s - 32.65s)
+function sceneTakeaway(c, t) {
+  const sy = IS_VERTICAL ? 420 : 180;
+
+  const r1 = [word('CONTAINERIZE', 30.3, disp(IS_VERTICAL ? 104 : 96), C.cyan), word('YOUR STACK', 30.7, disp(IS_VERTICAL ? 104 : 96), C.ink)];
+  row(c, r1, W / 2, sy, 24);
+  r1.forEach(it => slam(c, it, t));
+
+  const items = [
+    { text: 'Instant Sub-100ms Spin-Up', t: TL.take.check1 },
+    { text: '90% Memory Overhead Reduction', t: TL.take.check2 },
+    { text: 'Identical Dev & Production Parity', t: TL.take.check3 }
+  ];
+
+  let curY = sy + (IS_VERTICAL ? 140 : 110);
+  items.forEach(it => {
+    if (t < it.t) return;
+    const u = span(t, it.t, it.t + 0.22);
+    const s = ez.outBack(u);
+    c.save();
+    c.translate(W / 2, curY);
+    c.scale(s, s);
+    c.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    c.strokeStyle = '#30d158';
+    c.lineWidth = 1.5;
+    rr(c, -260, -26, 520, 52, 12);
+    c.fill(); c.stroke();
+
+    c.fillStyle = '#30d158';
+    c.font = '800 20px "Inter", sans-serif';
+    c.textAlign = 'left';
+    c.textBaseline = 'middle';
+    c.fillText('✓  ' + it.text, -230, 0);
+    c.restore();
+    curY += IS_VERTICAL ? 80 : 66;
+  });
+}
+
+// =================================== CAMERA & COMPOSITOR ===================================
+function getCamera(t) {
+  let z = 1.0, dx = 0, dy = 0;
+  for (const p of PUNCH) {
+    const d = t - p.t;
+    if (d >= 0 && d < 0.4) {
+      const e = d < 0.06 ? ez.out3(d / 0.06) : Math.exp(-(d - 0.06) * (p.k || 3.0));
+      z += p.a * e;
+    }
+  }
+  for (const s of SHAKE) {
+    const d = t - s.t;
+    if (d >= 0 && d < 0.8) {
+      const e = s.a * Math.exp(-d * (s.k || 7.0));
+      dx += (rng('sx' + Math.floor(t * 30))() * 2 - 1) * e;
+      dy += (rng('sy' + Math.floor(t * 30))() * 2 - 1) * e;
+    }
+  }
+  return { z, dx, dy };
+}
+
+const SCENES = [
+  sceneHook, sceneVMStack, sceneKernelSharing,
+  sceneFastContainers, sceneRollingStat, sceneMonolithStamp, sceneTakeaway
+];
+
+function getSceneIndex(t) {
+  let idx = 0;
+  for (const cut of CUTS) {
+    if (t >= cut.t) idx++;
+  }
+  return Math.min(idx, SCENES.length - 1);
+}
+
 function renderScene(t) {
-  drawBackground(cx, t);
+  background(cx, t);
 
-  // Chrome header
-  cx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-  cx.font = '700 ' + (IS_VERTICAL ? 22 : 18) + 'px Inter, sans-serif';
-  cx.fillText('DOCKER CONTAINERS · ARCHITECTURE', IS_VERTICAL ? 48 : 56, IS_VERTICAL ? 90 : 54);
-
-  // Sample Kinetic Typography Hero Beat
-  const slamProgress = CM.clamp(t / 1.8, 0, 1);
-  const slamScale = 1.0 + (1.0 - CM.easeOutExpo(slamProgress)) * 0.8;
-  const slamAlpha = CM.clamp(slamProgress * 3.0, 0, 1);
-
+  const cam = getCamera(t);
   cx.save();
-  cx.translate(W / 2, IS_VERTICAL ? H * 0.38 : H * 0.44);
-  cx.scale(slamScale, slamScale);
-  cx.globalAlpha = slamAlpha;
+  cx.translate(W / 2 + cam.dx, HH / 2 + cam.dy);
+  cx.scale(cam.z, cam.z);
+  cx.translate(-W / 2, -HH / 2);
 
-  cx.textAlign = 'center';
-  cx.textBaseline = 'middle';
-  cx.font = '900 ' + (IS_VERTICAL ? 104 : 112) + 'px Anton, sans-serif';
-  cx.fillStyle = '#f2f0ea';
-  cx.fillText('DOCKER CONTAINERS', 0, -50);
+  // Check scene cut transition
+  let inCut = false;
+  for (const cut of CUTS) {
+    if (t >= cut.t - cut.d / 2 && t <= cut.t + cut.d / 2) {
+      inCut = true;
+      const u = (t - (cut.t - cut.d / 2)) / cut.d;
+      if (cut.type === 'whip') {
+        const offX = lerp(0, -W * cut.dir, ez.inout3(u));
+        cx.save();
+        cx.translate(offX, 0);
+        SCENES[getSceneIndex(cut.t - 0.1)](cx, t);
+        cx.restore();
 
-  cx.font = 'italic 700 ' + (IS_VERTICAL ? 54 : 58) + 'px "Instrument Serif", serif';
-  cx.fillStyle = '#ffd60a';
-  cx.fillText('Production Masterclass', 0, 36);
+        cx.save();
+        cx.translate(offX + W * cut.dir, 0);
+        SCENES[getSceneIndex(cut.t + 0.1)](cx, t);
+        cx.restore();
+      } else if (cut.type === 'flash') {
+        SCENES[getSceneIndex(t)](cx, t);
+        const flashA = 1 - Math.abs(u - 0.5) * 2;
+        cx.fillStyle = `rgba(255, 255, 255, ${flashA * 0.9})`;
+        cx.fillRect(0, 0, W, HH);
+      } else { // glitch
+        SCENES[getSceneIndex(t)](cx, t);
+        cx.fillStyle = `rgba(56, 189, 248, 0.25)`;
+        cx.fillRect(0, (rng(t)() * HH), W, 20);
+      }
+      break;
+    }
+  }
+
+  if (!inCut) {
+    const sIdx = getSceneIndex(t);
+    SCENES[sIdx](cx, t);
+  }
+
   cx.restore();
 
-  // Overlay Karaoke captions
-  drawKaraokeCaptions(cx, t);
+  // White flash on 90% lock
+  if (t >= 22.8 && t <= 23.4) {
+    const fa = (1 - (t - 22.8) / 0.6) * 0.7;
+    cx.fillStyle = `rgba(255, 255, 255, ${fa})`;
+    cx.fillRect(0, 0, W, HH);
+  }
 
-  // Finishing pass (vignette + grain)
-  drawFinishing(cx, t);
+  // Chrome & Captions
+  chrome(cx, t);
+  drawCaptions(cx, t);
+  finishing(cx, t);
 }
 
-// Playback Logic
+// =================================== PLAYBACK TRANSPORT ===================================
 let isPlaying = false;
 let animReq = null;
 
@@ -345,9 +860,7 @@ function updateUI(t) {
   scrubber.value = t;
   const m = Math.floor(t / 60);
   const s = Math.floor(t % 60);
-  const dm = Math.floor(DURATION / 60);
-  const ds = Math.floor(DURATION % 60);
-  timeDisp.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} / ${String(dm).padStart(2,'0')}:${String(ds).padStart(2,'0')}`;
+  timeDisp.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} / 00:32`;
 }
 
 function loop() {
@@ -366,7 +879,7 @@ function loop() {
 function play() {
   isPlaying = true;
   playBtn.textContent = 'Pause';
-  audio.play().catch(e => console.warn('Audio play error:', e));
+  audio.play().catch(e => console.warn(e));
   animReq = requestAnimationFrame(loop);
 }
 
@@ -389,7 +902,6 @@ window.DURATION = DURATION;
 playBtn.addEventListener('click', () => isPlaying ? pause() : play());
 scrubber.addEventListener('input', (e) => seek(parseFloat(e.target.value)));
 
-// Initial Render
 seek(0);
 </script>
 </body>
