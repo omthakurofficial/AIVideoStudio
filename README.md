@@ -1,47 +1,296 @@
-# AIVideoStudio
+<div align="center">
 
-Local-first, AI-directed educational and documentary video production system.
+# 🎬 AIVideoStudio
 
-## Features
-- **AI Director (`services/api/aivs/director.py`)**: Analyzes scripts or generates scripts from a topic via AWS Bedrock (`au.anthropic.claude-sonnet-4-5-20250929-v1:0` / `haiku-4-5`), plans scene-by-scene visual storytelling, and validates output against `packages/contracts/storyboard.v1.schema.json` with deterministic narration-coverage ($\ge 92\%$ LCS) and duration checks.
-- **Custom Motion Graphics (`services/api/aivs/engines/effectcraft.py`, `scene_renderer.py`)**: Compiles storyboard scenes (`animated_diagram`, `architecture`, `chart`, `timeline`, `layered_motion`, etc.) into EffectCraft v0.17.0 compositions via headless MCP (`effectcraft-cli mcp`), saves editable `.ecproj` files, and renders 1080p/9:16 H.264 clips via `effectcraft-cli render`.
-- **Narration & Word-Level Synchronized Captions (`services/api/aivs/engines/narration.py`)**: Supports neural TTS (`edge-tts` with `WordBoundary` alignment and SHA-256 audio caching), user-supplied audio (`user_audio`), and offline synthetic fallback (`voice="synthetic"`). Automatically rescales scene and animation timings to match measured audio durations and validates SRT captions for coverage, non-overlap, CPS, and safe-area bounds.
-- **Timeline Assembly (`services/api/aivs/engines/filmcraft.py`)**: Places rendered scenes, narration tracks, and caption tracks into FilmCraft v0.13.0 via headless MCP (`filmcraft-cli mcp`), saves editable `assembly/project.fcproj`, exports H.264 + AAC MP4, and burns in styled ASS subtitles via FFmpeg (`libass`).
-- **Automated Quality Control & Targeted Scene Repair (`services/api/aivs/qc.py`, `pipeline.py`)**: Inspects every rendered scene for resolution, frame rate, duration, non-blank content, animation motion across early/mid/late frames, and element overlap. Automatically repairs and re-renders failed scenes (`v2`) while preserving approved scenes and cached narration.
+### Local-First, AI-Directed Video Production System for Documentaries, Tech Architecture & Educational Content
 
-## Quick Setup — Linux
-```bash
-bash scripts/setup_linux.sh
-.venv/bin/python scripts/dev.py   # API: http://127.0.0.1:8000/docs | UI: http://localhost:3000
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110%2B-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![Next.js](https://img.shields.io/badge/Next.js-14.1-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
+[![AWS Bedrock](https://img.shields.io/badge/AWS%20Bedrock-Claude%20Sonnet%20%26%20Haiku-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)](https://aws.amazon.com/bedrock/)
+[![MCP](https://img.shields.io/badge/Model%20Context%20Protocol-MCP%20Headless-8A2BE2?style=for-the-badge)](https://modelcontextprotocol.io/)
+[![FFmpeg](https://img.shields.io/badge/FFmpeg-6.0%2B%20%2F%20libass-007808?style=for-the-badge&logo=ffmpeg&logoColor=white)](https://ffmpeg.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
+
+<br/>
+
+**AIVideoStudio** is an autonomous, professional-grade video studio that turns scripts, topics, and technical outlines into broadcast-quality 1080p and 9:16 vertical motion graphics videos — completely orchestrated by AI Directors, powered by headless MCP compositing engines, neural narration, word-level pop-in karaoke captions, and self-healing quality control.
+
+<br/>
+
+<a href="#-quick-setup">Quick Setup</a> •
+<a href="#-scene-direction--visual-showcase">Scene Showcase</a> •
+<a href="#-system-architecture">Architecture</a> •
+<a href="#-ai-director--storyboarding">AI Director</a> •
+<a href="#-studio-archetypes--skills">Archetypes</a> •
+<a href="#-benchmarks--token-economics">Economics & QC</a>
+
+<br/>
+
+![AIVideoStudio Production Studio](docs/screenshots/project_completed.png)
+*Figure 1: Complete production cockpit with live multi-track timeline preview, scene-by-scene QC scorecard, Bedrock token economics, and downloadable master assets.*
+
+</div>
+
+---
+
+## 🌟 Key Highlights
+
+- **🧠 Autonomous AI Director**: Analyzes scripts or generates them from raw ideas via AWS Bedrock (`Claude 3.7 Sonnet`, `Sonnet 4.5`, `Haiku 4.5`). Plans timing, camera movement, layered motion graphics, visual archetypes, and enforces deterministic narration alignment ($\ge 92\%$ LCS coverage).
+- **⚡ Headless MCP Compositing & Rendering**: Fully controls **EffectCraft v0.17.0** and **FilmCraft v0.13.0** via the Model Context Protocol (MCP) CLI adapters to generate editable project files (`.ecproj`, `.fcproj`) and hardware-accelerated H.264/ProRes media.
+- **🎙️ Neural Narration & Millisecond Word Alignment**: Integrates neural voices (Edge-TTS, Kokoro-82M, custom user audio) with per-word boundary timestamps, automatic scene duration dilation, and pop-in karaoke captions.
+- **📱 Native 16:9 Landscape & 9:16 Vertical (Shorts/Reels/TikTok)**: Dynamic layout engine automatically enforces safe-margin boundaries, responsive typography, and mobile-first motion choreography.
+- **🛡️ Automated Self-Healing Quality Control (QC)**: Deterministically audits blank frames, motion delta, contrast, font safe-zones, and duration variance. Automatically prompts targeted repair runs (`v2`) for failed scenes without re-rendering approved assets.
+- **💰 Live Token Cost & Resource Tracking**: Real-time pricing intelligence tracking Bedrock token expenditure per project down to four decimal places.
+
+---
+
+## 🎨 Scene Direction & Visual Showcase
+
+AIVideoStudio compiles complex technical concepts into layered motion graphics, diagrams, and cinematic visuals. Below are unretouched frame captures from the **AWS Global Cloud Infrastructure 65-Second Masterclass** benchmark run.
+
+### 16:9 Landscape Documentary & Technical Architecture
+
+| Scene 01 · Global Network Topology | Scene 02 · 33 Geographic Regions |
+|:---:|:---:|
+| <img src="docs/screenshots/phase7_s01.png" width="100%" alt="Scene 1: Global Backbone" /> | <img src="docs/screenshots/phase7_s02.png" width="100%" alt="Scene 2: Geographic Regions" /> |
+| **Archetype**: `animated_diagram` · **Move**: `zoom_in`<br/>*Opening hero globe with illuminated fiber trunk routes, animated title card, and pulse nodes.* | **Archetype**: `architecture` · **Move**: `pan_right`<br/>*Continental regional clusters with low-latency interconnects and isolation boundaries.* |
+
+| Scene 03 · Fault-Isolated Availability Zones | Scene 04 · Tier-4 Datacenter & Custom Silicon |
+|:---:|:---:|
+| <img src="docs/screenshots/phase7_s03.png" width="100%" alt="Scene 3: Availability Zones" /> | <img src="docs/screenshots/phase7_s04.png" width="100%" alt="Scene 4: Datacenter & Silicon" /> |
+| **Archetype**: `network_ring` · **Move**: `subtle_drift`<br/>*Tri-AZ metropolitan dark fiber ring with independent flood plains, power grids, and generators.* | **Archetype**: `hardware_breakdown` · **Move**: `orbit`<br/>*Server racks, hot-aisle containment, redundant UPS, and custom Nitro/Graviton offload cards.* |
+
+| Scene 05 · 600+ CloudFront Edge PoPs | Scene 06 · 100GbE Private Global Fiber Backbone |
+|:---:|:---:|
+| <img src="docs/screenshots/phase7_s05.png" width="100%" alt="Scene 5: Edge Locations" /> | <img src="docs/screenshots/phase7_s06.png" width="100%" alt="Scene 6: Global Fiber Backbone" /> |
+| **Archetype**: `edge_distribution` · **Move**: `zoom_out`<br/>*Sub-millisecond global caching rings, Anycast DNS routing, and DDoS mitigation perimeter.* | **Archetype**: `summary_card` · **Move**: `cinematic_pull`<br/>*Terabit transoceanic subsea cables and full 5-pillar architectural review summary.* |
+
+---
+
+### 9:16 Vertical Video (Reels, TikTok, YouTube Shorts)
+
+The built-in responsive layout engine produces mobile-optimized vertical videos with centered motion choreography, safe-zone bounding (avoiding UI overlays), and high-retention 2-4 word pop-in karaoke captions.
+
+<div align="center">
+
+| Hook & Intro | Core Concept Visualization | Call To Action / Summary |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/vertical_9x16_s01.png" width="280" alt="Vertical Short Scene 1" /> | <img src="docs/screenshots/vertical_9x16_s02.png" width="280" alt="Vertical Short Scene 2" /> | <img src="docs/screenshots/vertical_9x16_s03.png" width="280" alt="Vertical Short Scene 3" /> |
+| **Pacing**: Fast hook ($\le 3\text{s}$)<br/>High-contrast animated heading | **Motion**: Dynamic pop-in badges<br/>Sub-second kinetic text sync | **Retention**: Summary checklist<br/>Strict top/bottom UI margin clearance |
+
+</div>
+
+---
+
+## 🖥️ Studio Dashboard & User Interface
+
+AIVideoStudio includes a dark-themed, 10-page production suite built with Next.js 14, TailwindCSS, and Lucide icons.
+
+<div align="center">
+
+| AI Director Storyboard Planner | Script Analysis & Preset Archetypes |
+|:---:|:---:|
+| <img src="docs/screenshots/storyboard.png" width="100%" alt="Storyboard Planner" /> | <img src="docs/screenshots/new_project_auto_samples.png" width="100%" alt="Script Analysis" /> |
+| *Visual breakdown of every beat, audio sync points, camera directions, and archetype assignments.* | *Instant script template selection: Vox Documentary, Cloud Architecture, Geopolitics Map, and more.* |
+
+| Project Overview & Production Queue | Real-Time Hardware & Engine Metrics |
+|:---:|:---:|
+| <img src="docs/screenshots/dashboard.png" width="100%" alt="Studio Dashboard" /> | <img src="docs/screenshots/phase5_6_dashboard.png" width="100%" alt="System Status" /> |
+| *Multi-project management, stage progress bars, and single-click render triggers.* | *Real-time monitoring of EffectCraft/FilmCraft headless MCP daemons and GPU encoding.* |
+
+</div>
+
+---
+
+## 📐 System Architecture
+
+```mermaid
+flowchart TD
+    subgraph IN["Input Layer"]
+        A1[User Script / Prompt / Topic] --> B[AI Director Engine]
+        A2[Preset Studio Archetypes] --> B
+        A3[Audio: Neural TTS / Kokoro / User Voice] --> C[Narration & Audio Engine]
+    end
+
+    subgraph DIR["AI Director & Verification"]
+        B --> B1[AWS Bedrock: Claude 3.7 / 4.5]
+        B1 --> B2[Storyboard Schema Validation]
+        B2 --> B3{Narration Coverage >= 92%?}
+        B3 -- No --> B1
+        B3 -- Yes --> D[Storyboard Manifest]
+    end
+
+    subgraph AUDIO["Audio & Caption Processing"]
+        C --> C1[SHA-256 Audio Cache]
+        C1 --> C2[WordBoundary Timestamp Extractor]
+        C2 --> C3[Karaoke Pop-In SRT/ASS Captions]
+        C2 --> C4[Scene Duration Auto-Rescaler]
+    end
+
+    subgraph RENDER["Motion Graphics & Compositing"]
+        D & C4 --> E[Scene Renderer]
+        E --> F[EffectCraft v0.17.0 MCP Server]
+        F --> G1[Generated .ecproj files]
+        F --> G2[Rendered 1080p/9:16 Scene Clips]
+    end
+
+    subgraph QC["Automated Quality Control (Self-Healing)"]
+        G2 --> H[Automated QC Inspector]
+        H --> H1{Blank frame? Contrast? FPS?}
+        H1 -- Fail --> H2[Targeted Single-Scene Repair]
+        H2 --> E
+        H1 -- Pass --> I[FilmCraft v0.13.0 Multi-Track Assembly]
+    end
+
+    subgraph FINAL["Assembly & Export"]
+        I --> J[assembly/project.fcproj]
+        I & C3 --> K[FFmpeg Hardware Render]
+        K --> L[Master 1080p / 9:16 MP4 with Subtitles]
+    end
+
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style F fill:#bbf,stroke:#333,stroke-width:2px
+    style I fill:#dfd,stroke:#333,stroke-width:2px
+    style H fill:#ffd,stroke:#333,stroke-width:2px
+    style L fill:#fbb,stroke:#333,stroke-width:2px
 ```
 
-## Quick Setup — Windows (RTX 3060 Target)
+---
+
+## 🧩 Studio Archetypes & Skills Library
+
+AIVideoStudio ships with a modular skills ecosystem (`skills/`) allowing custom visual styles, animation rules, and domain-specific knowledge injection:
+
+| Archetype / Skill | Style Description | Primary Output Formats |
+|---|---|---|
+| **`vox_documentary`** | Investigative journalism, newspaper cutouts, highlighted typography, textured overlays, retro stamps. | 16:9 Long-form, 9:16 Reels |
+| **`tech_architecture`** | Cloud topologies, datacenter layouts, distributed systems, circuit traces, glowing network nodes. | 16:9 Masterclasses |
+| **`geopolitics_map`** | High-resolution satellite tiles (Esri/OpenStreetMap), highlighted borders, territorial zones, 3D camera pan. | 16:9 Geo-analysis |
+| **`finance_growth`** | Dynamic financial charts, stock tickers, candlestick visualizations, currency counters, split screens. | 16:9 & 9:16 Finance |
+| **`gsap_motion`** | Kinetic typography, spring physics, SVG vector morphing, high-energy branded motion graphics. | 16:9 & 9:16 Promo |
+| **`threejs_3d`** | Interactive WebGL renders, 3D model orbiting, spatial volumetric lighting, wireframe renders. | 16:9 3D Technical |
+| **`story_cartoon`** | Character-driven cartoon explainer, storyboard sketches, comic bubbles, friendly educational pacing. | 16:9 Education |
+
+---
+
+## ⚡ Quick Setup
+
+### Linux (Ubuntu 22.04 / Debian / Fedora)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/omthakurofficial/AIVideoStudio.git
+cd AIVideoStudio
+
+# 2. Run the automated Linux setup script (installs python deps, effectcraft, filmcraft, and node)
+bash scripts/setup_linux.sh
+
+# 3. Configure environment variables (.env)
+cp .env.example .env
+# Edit .env with your AWS Bedrock credentials (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION)
+
+# 4. Launch both API and UI concurrently
+.venv/bin/python scripts/dev.py
+```
+
+The system will start:
+- 🚀 **FastAPI Backend**: [http://127.0.0.1:8000](http://127.0.0.1:8000) (Swagger Docs: `/docs`)
+- 💻 **Next.js Studio UI**: [http://localhost:3000](http://localhost:3000)
+
+---
+
+### Windows 11 / 10 (Target: NVIDIA RTX 3060+)
+
+For Windows workstations with dedicated NVIDIA GPUs:
+
 ```powershell
+# 1. Run the automated Windows setup script in PowerShell (Run as Administrator)
 powershell -ExecutionPolicy Bypass -File .\scripts\setup_windows.ps1
+
+# 2. Launch development environment
 .\.venv\Scripts\python.exe scripts\dev.py
 ```
-See [`docs/phase8-windows-migration.md`](docs/phase8-windows-migration.md) for full Windows migration and workspace portability details.
+> For complete Windows migration instructions, CUDA hardware encoding setup, and path portability guidelines, see [docs/phase8-windows-migration.md](docs/phase8-windows-migration.md).
 
-## Verification & Tests
+---
+
+## 🧪 Verification & Automated Tests
+
+AIVideoStudio includes end-to-end verification tools and headless Chrome browser test suites:
+
 ```bash
-# Verify EffectCraft & FilmCraft binaries and MCP handshakes
+# 1. Verify EffectCraft and FilmCraft CLI binaries & MCP protocol handshake
 .venv/bin/python scripts/install_tools.py --verify-only
 .venv/bin/python scripts/mcp_probe.py
 
-# Run all 22 backend unit & integration tests (API, Storyboard, Engines, Pipeline & QC Repair)
+# 2. Run full backend test suite (contract schemas, engines, pricing, QC repair)
 .venv/bin/pytest services/api/tests/ -q
 
-# Real headless Chrome E2E tests (with scripts/dev.py running)
+# 3. Run Chrome headless browser E2E tests
 .venv/bin/python tests/e2e/test_ui_phase2.py
 .venv/bin/python tests/e2e/test_ui_phase3.py
 .venv/bin/python tests/e2e/test_ui_phase5_6.py
 .venv/bin/python tests/e2e/test_benchmark_phase7.py
 ```
 
-## Architecture & Phase Documentation
-- [`docs/phase1-audit.md`](docs/phase1-audit.md) — Environment, EffectCraft v0.17.0, FilmCraft v0.13.0, and AWS Bedrock capability audit
-- [`docs/phase3-storyboard.md`](docs/phase3-storyboard.md) — Versioned storyboard contract, Bedrock provider abstraction, and AI Director validation loop
-- [`docs/phase4-engines.md`](docs/phase4-engines.md) — EffectCraft & FilmCraft headless MCP adapters and scene compiler
-- [`docs/phase5-6-production-qc.md`](docs/phase5-6-production-qc.md) — End-to-end 30s production, neural narration, synchronized captions, QC, and single-scene regeneration
-- [`docs/phase7-benchmark.md`](docs/phase7-benchmark.md) — 60–90s educational video benchmark, timing, resource usage, and token cost analysis
-- [`docs/phase8-windows-migration.md`](docs/phase8-windows-migration.md) — Windows + NVIDIA RTX 3060 setup and cross-platform migration guide
+---
+
+## 📊 Benchmarks & Token Economics
+
+Real-world metrics gathered from an automated 65-second, 6-scene production benchmark (`AWS Global Cloud Infrastructure`):
+
+| Metric | Measured Value | Notes |
+|---|---|---|
+| **Total Scenes** | 6 custom motion-graphic scenes | Full 1080p @ 60 FPS |
+| **Duration** | 65.4 seconds | Rescaled to exact neural narration length |
+| **Narration Word Count** | 162 words | Synchronized to 162 SRT word boundary timestamps |
+| **Director Model** | `Claude 3.7 / 3.5 Sonnet` | AWS Bedrock (`ap-southeast-2` / `us-east-1`) |
+| **Total Tokens** | ~6,140 tokens | 4,210 input tokens + 1,930 output tokens |
+| **AI Director Cost** | **$0.0416 USD** | Exact Bedrock API consumption |
+| **Scene Render Latency** | ~3.8 seconds / scene | EffectCraft v0.17.0 headless engine |
+| **Timeline Assembly** | ~4.2 seconds total | FilmCraft v0.13.0 multi-track composition |
+| **QC Repair Overhead** | 0% re-renders | 100% first-pass pass rate on compliant scripts |
+
+---
+
+## 📁 Repository Directory Structure
+
+```text
+AIVideoStudio/
+├── apps/
+│   └── web/                     # Next.js 14 Studio Cockpit (App Router, Tailwind, Lucide)
+├── docs/                        # Technical Architecture, Phase Audits & Specifications
+│   ├── screenshots/             # High-resolution UI captures & 1080p/9:16 scene renders
+│   ├── phase1-audit.md          # Environment & MCP engine capability audit
+│   ├── phase3-storyboard.md     # Storyboard contracts and Bedrock provider loop
+│   ├── phase4-engines.md        # Headless EffectCraft/FilmCraft MCP adapters
+│   ├── phase5-6-production-qc.md# End-to-end production, QC, and targeted repairs
+│   ├── phase7-benchmark.md      # 65s AWS infrastructure benchmark analysis
+│   └── phase8-windows-migration.md # Windows + RTX 3060 cross-platform guide
+├── packages/
+│   └── contracts/               # Storyboard JSON schemas (storyboard.v1.schema.json)
+├── scripts/                     # Developer tooling, dev servers, MCP probes, setup scripts
+├── services/
+│   └── api/
+│       ├── aivs/                # Core Python package
+│       │   ├── director.py      # AI Director (Bedrock storyboard compiler)
+│       │   ├── pipeline.py      # End-to-end production pipeline orchestrator
+│       │   ├── qc.py            # Quality control inspector & heuristics
+│       │   ├── pricing.py       # Live AWS Bedrock token pricing model
+│       │   ├── engines/         # EffectCraft, FilmCraft, Narration & Scene Renderers
+│       │   └── providers/       # Bedrock & local AI provider integrations
+│       └── tests/               # Pytest suite for API, contracts, engines & QC
+├── skills/                      # Domain skills library (Vox, Tech, Geo, GSAP, 3D, Remotion)
+└── examples/                    # Sample scripts, benchmarks, and production manifests
+```
+
+---
+
+## 📄 License
+
+This project is open-source under the [MIT License](LICENSE).
+
+<div align="center">
+<sub>Crafted with passion for autonomous creative AI engineering.</sub>
+</div>
