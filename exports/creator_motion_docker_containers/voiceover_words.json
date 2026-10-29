@@ -1,0 +1,442 @@
+[
+  {
+    "word": "Stop",
+    "start_s": 0.25,
+    "end_s": 0.537
+  },
+  {
+    "word": "deploying",
+    "start_s": 0.537,
+    "end_s": 0.95
+  },
+  {
+    "word": "entire",
+    "start_s": 0.95,
+    "end_s": 1.475
+  },
+  {
+    "word": "virtual",
+    "start_s": 1.475,
+    "end_s": 1.788
+  },
+  {
+    "word": "machines",
+    "start_s": 1.788,
+    "end_s": 2.325
+  },
+  {
+    "word": "just",
+    "start_s": 2.325,
+    "end_s": 2.575
+  },
+  {
+    "word": "to",
+    "start_s": 2.575,
+    "end_s": 2.675
+  },
+  {
+    "word": "run",
+    "start_s": 2.675,
+    "end_s": 2.862
+  },
+  {
+    "word": "a",
+    "start_s": 2.862,
+    "end_s": 2.962
+  },
+  {
+    "word": "single",
+    "start_s": 2.962,
+    "end_s": 3.312
+  },
+  {
+    "word": "service",
+    "start_s": 3.312,
+    "end_s": 4.1
+  },
+  {
+    "word": ".",
+    "start_s": 4.1,
+    "end_s": 4.237
+  },
+  {
+    "word": "Traditional",
+    "start_s": 4.237,
+    "end_s": 4.725
+  },
+  {
+    "word": "VMs",
+    "start_s": 4.725,
+    "end_s": 5.25
+  },
+  {
+    "word": "carry",
+    "start_s": 5.25,
+    "end_s": 5.537
+  },
+  {
+    "word": "full",
+    "start_s": 5.537,
+    "end_s": 5.775
+  },
+  {
+    "word": "guest",
+    "start_s": 5.775,
+    "end_s": 6.05
+  },
+  {
+    "word": "operating",
+    "start_s": 6.05,
+    "end_s": 6.625
+  },
+  {
+    "word": "systems",
+    "start_s": 6.625,
+    "end_s": 7.3
+  },
+  {
+    "word": ",",
+    "start_s": 7.3,
+    "end_s": 7.412
+  },
+  {
+    "word": "massive",
+    "start_s": 7.412,
+    "end_s": 7.875
+  },
+  {
+    "word": "memory",
+    "start_s": 7.875,
+    "end_s": 8.25
+  },
+  {
+    "word": "overhead",
+    "start_s": 8.25,
+    "end_s": 8.775
+  },
+  {
+    "word": ",",
+    "start_s": 8.775,
+    "end_s": 8.85
+  },
+  {
+    "word": "and",
+    "start_s": 8.85,
+    "end_s": 8.975
+  },
+  {
+    "word": "minute-long",
+    "start_s": 8.975,
+    "end_s": 9.488
+  },
+  {
+    "word": "cold",
+    "start_s": 9.488,
+    "end_s": 9.863
+  },
+  {
+    "word": "boots",
+    "start_s": 9.863,
+    "end_s": 10.6
+  },
+  {
+    "word": ".",
+    "start_s": 10.6,
+    "end_s": 10.738
+  },
+  {
+    "word": "Docker",
+    "start_s": 10.738,
+    "end_s": 11.125
+  },
+  {
+    "word": "changes",
+    "start_s": 11.125,
+    "end_s": 11.5
+  },
+  {
+    "word": "everything",
+    "start_s": 11.5,
+    "end_s": 11.875
+  },
+  {
+    "word": "by",
+    "start_s": 11.875,
+    "end_s": 12.062
+  },
+  {
+    "word": "sharing",
+    "start_s": 12.062,
+    "end_s": 12.387
+  },
+  {
+    "word": "the",
+    "start_s": 12.387,
+    "end_s": 12.475
+  },
+  {
+    "word": "host",
+    "start_s": 12.475,
+    "end_s": 12.775
+  },
+  {
+    "word": "Linux",
+    "start_s": 12.775,
+    "end_s": 13.1
+  },
+  {
+    "word": "kernel",
+    "start_s": 13.1,
+    "end_s": 13.425
+  },
+  {
+    "word": "through",
+    "start_s": 13.425,
+    "end_s": 13.625
+  },
+  {
+    "word": "namespaces",
+    "start_s": 13.625,
+    "end_s": 14.3
+  },
+  {
+    "word": "and",
+    "start_s": 14.3,
+    "end_s": 14.438
+  },
+  {
+    "word": "cgroups",
+    "start_s": 14.438,
+    "end_s": 15.3
+  },
+  {
+    "word": ".",
+    "start_s": 15.3,
+    "end_s": 15.438
+  },
+  {
+    "word": "Processes",
+    "start_s": 15.438,
+    "end_s": 16.075
+  },
+  {
+    "word": "run",
+    "start_s": 16.075,
+    "end_s": 16.312
+  },
+  {
+    "word": "isolated",
+    "start_s": 16.312,
+    "end_s": 16.913
+  },
+  {
+    "word": "in",
+    "start_s": 16.913,
+    "end_s": 17.025
+  },
+  {
+    "word": "lightweight",
+    "start_s": 17.025,
+    "end_s": 17.4
+  },
+  {
+    "word": "containers",
+    "start_s": 17.4,
+    "end_s": 17.95
+  },
+  {
+    "word": "that",
+    "start_s": 17.95,
+    "end_s": 18.113
+  },
+  {
+    "word": "spin",
+    "start_s": 18.113,
+    "end_s": 18.387
+  },
+  {
+    "word": "up",
+    "start_s": 18.387,
+    "end_s": 18.538
+  },
+  {
+    "word": "in",
+    "start_s": 18.538,
+    "end_s": 18.613
+  },
+  {
+    "word": "under",
+    "start_s": 18.613,
+    "end_s": 18.8
+  },
+  {
+    "word": "one",
+    "start_s": 18.8,
+    "end_s": 18.938
+  },
+  {
+    "word": "hundred",
+    "start_s": 18.938,
+    "end_s": 19.225
+  },
+  {
+    "word": "milliseconds",
+    "start_s": 19.225,
+    "end_s": 20.3
+  },
+  {
+    "word": ".",
+    "start_s": 20.3,
+    "end_s": 20.462
+  },
+  {
+    "word": "Ninety",
+    "start_s": 20.462,
+    "end_s": 20.85
+  },
+  {
+    "word": "percent",
+    "start_s": 20.85,
+    "end_s": 21.2
+  },
+  {
+    "word": "less",
+    "start_s": 21.2,
+    "end_s": 21.425
+  },
+  {
+    "word": "memory",
+    "start_s": 21.425,
+    "end_s": 21.8
+  },
+  {
+    "word": "overhead",
+    "start_s": 21.8,
+    "end_s": 22.475
+  },
+  {
+    "word": ",",
+    "start_s": 22.475,
+    "end_s": 22.613
+  },
+  {
+    "word": "zero",
+    "start_s": 22.613,
+    "end_s": 23.0
+  },
+  {
+    "word": "guest",
+    "start_s": 23.0,
+    "end_s": 23.312
+  },
+  {
+    "word": "OS",
+    "start_s": 23.312,
+    "end_s": 23.738
+  },
+  {
+    "word": "bloat",
+    "start_s": 23.738,
+    "end_s": 24.3
+  },
+  {
+    "word": ",",
+    "start_s": 24.3,
+    "end_s": 24.4
+  },
+  {
+    "word": "and",
+    "start_s": 24.4,
+    "end_s": 24.538
+  },
+  {
+    "word": "identical",
+    "start_s": 24.538,
+    "end_s": 25.038
+  },
+  {
+    "word": "environments",
+    "start_s": 25.038,
+    "end_s": 25.625
+  },
+  {
+    "word": "from",
+    "start_s": 25.625,
+    "end_s": 25.8
+  },
+  {
+    "word": "local",
+    "start_s": 25.8,
+    "end_s": 26.137
+  },
+  {
+    "word": "dev",
+    "start_s": 26.137,
+    "end_s": 26.475
+  },
+  {
+    "word": "to",
+    "start_s": 26.475,
+    "end_s": 26.575
+  },
+  {
+    "word": "production",
+    "start_s": 26.575,
+    "end_s": 27.575
+  },
+  {
+    "word": ".",
+    "start_s": 27.575,
+    "end_s": 27.762
+  },
+  {
+    "word": "Stop",
+    "start_s": 28.125,
+    "end_s": 28.425
+  },
+  {
+    "word": "running",
+    "start_s": 28.425,
+    "end_s": 28.725
+  },
+  {
+    "word": "monolithic",
+    "start_s": 28.725,
+    "end_s": 29.35
+  },
+  {
+    "word": "infrastructure",
+    "start_s": 29.35,
+    "end_s": 30.275
+  },
+  {
+    "word": ".",
+    "start_s": 30.275,
+    "end_s": 30.4
+  },
+  {
+    "word": "Containerize",
+    "start_s": 30.4,
+    "end_s": 31.088
+  },
+  {
+    "word": "your",
+    "start_s": 31.088,
+    "end_s": 31.2
+  },
+  {
+    "word": "stack",
+    "start_s": 31.2,
+    "end_s": 31.55
+  },
+  {
+    "word": "today",
+    "start_s": 31.55,
+    "end_s": 32.325
+  },
+  {
+    "word": ".",
+    "start_s": 32.325,
+    "end_s": 32.55
+  }
+]
