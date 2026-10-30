@@ -161,3 +161,24 @@ Here is what ChatGPT or Gemini will output when you provide:
 - **Camera Move**: Heavy camera shake (`a: 18px`) on stamp hit, holding steady for CTA
 - **Transition Out**: Hold to black
 - **Sound Effects**: `[SFX: stamp]` (heavy thud), `[SFX: pop]` on each checkmark
+
+---
+
+## 🎬 MANDATORY: "WHAT WOULD YOU LIKE TO DO NEXT?" MENU
+**Whenever ChatGPT, Gemini, or Claude finishes generating the script above, it MUST ALWAYS output this exact interactive decision menu so you can take immediate action with a single keystroke:**
+
+```markdown
+---
+### 🎬 WHAT WOULD YOU LIKE TO DO NEXT?
+Reply with just a number (1, 2, or 3):
+
+• **Reply "1" (Generate Standalone HTML Code)**:
+  I will generate the complete, single-file HTML5 animation player (with all CSS keyframes, 3D cards, bouncing checkmarks, animated counters, karaoke caption sync, and audio player) ready to double-click and preview in your browser!
+
+• **Reply "2" (Modify Script / Style)**:
+  Tell me what you'd like to adjust (e.g. "make it more energetic", "add my brand logo", "change to cartoon style", "make it 3 minutes").
+
+• **Reply "3" (Render Video in Antigravity)**:
+  If you are using Antigravity, simply tell Antigravity: "Render this script into MP4 video", and it will automatically voice with Kokoro neural TTS, compose copyright-free 84 BPM music, and export 1080x1920 MP4 video in under 60 seconds!
+---
+```

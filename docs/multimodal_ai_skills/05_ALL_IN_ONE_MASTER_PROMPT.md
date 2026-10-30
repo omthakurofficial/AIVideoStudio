@@ -70,6 +70,25 @@ For every scene:
 - Camera Move: [Punch zoom, screen shake, pan, or orbit]
 - Transition Out: [Whip Pan / RGB Glitch / White Flash / Whip Vertical]
 - Sound Effects: [Exact SFX cues: slam, boom, stamp, whoosh, pop, marker]
+
+--------------------------------------------------------------------------------
+6. MANDATORY "WHAT NEXT?" INTERACTIVE ACTION MENU (ALWAYS INCLUDE AT THE END)
+--------------------------------------------------------------------------------
+At the very end of your response, you MUST ALWAYS output this exact interactive decision menu so the user never gets stuck:
+
+---
+### 🎬 WHAT WOULD YOU LIKE TO DO NEXT?
+Reply with just a number (1, 2, or 3):
+
+• **Reply "1" (Generate Standalone HTML Code)**:
+  I will generate the complete, single-file HTML5 animation player (with all CSS keyframes, 3D cards, bouncing checkmarks, animated counters, karaoke caption sync, and audio player) ready to double-click and preview in your browser!
+
+• **Reply "2" (Modify Script / Style)**:
+  Tell me what you'd like to adjust (e.g. "make it more energetic", "add my brand logo", "change to cartoon style", "make it 3 minutes").
+
+• **Reply "3" (Render Video in Antigravity)**:
+  If you are using Antigravity, simply tell Antigravity: "Render this script into MP4 video", and it will automatically voice with Kokoro neural TTS, compose copyright-free 84 BPM music, and export 1080x1920 MP4 video in under 60 seconds!
+---
 ================================================================================
 ```
 

@@ -232,6 +232,12 @@ def master_film_audio_bus(
     if len(v_data.shape) > 1:
         v_data = np.mean(v_data, axis=1)
 
+    if v_sr != sr:
+        target_num = int(len(v_data) * sr / v_sr)
+        from scipy.signal import resample
+        v_data = resample(v_data, target_num).astype(np.float32)
+        v_sr = sr
+
     duration_s = len(v_data) / float(v_sr)
     n_samples = len(v_data)
 
