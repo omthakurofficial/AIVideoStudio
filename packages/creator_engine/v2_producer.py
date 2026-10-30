@@ -575,33 +575,78 @@ function drawKineticScene(c, t) {{
     c.fillText('Alpha Portfolio Benchmark Outperformance', 0, 48);
   }}
   else {{
-    // Permanent Magnet & High-Tech Geopolitical / Technical Indicator
-    c.fillStyle = '#ef4444';
-    c.beginPath(); c.roundRect(-160, -45, 150, 90, [12, 0, 0, 12]); c.fill();
-    c.fillStyle = '#3b82f6';
-    c.beginPath(); c.roundRect(10, -45, 150, 90, [0, 12, 12, 0]); c.fill();
+    const isHistory = curScene.visual_badge && (
+      curScene.visual_badge.includes('YEARS') ||
+      curScene.visual_badge.includes('SHANG') ||
+      curScene.visual_badge.includes('MANDATE') ||
+      curScene.visual_badge.includes('QIN') ||
+      curScene.visual_badge.includes('DYNASTIC') ||
+      curScene.visual_badge.includes('CIVILIZATION')
+    );
 
-    c.fillStyle = '#ffffff';
-    c.font = '900 36px "Inter", sans-serif';
-    c.textAlign = 'center';
-    c.fillText('N', -85, 12);
-    c.fillText('S', 85, 12);
+    if (isHistory) {{
+      // Rotating Imperial Mandate Wheel & Great Wall Vector
+      const rot = t * 0.8;
+      c.save();
+      c.rotate(rot * 0.1);
+      c.strokeStyle = '#ffd700';
+      c.lineWidth = 3;
+      c.beginPath(); c.arc(0, 0, 85, 0, Math.PI * 2); c.stroke();
+      for (let i = 0; i < 4; i++) {{
+        const a = (i * Math.PI) / 2 + rot * 0.1;
+        c.beginPath(); c.moveTo(Math.cos(a) * 45, Math.sin(a) * 45); c.lineTo(Math.cos(a) * 85, Math.sin(a) * 85); c.stroke();
+      }}
+      c.restore();
 
-    // Magnetic Flux Curves
-    c.strokeStyle = 'rgba(255, 214, 0, 0.4)';
-    c.lineWidth = 2;
-    c.beginPath(); c.arc(0, 0, 190, 0, Math.PI, true); c.stroke();
-    c.beginPath(); c.arc(0, 0, 190, 0, Math.PI, false); c.stroke();
+      // Central Imperial Jade Seal
+      c.fillStyle = '#b91c1c';
+      c.beginPath(); c.roundRect(-42, -42, 84, 84, 12); c.fill();
+      c.strokeStyle = '#ffd700'; c.lineWidth = 2; c.stroke();
+      c.fillStyle = '#ffd700';
+      c.font = '900 32px sans-serif';
+      c.textAlign = 'center';
+      c.fillText('天', 0, 11);
 
-    // On-Screen Metric Badge
-    c.fillStyle = '#111116';
-    c.strokeStyle = ACCENT;
-    c.lineWidth = 2;
-    c.beginPath(); c.roundRect(-220, 68, 440, 52, 10); c.fill(); c.stroke();
+      // On-Screen Metric Badge
+      c.fillStyle = '#140c10';
+      c.strokeStyle = '#e63946';
+      c.lineWidth = 2;
+      c.beginPath();
+      c.roundRect(-230, 68, 460, 52, 10);
+      c.fill(); c.stroke();
 
-    c.font = '800 20px "Inter", sans-serif';
-    c.fillStyle = '#ffffff';
-    c.fillText(curScene.visual_badge || '⚡ REPM STRATEGIC BREAKTHROUGH', 0, 101);
+      c.font = '800 18px "Inter", sans-serif';
+      c.fillStyle = '#ffffff';
+      c.fillText(curScene.visual_badge || '⚡ 4,000 YEARS OF COLLAPSE & REBIRTH', 0, 101);
+    }} else {{
+      // Permanent Magnet & High-Tech Geopolitical / Technical Indicator
+      c.fillStyle = '#ef4444';
+      c.beginPath(); c.roundRect(-160, -45, 150, 90, [12, 0, 0, 12]); c.fill();
+      c.fillStyle = '#3b82f6';
+      c.beginPath(); c.roundRect(10, -45, 150, 90, [0, 12, 12, 0]); c.fill();
+
+      c.fillStyle = '#ffffff';
+      c.font = '900 36px "Inter", sans-serif';
+      c.textAlign = 'center';
+      c.fillText('N', -85, 12);
+      c.fillText('S', 85, 12);
+
+      // Magnetic Flux Curves
+      c.strokeStyle = 'rgba(255, 214, 0, 0.4)';
+      c.lineWidth = 2;
+      c.beginPath(); c.arc(0, 0, 190, 0, Math.PI, true); c.stroke();
+      c.beginPath(); c.arc(0, 0, 190, 0, Math.PI, false); c.stroke();
+
+      // On-Screen Metric Badge
+      c.fillStyle = '#111116';
+      c.strokeStyle = ACCENT;
+      c.lineWidth = 2;
+      c.beginPath(); c.roundRect(-220, 68, 440, 52, 10); c.fill(); c.stroke();
+
+      c.font = '800 20px "Inter", sans-serif';
+      c.fillStyle = '#ffffff';
+      c.fillText(curScene.visual_badge || '⚡ REPM STRATEGIC BREAKTHROUGH', 0, 101);
+    }}
   }}
   c.restore();
 

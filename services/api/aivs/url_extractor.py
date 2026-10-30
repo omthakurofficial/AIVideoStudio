@@ -149,10 +149,33 @@ def deconstruct_youtube_url(url: str) -> Dict[str, Any]:
     else:
         result["suggested_niche"] = "vox_explainer"
 
-    # Extract salient facts/bullet points
-    sentences = re.split(r"[.!?]\s+", result["description"])
-    salient = [s.strip() for s in sentences if len(s.strip()) > 20 and not s.strip().startswith("http")][:5]
-    result["key_facts"] = salient
+    # Extract salient facts/bullet points, aggressively filtering out sponsors/affiliates
+    junk_keywords = [
+        "http", "bit.ly", "patreon", "myheritage", "nordvpn", "surfshark", "expressvpn",
+        "coupon", "discount", "offer", "code", "free trial", "shipping", "merch", "instagram",
+        "twitter", "check out our latest", "check out", "subscribe", "social media", "tiktok",
+        "qr code", "sponsor", "buy now", "click here"
+    ]
+
+    clean_facts: List[str] = []
+    # 1. First prioritize opening punchlines from actual spoken transcript if available
+    if result["transcript"]:
+        transcript_clean = re.sub(r"\[.*?\]", "", result["transcript"])
+        t_sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", transcript_clean) if len(s.strip()) > 25]
+        for s in t_sentences[:4]:
+            if not any(j in s.lower() for j in junk_keywords):
+                clean_facts.append(s)
+
+    # 2. Extract substantive sentences from description (skipping sponsor headers)
+    if result["description"]:
+        desc_sentences = [s.strip() for s in re.split(r"[.!?\n]\s*", result["description"]) if len(s.strip()) > 25]
+        for s in desc_sentences:
+            if not any(j in s.lower() for j in junk_keywords):
+                clean_facts.append(s)
+            if len(clean_facts) >= 6:
+                break
+
+    result["key_facts"] = clean_facts[:6]
 
     return result
 

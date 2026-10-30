@@ -381,8 +381,55 @@ def synthesize_topic_scenes(
 
     # Special Detection: India vs China Rare Earth Magnets / Energy / Geopolitics
     is_rare_earths = any(k in full_text for k in ["rare earth", "7,280", "7280", "permanent magnet", "repm", "thorium", "villal", "beach sand", "monazite", "ammonium sulphate"])
+    # Special Detection: 4000 Years of Chinese History / Dynastic Cycles
+    is_chinese_history = any(k in full_text for k in ["chinese history", "dynasty", "dynasties", "4000 years", "shang", "mandate of heaven", "qin shi huang", "animated history", "wuhnbi8jnl0"])
 
-    if is_rare_earths:
+    if is_chinese_history:
+        story_beats = [
+            {
+                "headline": "CHINA DIED MORE THAN ANY COUNTRY",
+                "badge": "4,000 YEARS OF COLLAPSE & REBIRTH",
+                "narration": "China has died more times than any country on Earth. Rome fell once. Egypt disappeared. Babylon vanished. But China collapsed, fractured, and resurrected again, and again, and again.",
+                "prop": "Map of Ancient Civilizations: Rome vs Egypt vs Fractured China",
+                "choreo": "SLAM, RED_STRIKE, EMPIRE_COLLAPSE_MAP"
+            },
+            {
+                "headline": "ORACLE BONES & GHOST CHARACTERS",
+                "badge": "SHANG DYNASTY (3,000+ YEARS AGO)",
+                "narration": "Over three thousand years ago, Shang kings carved life-or-death questions onto turtle shells and ox bones, reading fire cracks to consult ghosts. Those ritual carvings became the writing system one billion people use today.",
+                "prop": "Ancient Oracle Bone Inscription & Glowing Chinese Glyph Evolution",
+                "choreo": "FIRE_CRACK, ORACLE_CARVING, REVEAL"
+            },
+            {
+                "headline": "THE MANDATE OF HEAVEN",
+                "badge": "ZHOU DYNASTY (DIVINE EXCUSE)",
+                "narration": "When the Zhou overthrew the Shang, they invented history's most powerful political idea: The Mandate of Heaven. If an emperor turned corrupt, heaven sent floods and famine, granting the people the divine right to rebel.",
+                "prop": "Cyclical Mandate of Heaven Wheel: Unity -> Decay -> Disaster -> Rebellion",
+                "choreo": "DIVINE_LIGHTNING, MANDATE_WHEEL, REBELLION_WAVE"
+            },
+            {
+                "headline": "THE FIRST EMPEROR UNIFICATION",
+                "badge": "QIN SHI HUANG (221 BCE)",
+                "narration": "Then came Qin Shi Huang. In just nine years, he conquered all warring states, standardized writing, wheel widths, and currency, and forged the Great Wall to seal the realm.",
+                "prop": "Terracotta Army Formation & Great Wall Topological Border Vector",
+                "choreo": "STANDARD_LOCK, GREAT_WALL_EXTRUDE, BRONZE_STAMP"
+            },
+            {
+                "headline": "THE DEADLIEST CIVIL WARS",
+                "badge": "THE DYNASTIC PENDULUM",
+                "narration": "Yet every dynasty decayed. From the Three Kingdoms to the Taiping Rebellion—the deadliest civil war in history—hundreds of millions perished. But unlike Rome, China always pulled itself back together.",
+                "prop": "Dynasty Timeline Pendulum: Han, Tang, Song, Ming, Qing to Modern Superpower",
+                "choreo": "RED_BLOAT, SHAKE, PENDULUM_SWING"
+            },
+            {
+                "headline": "WHY CHINA NEVER STAYS DEAD",
+                "badge": "THE ETERNAL CIVILIZATION STATE",
+                "narration": "Western empires fracture into separate nations. But China is not just a country—it is an eternal civilization bound by shared script and the instinct to reunite. What dynasty was most influential? Comment below.",
+                "prop": "Imperial Jade Seal Stamp & Golden Dragon Unification Callout",
+                "choreo": "GOLDEN_CTA, IMPERIAL_SEAL_STAMP, REUNIFICATION_PULSE"
+            }
+        ]
+    elif is_rare_earths:
         story_beats = [
             {
                 "headline": "CHINA'S 40-YEAR MONOPOLY",
@@ -986,42 +1033,87 @@ function drawScene(t) {{
   cx.save();
   cx.translate(W / 2, propY);
 
-  // Dynamic Rare Earth Magnet / Technical Indicator
-  cx.strokeStyle = ACCENT;
-  cx.lineWidth = 3;
-  // Neodymium Magnet Poles (North / South)
-  cx.fillStyle = '#ef4444';
-  cx.beginPath(); cx.roundRect(-160, -45, 150, 90, [12, 0, 0, 12]); cx.fill();
-  cx.fillStyle = '#3b82f6';
-  cx.beginPath(); cx.roundRect(10, -45, 150, 90, [0, 12, 12, 0]); cx.fill();
+  const isHistory = curScene.visual_badge && (
+    curScene.visual_badge.includes('YEARS') ||
+    curScene.visual_badge.includes('SHANG') ||
+    curScene.visual_badge.includes('MANDATE') ||
+    curScene.visual_badge.includes('QIN') ||
+    curScene.visual_badge.includes('DYNASTIC') ||
+    curScene.visual_badge.includes('CIVILIZATION')
+  );
 
-  cx.fillStyle = '#ffffff';
-  cx.font = '900 36px "Inter", sans-serif';
-  cx.textAlign = 'center';
-  cx.fillText('N', -85, 12);
-  cx.fillText('S', 85, 12);
+  if (isHistory) {{
+    // Rotating Imperial Mandate Wheel & Great Wall Vector
+    const rot = t * 0.8;
+    cx.save();
+    cx.rotate(rot * 0.1);
+    cx.strokeStyle = '#ffd700';
+    cx.lineWidth = 3;
+    cx.beginPath(); cx.arc(0, 0, 85, 0, Math.PI * 2); cx.stroke();
+    for (let i = 0; i < 4; i++) {{
+      const a = (i * Math.PI) / 2 + rot * 0.1;
+      cx.beginPath(); cx.moveTo(Math.cos(a) * 45, Math.sin(a) * 45); cx.lineTo(Math.cos(a) * 85, Math.sin(a) * 85); cx.stroke();
+    }}
+    cx.restore();
 
-  // Magnetic Flux Curves
-  cx.strokeStyle = 'rgba(255, 214, 0, 0.4)';
-  cx.lineWidth = 2;
-  cx.beginPath();
-  cx.arc(0, 0, 190, 0, Math.PI, true);
-  cx.stroke();
-  cx.beginPath();
-  cx.arc(0, 0, 190, 0, Math.PI, false);
-  cx.stroke();
+    // Central Imperial Jade Seal
+    cx.fillStyle = '#b91c1c';
+    cx.beginPath(); cx.roundRect(-42, -42, 84, 84, 12); cx.fill();
+    cx.strokeStyle = '#ffd700'; cx.lineWidth = 2; cx.stroke();
+    cx.fillStyle = '#ffd700';
+    cx.font = '900 32px sans-serif';
+    cx.textAlign = 'center';
+    cx.fillText('天', 0, 11);
 
-  // On-Screen Metric Badge
-  cx.fillStyle = '#111116';
-  cx.strokeStyle = ACCENT;
-  cx.lineWidth = 2;
-  cx.beginPath();
-  cx.roundRect(-220, 68, 440, 52, 10);
-  cx.fill(); cx.stroke();
+    // On-Screen Metric Badge
+    cx.fillStyle = '#140c10';
+    cx.strokeStyle = '#e63946';
+    cx.lineWidth = 2;
+    cx.beginPath();
+    cx.roundRect(-230, 68, 460, 52, 10);
+    cx.fill(); cx.stroke();
 
-  cx.font = '800 20px "Inter", sans-serif';
-  cx.fillStyle = '#ffffff';
-  cx.fillText(curScene.visual_badge || '⚡ REPM STRATEGIC BREAKTHROUGH', 0, 101);
+    cx.font = '800 18px "Inter", sans-serif';
+    cx.fillStyle = '#ffffff';
+    cx.fillText(curScene.visual_badge || '⚡ 4,000 YEARS OF COLLAPSE & REBIRTH', 0, 101);
+  }} else {{
+    // Dynamic Rare Earth Magnet / Technical Indicator
+    cx.strokeStyle = ACCENT;
+    cx.lineWidth = 3;
+    // Neodymium Magnet Poles (North / South)
+    cx.fillStyle = '#ef4444';
+    cx.beginPath(); cx.roundRect(-160, -45, 150, 90, [12, 0, 0, 12]); cx.fill();
+    cx.fillStyle = '#3b82f6';
+    cx.beginPath(); cx.roundRect(10, -45, 150, 90, [0, 12, 12, 0]); cx.fill();
+
+    cx.fillStyle = '#ffffff';
+    cx.font = '900 36px "Inter", sans-serif';
+    cx.textAlign = 'center';
+    cx.fillText('N', -85, 12);
+    cx.fillText('S', 85, 12);
+
+    // Magnetic Flux Curves
+    cx.strokeStyle = 'rgba(255, 214, 0, 0.4)';
+    cx.lineWidth = 2;
+    cx.beginPath();
+    cx.arc(0, 0, 190, 0, Math.PI, true);
+    cx.stroke();
+    cx.beginPath();
+    cx.arc(0, 0, 190, 0, Math.PI, false);
+    cx.stroke();
+
+    // On-Screen Metric Badge
+    cx.fillStyle = '#111116';
+    cx.strokeStyle = ACCENT;
+    cx.lineWidth = 2;
+    cx.beginPath();
+    cx.roundRect(-220, 68, 440, 52, 10);
+    cx.fill(); cx.stroke();
+
+    cx.font = '800 20px "Inter", sans-serif';
+    cx.fillStyle = '#ffffff';
+    cx.fillText(curScene.visual_badge || '⚡ REPM STRATEGIC BREAKTHROUGH', 0, 101);
+  }}
   cx.restore();
 
   // Bottom Safe Action Pill
