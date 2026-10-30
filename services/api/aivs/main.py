@@ -552,8 +552,11 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         }
 
     @app.post("/api/v2/templates/generate")
-    def generate_v2_template(req: V2TemplateGenerateRequest):
+    async def generate_v2_template(req: V2TemplateGenerateRequest):
         from packages.creator_engine.templates import TemplateGenerator
+        from packages.creator_engine.v2_producer import produce_v2_video
+
+        # 1. First generate template blueprint
         generator = TemplateGenerator()
         blueprint = generator.generate_blueprint(
             topic=req.topic,
@@ -564,7 +567,69 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
             voice_id=req.voice_id or "kokoro:am_michael",
             custom_instructions=req.custom_instructions
         )
+
+        # 2. Synthesize REAL neural speech audio + beat + karaoke sync for the live player!
+        try:
+            prod_res = await produce_v2_video(
+                topic=req.topic,
+                niche_id=req.niche_id,
+                target_duration_s=req.target_duration_s,
+                aspect_ratio=req.aspect_ratio,
+                voice_id=req.voice_id or "kokoro:am_michael",
+                custom_instructions=req.custom_instructions
+            )
+            blueprint["standalone_html_code"] = prod_res["html_code"]
+            blueprint["audio_base64"] = prod_res["audio_base64"]
+            blueprint["master_wav"] = prod_res["master_wav"]
+            blueprint["master_mp3"] = prod_res["master_mp3"]
+            blueprint["html_file"] = prod_res["html_file"]
+            blueprint["has_audio"] = True
+        except Exception as e:
+            # Fallback if audio fails
+            blueprint["audio_error"] = str(e)
+            blueprint["has_audio"] = False
+
         return blueprint
+
+    @app.post("/api/v2/templates/render-mp4")
+    def render_v2_mp4(req: dict):
+        """Render the generated HTML player to a local MP4 file."""
+        html_file = req.get("html_file")
+        master_wav = req.get("master_wav")
+        aspect_ratio = req.get("aspect_ratio", "9:16")
+
+        if not html_file or not Path(html_file).is_file():
+            raise HTTPException(400, "Valid html_file is required")
+        if not master_wav or not Path(master_wav).is_file():
+            raise HTTPException(400, "Valid master_wav is required")
+
+        is_vert = aspect_ratio == "9:16"
+        w = 1080 if is_vert else 1280
+        h = 1920 if is_vert else 720
+        out_mp4 = Path(html_file).with_suffix(".mp4")
+
+        from packages.creator_engine.renderer import render_html_to_mp4
+        render_html_to_mp4(
+            html_path=html_file,
+            audio_wav_path=master_wav,
+            out_mp4=str(out_mp4),
+            width=w,
+            height=h,
+            fps=30
+        )
+        return {
+            "ok": True,
+            "mp4_file": str(out_mp4),
+            "filename": out_mp4.name,
+            "download_url": f"/api/v2/templates/download-video?path={out_mp4}"
+        }
+
+    @app.get("/api/v2/templates/download-video")
+    def download_v2_video(path: str):
+        p = Path(path)
+        if not p.is_file() or not str(p).startswith(str(REPO_ROOT / "exports")):
+            raise HTTPException(404, "Video file not found or unauthorized")
+        return FileResponse(p, media_type="video/mp4", filename=p.name)
 
     @app.post("/api/v2/templates/render-html-preview")
     def render_v2_html_preview(req: dict):

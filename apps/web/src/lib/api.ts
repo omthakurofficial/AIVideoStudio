@@ -435,6 +435,8 @@ export const api = {
     custom_instructions?: string;
   }) => req<V2TemplateBlueprint>("/api/v2/templates/generate", { method: "POST", body: JSON.stringify(body) }),
   v2SavePreviewHtml: (html: string) => req<{ ok: boolean; url: string }>("/api/v2/templates/render-html-preview", { method: "POST", body: JSON.stringify({ html }) }),
+  v2RenderMp4: (body: { html_file: string; master_wav: string; aspect_ratio: string }) =>
+    req<{ ok: boolean; mp4_file: string; filename: string; download_url: string }>("/api/v2/templates/render-mp4", { method: "POST", body: JSON.stringify(body) }),
 };
 
 export type V2VoiceItem = {
@@ -494,6 +496,11 @@ export type V2TemplateBlueprint = {
   };
   portable_master_prompt: string;
   standalone_html_code?: string;
+  html_file?: string;
+  master_wav?: string;
+  master_mp3?: string;
+  audio_base64?: string;
+  has_audio?: boolean;
 };
 
 export const sbApi = {
