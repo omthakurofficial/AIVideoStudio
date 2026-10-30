@@ -481,6 +481,7 @@ export type V2TemplateBlueprint = {
     master_lufs: number;
   };
   portable_master_prompt: string;
+  standalone_html_code?: string;
 };
 
 export const sbApi = {

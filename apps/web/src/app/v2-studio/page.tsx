@@ -31,8 +31,9 @@ export default function V2StudioPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [blueprint, setBlueprint] = useState<V2TemplateBlueprint | null>(null);
-  const [activeInspectorTab, setActiveInspectorTab] = useState<"prompt" | "storyboard" | "audio" | "raw">("prompt");
-  const [copied, setCopied] = useState(false);
+  const [activeInspectorTab, setActiveInspectorTab] = useState<"html" | "prompt" | "storyboard" | "audio" | "raw">("html");
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
+  const [copiedHtml, setCopiedHtml] = useState(false);
 
   useEffect(() => {
     api.v2Niches().then(res => {
@@ -96,8 +97,28 @@ export default function V2StudioPage() {
   function copyPromptToClipboard() {
     if (!blueprint?.portable_master_prompt) return;
     navigator.clipboard.writeText(blueprint.portable_master_prompt);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
+    setCopiedPrompt(true);
+    setTimeout(() => setCopiedPrompt(false), 2500);
+  }
+
+  function copyHtmlToClipboard() {
+    if (!blueprint?.standalone_html_code) return;
+    navigator.clipboard.writeText(blueprint.standalone_html_code);
+    setCopiedHtml(true);
+    setTimeout(() => setCopiedHtml(false), 2500);
+  }
+
+  function downloadHtmlFile() {
+    if (!blueprint?.standalone_html_code) return;
+    const blob = new Blob([blueprint.standalone_html_code], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${selectedNicheId}_${duration}s_${aspect.replace(":", "x")}_player.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 
   function downloadPromptFile() {
@@ -515,23 +536,45 @@ export default function V2StudioPage() {
               <button
                 type="button"
                 className="btn"
-                onClick={copyPromptToClipboard}
-                style={{ background: copied ? "#30d158" : "#38bdf8", color: "#000", fontWeight: 700 }}
+                onClick={copyHtmlToClipboard}
+                style={{ background: copiedHtml ? "#30d158" : "#ffd60a", color: "#000", fontWeight: 700 }}
               >
-                {copied ? "✓ Copied AI Prompt!" : "📋 Copy Prompt for ChatGPT / Gemini / Claude"}
+                {copiedHtml ? "✓ Copied HTML Player!" : "🌐 Copy HTML Player Code"}
+              </button>
+              <button
+                type="button"
+                className="btn secondary"
+                onClick={downloadHtmlFile}
+              >
+                💾 Download .html Player
+              </button>
+              <button
+                type="button"
+                className="btn"
+                onClick={copyPromptToClipboard}
+                style={{ background: copiedPrompt ? "#30d158" : "#38bdf8", color: "#000", fontWeight: 700 }}
+              >
+                {copiedPrompt ? "✓ Copied AI Prompt!" : "📋 Copy Prompt for AI"}
               </button>
               <button
                 type="button"
                 className="btn secondary"
                 onClick={downloadPromptFile}
               >
-                💾 Download .md File
+                💾 Download .md Prompt
               </button>
             </div>
           </div>
 
           {/* Inspector Tabs */}
           <div className="tab-bar" style={{ marginBottom: 16 }}>
+            <button
+              type="button"
+              className={`tab-btn ${activeInspectorTab === "html" ? "active" : ""}`}
+              onClick={() => setActiveInspectorTab("html")}
+            >
+              🌐 Standalone HTML5 Player Code
+            </button>
             <button
               type="button"
               className={`tab-btn ${activeInspectorTab === "prompt" ? "active" : ""}`}
@@ -562,6 +605,63 @@ export default function V2StudioPage() {
             </button>
           </div>
 
+          {/* Tab 0: Standalone HTML Player Code */}
+          {activeInspectorTab === "html" && (
+            <div>
+              <div style={{
+                background: "rgba(255, 214, 10, 0.08)",
+                border: "1px solid rgba(255, 214, 10, 0.25)",
+                borderRadius: 8,
+                padding: "10px 14px",
+                marginBottom: 12,
+                fontSize: "0.84rem",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
+              }}>
+                <div>
+                  <strong>⚡ Standalone HTML5 Video Animation Player:</strong>
+                  <div className="muted" style={{ fontSize: "0.78rem", marginTop: 2 }}>
+                    Self-contained single-file HTML document with interactive scrubber, canvas render loop, and responsive safe margin preview. Double-click or open in any browser!
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={copyHtmlToClipboard}
+                    style={{ background: copiedHtml ? "#30d158" : "#ffd60a", color: "#000", fontWeight: 700, fontSize: "0.78rem", padding: "6px 12px" }}
+                  >
+                    {copiedHtml ? "✓ Copied!" : "📋 Copy HTML Code"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={downloadHtmlFile}
+                    style={{ fontSize: "0.78rem", padding: "6px 12px" }}
+                  >
+                    💾 Save .html
+                  </button>
+                </div>
+              </div>
+
+              <pre style={{
+                background: "#08080c",
+                border: "1px solid var(--line)",
+                borderRadius: 8,
+                padding: 16,
+                color: "#ffd60a",
+                fontSize: "0.8rem",
+                lineHeight: 1.45,
+                maxHeight: 520,
+                overflowY: "auto",
+                whiteSpace: "pre-wrap"
+              }}>
+                {blueprint.standalone_html_code || "Generating HTML Player..."}
+              </pre>
+            </div>
+          )}
+
           {/* Tab 1: AI Prompt Box */}
           {activeInspectorTab === "prompt" && (
             <div>
@@ -571,15 +671,38 @@ export default function V2StudioPage() {
                 borderRadius: 8,
                 padding: "10px 14px",
                 marginBottom: 12,
-                fontSize: "0.84rem"
+                fontSize: "0.84rem",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center"
               }}>
-                <strong>How to use this in ChatGPT, Gemini, or Claude:</strong>
-                <ol style={{ margin: "6px 0 0", paddingLeft: 20 }}>
-                  <li>Click the blue <strong>"Copy Prompt"</strong> button above.</li>
-                  <li>Paste it into <strong>Google Gemini, ChatGPT, Claude, or DeepSeek</strong>.</li>
-                  <li>Attach any reference file (PDF, PPT, Image, Video URL) if you have one.</li>
-                  <li>The AI will write your complete script, and automatically offer the <strong>"What Next?"</strong> 1-click decision menu at the end!</li>
-                </ol>
+                <div>
+                  <strong>How to use this in ChatGPT, Gemini, or Claude:</strong>
+                  <ol style={{ margin: "4px 0 0", paddingLeft: 20 }}>
+                    <li>Click the blue <strong>"Copy Prompt"</strong> button on the right.</li>
+                    <li>Paste it into <strong>Google Gemini, ChatGPT, Claude, or DeepSeek</strong>.</li>
+                    <li>Attach any reference file (PDF, PPT, Image, Video URL) if you have one.</li>
+                    <li>The AI will write your complete script, and automatically offer the <strong>"What Next?"</strong> 1-click decision menu at the end!</li>
+                  </ol>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={copyPromptToClipboard}
+                    style={{ background: copiedPrompt ? "#30d158" : "#38bdf8", color: "#000", fontWeight: 700, fontSize: "0.78rem", padding: "6px 12px" }}
+                  >
+                    {copiedPrompt ? "✓ Copied!" : "📋 Copy Prompt"}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn secondary"
+                    onClick={downloadPromptFile}
+                    style={{ fontSize: "0.78rem", padding: "6px 12px" }}
+                  >
+                    💾 Save .md
+                  </button>
+                </div>
               </div>
 
               <pre style={{

@@ -436,6 +436,15 @@ class TemplateGenerator:
             scenes=scenes
         )
 
+        # Generate Standalone Runnable HTML5 Player Code
+        standalone_html = self._generate_standalone_html(
+            topic=topic,
+            niche=niche,
+            target_duration_s=target_duration_s,
+            aspect_ratio=aspect_ratio,
+            scenes=scenes
+        )
+
         return {
             "status": "success",
             "project_title": topic,
@@ -450,7 +459,8 @@ class TemplateGenerator:
                 "sidechain_ducking": "Voiceover active -> duck music -14dB (50ms attack, 250ms release)",
                 "master_lufs": -14.0
             },
-            "portable_master_prompt": portable_prompt
+            "portable_master_prompt": portable_prompt,
+            "standalone_html_code": standalone_html
         }
 
     def _build_portable_prompt(
@@ -524,4 +534,297 @@ Reply with just a number (1, 2, or 3):
   If you are using Antigravity, simply tell Antigravity: "Render this script into MP4 video", and it will automatically voice with Kokoro neural TTS, compose copyright-free {niche['music_style']} music, and export {aspect_ratio} MP4 video in under 60 seconds!
 ---
 ================================================================================
+"""
+
+    def _generate_standalone_html(
+        self,
+        topic: str,
+        niche: Dict[str, Any],
+        target_duration_s: int,
+        aspect_ratio: str,
+        scenes: List[Dict[str, Any]]
+    ) -> str:
+        """Generate a complete, self-contained HTML5 animation player document."""
+        is_vert = aspect_ratio == "9:16"
+        w = 1080 if is_vert else 1280
+        h = 1920 if is_vert else 720
+        aspect_css = "9 / 16" if is_vert else "16 / 9"
+        bg_col = niche["colors"]["bg"]
+        accent_col = niche["colors"]["accent"]
+        sec_col = niche["colors"]["secondary"]
+        hi_col = niche["colors"]["highlight"]
+
+        scenes_json = json.dumps(scenes)
+
+        return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>{topic} — {niche['badge']}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;600;700;800;900&display=swap">
+<style>
+:root {{
+  color-scheme: dark;
+  --bg: {bg_col};
+  --accent: {accent_col};
+  --sec: {sec_col};
+  --hi: {hi_col};
+  --panel: #14141c;
+  --line: #262634;
+  --text: #f4f1ea;
+  --dim: #8e8d98;
+}}
+* {{ box-sizing: border-box; margin: 0; padding: 0; }}
+body {{
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", system-ui, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+}}
+.player-wrap {{
+  width: 100%;
+  max-width: {'480px' if is_vert else '1140px'};
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}}
+.player-header {{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+}}
+.player-title {{
+  font-family: "Anton", Impact, sans-serif;
+  font-size: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+}}
+.player-badge {{
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(255, 214, 10, 0.15);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 4px 10px;
+  border-radius: 999px;
+}}
+.stage-container {{
+  position: relative;
+  width: 100%;
+  aspect-ratio: {aspect_css};
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.8);
+}}
+canvas#stage {{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}}
+.player-bar {{
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}}
+button.play-btn {{
+  background: var(--accent);
+  color: #000;
+  border: 0;
+  font-weight: 800;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}}
+input.scrubber {{
+  flex: 1;
+  accent-color: var(--accent);
+  cursor: pointer;
+}}
+.time-disp {{
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}}
+</style>
+</head>
+<body>
+
+<div class="player-wrap">
+  <div class="player-header">
+    <div class="player-title">{topic[:35]}...</div>
+    <div class="player-badge">{niche['badge']} · {aspect_ratio}</div>
+  </div>
+
+  <div class="stage-container">
+    <canvas id="stage" width="{w}" height="{h}"></canvas>
+  </div>
+
+  <div class="player-bar">
+    <button class="play-btn" id="playBtn">▶ Play</button>
+    <input type="range" class="scrubber" id="scrubber" min="0" max="{target_duration_s}" step="0.05" value="0">
+    <div class="time-disp" id="timeDisp">00:00 / {f'{target_duration_s//60:02d}:{target_duration_s%60:02d}'}</div>
+  </div>
+</div>
+
+<script>
+const DURATION = {target_duration_s};
+const IS_VERT = {'true' if is_vert else 'false'};
+const W = {w};
+const H = {h};
+const ACCENT = '{accent_col}';
+const SEC = '{sec_col}';
+const HI = '{hi_col}';
+const SCENES = {scenes_json};
+
+const cv = document.getElementById('stage');
+const cx = cv.getContext('2d');
+const playBtn = document.getElementById('playBtn');
+const scrubber = document.getElementById('scrubber');
+const timeDisp = document.getElementById('timeDisp');
+
+let isPlaying = false;
+let currentTime = 0;
+let lastTimestamp = 0;
+let audioCtx = null;
+let osc = null;
+
+function ezOut(t) {{ return 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3); }}
+
+function drawScene(t) {{
+  // Background
+  cx.fillStyle = '{bg_col}';
+  cx.fillRect(0, 0, W, H);
+
+  // Subtle ambient grid
+  cx.strokeStyle = 'rgba(255, 255, 255, 0.035)';
+  cx.lineWidth = 1;
+  const off = (t * 12) % 60;
+  for (let x = -off; x < W; x += 60) {{ cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, H); cx.stroke(); }}
+  for (let y = -off * 0.5; y < H; y += 60) {{ cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke(); }}
+
+  // Current Scene Index
+  let curScene = SCENES[0];
+  for (const s of SCENES) {{ if (t >= s.start_s) curScene = s; }}
+
+  // Header Chrome
+  cx.fillStyle = ACCENT;
+  cx.fillRect(IS_VERT ? 60 : 50, IS_VERT ? 140 : 40, 10, 10);
+  cx.font = '700 ' + (IS_VERT ? 22 : 18) + 'px "Inter", sans-serif';
+  cx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+  cx.fillText('{niche["name"].upper()} · SCENE 0' + curScene.scene_number, IS_VERT ? 80 : 70, IS_VERT ? 150 : 49);
+
+  // Animated Kinetic Title Card
+  const sceneT = t - curScene.start_s;
+  const animProg = ezOut(sceneT / 0.5);
+  const scale = 1.35 - 0.35 * animProg;
+
+  cx.save();
+  const centerY = IS_VERT ? H * 0.42 : H * 0.45;
+  cx.translate(W / 2, centerY);
+  cx.scale(scale, scale);
+
+  cx.font = '900 ' + (IS_VERT ? 76 : 84) + 'px "Anton", Impact, sans-serif';
+  cx.textAlign = 'center';
+  cx.fillStyle = '#f4f1ea';
+  cx.shadowColor = 'rgba(0,0,0,0.8)';
+  cx.shadowBlur = 30;
+
+  // Split title into 2 lines if needed
+  const titleParts = curScene.title.split(': ');
+  const mainLabel = titleParts[1] ? titleParts[1].toUpperCase() : curScene.title.toUpperCase();
+  cx.fillText(mainLabel, 0, -20);
+
+  // Subtitle / Action choreo
+  cx.font = 'italic 700 ' + (IS_VERT ? 36 : 40) + 'px "Instrument Serif", Georgia, serif';
+  cx.fillStyle = ACCENT;
+  cx.shadowColor = ACCENT;
+  cx.shadowBlur = 20;
+  cx.fillText(curScene.broll_layers || '{niche["visual_elements"][0]}', 0, 50);
+  cx.restore();
+
+  // Bottom Pill Card
+  const pillY = IS_VERT ? H * 0.72 : H * 0.82;
+  const pillW = Math.min(W - 120, 680);
+  cx.fillStyle = 'rgba(20, 20, 28, 0.9)';
+  cx.strokeStyle = ACCENT;
+  cx.lineWidth = 1.5;
+  cx.beginPath();
+  cx.roundRect(W / 2 - pillW / 2, pillY - 30, pillW, 60, 14);
+  cx.fill(); cx.stroke();
+
+  cx.font = '700 ' + (IS_VERT ? 22 : 20) + 'px "Inter", sans-serif';
+  cx.fillStyle = '#ffffff';
+  cx.textAlign = 'center';
+  cx.fillText('⚡ ' + (curScene.visual_choreography || 'KINETIC SLAM & CAMERA ORBIT'), W / 2, pillY + 7);
+}}
+
+function updateDisplay() {{
+  scrubber.value = currentTime;
+  const m = Math.floor(currentTime / 60);
+  const s = Math.floor(currentTime % 60);
+  const totM = Math.floor(DURATION / 60);
+  const totS = Math.floor(DURATION % 60);
+  timeDisp.textContent = `${{String(m).padStart(2,'0')}}:${{String(s).padStart(2,'0')}} / ${{String(totM).padStart(2,'0')}}:${{String(totS).padStart(2,'0')}}`;
+}}
+
+function loop(timestamp) {{
+  if (!isPlaying) return;
+  if (!lastTimestamp) lastTimestamp = timestamp;
+  const delta = (timestamp - lastTimestamp) / 1000;
+  lastTimestamp = timestamp;
+
+  currentTime += delta;
+  if (currentTime >= DURATION) {{
+    currentTime = 0;
+    isPlaying = false;
+    playBtn.textContent = '▶ Play';
+  }}
+
+  drawScene(currentTime);
+  updateDisplay();
+  requestAnimationFrame(loop);
+}}
+
+playBtn.addEventListener('click', () => {{
+  isPlaying = !isPlaying;
+  playBtn.textContent = isPlaying ? '⏸ Pause' : '▶ Play';
+  if (isPlaying) {{
+    lastTimestamp = 0;
+    requestAnimationFrame(loop);
+  }}
+}});
+
+scrubber.addEventListener('input', (e) => {{
+  currentTime = parseFloat(e.target.value);
+  drawScene(currentTime);
+  updateDisplay();
+}});
+
+// Initial draw
+drawScene(0);
+updateDisplay();
+</script>
+</body>
+</html>
 """
