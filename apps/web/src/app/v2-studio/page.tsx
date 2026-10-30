@@ -501,6 +501,16 @@ export default function V2StudioPage() {
   // Mode 3B: URL Reference & Avatar Transform Fields
   const [referenceUrl, setReferenceUrl] = useState("");
   const [humanAvatarTransform, setHumanAvatarTransform] = useState("2d_cartoon");
+  const [deconstructingUrl, setDeconstructingUrl] = useState(false);
+  const [deconstructedInfo, setDeconstructedInfo] = useState<{
+    title?: string;
+    channel?: string;
+    description?: string;
+    transcript?: string;
+    key_facts?: string[];
+    suggested_niche?: string;
+    url?: string;
+  } | null>(null);
 
   // Mode 3C: Granular Multi-Placeholders Fields
   const [hookPlaceholder, setHookPlaceholder] = useState("");
@@ -625,15 +635,42 @@ export default function V2StudioPage() {
     return undefined;
   }
 
+  // Action 3B: Deep URL Deconstruction
+  async function handleDeconstructUrl() {
+    const targetUrl = referenceUrl.trim() || manualReferenceUrl.trim() || topic.trim();
+    if (!targetUrl || (!targetUrl.startsWith("http://") && !targetUrl.startsWith("https://"))) {
+      setError("Please paste a valid YouTube, Shorts, Reels, or Web URL to deconstruct.");
+      return;
+    }
+    setDeconstructingUrl(true);
+    setError(null);
+    try {
+      const res = await api.v2DeconstructUrl(targetUrl);
+      setDeconstructedInfo(res);
+      if (res.title) {
+        setTopic(res.title);
+      }
+      if (res.suggested_niche) {
+        setSelectedNicheId(res.suggested_niche);
+      }
+    } catch (err) {
+      setError((err as Error).message || "Failed to deconstruct URL.");
+    } finally {
+      setDeconstructingUrl(false);
+    }
+  }
+
   // ACTION 4.1: Generate Master Script & Blueprint (Instant & Zero Audio Wait)
   async function generateMasterScriptOnly() {
     let finalTopic = topic.trim();
+    let refUrl = inputMode === "url_reference" ? referenceUrl.trim() : (manualReferenceUrl.trim() || undefined);
+
     if (inputMode === "url_reference") {
-      if (!referenceUrl.trim()) {
+      if (!refUrl) {
         setError("Please enter a reference URL (YouTube, Shorts, Reels, TikTok, PDF, or Deck link).");
         return;
       }
-      finalTopic = topic.trim() || `Deconstructed Re-creation from: ${referenceUrl.trim()}`;
+      finalTopic = finalTopic || refUrl;
     } else {
       if (!finalTopic) {
         setError("Please enter a topic or concept.");
@@ -647,6 +684,7 @@ export default function V2StudioPage() {
     try {
       const res = await api.v2GenerateTemplate({
         topic: finalTopic,
+        reference_url: refUrl,
         niche_id: selectedNicheId,
         target_duration_s: duration,
         aspect_ratio: aspect,
@@ -657,6 +695,9 @@ export default function V2StudioPage() {
         custom_instructions: customNotes,
       });
       setBlueprint(res);
+      if (res.project_title && !topic.trim()) {
+        setTopic(res.project_title);
+      }
       setActiveInspectorTab("storyboard");
     } catch (err) {
       setError((err as Error).message || "Master script generation failed.");
@@ -668,12 +709,14 @@ export default function V2StudioPage() {
   // ACTION 4.2: Synthesize Voice Audio & Build Live Canvas Player (Step 2)
   async function synthesizeVoiceAndLivePlayer() {
     let finalTopic = topic.trim();
+    let refUrl = inputMode === "url_reference" ? referenceUrl.trim() : (manualReferenceUrl.trim() || undefined);
+
     if (inputMode === "url_reference") {
-      if (!referenceUrl.trim()) {
+      if (!refUrl) {
         setError("Please enter a reference URL.");
         return;
       }
-      finalTopic = topic.trim() || `Deconstructed Re-creation from: ${referenceUrl.trim()}`;
+      finalTopic = finalTopic || refUrl;
     } else {
       if (!finalTopic) {
         setError("Please enter or generate a master topic first.");
@@ -688,6 +731,7 @@ export default function V2StudioPage() {
     try {
       const res = await api.v2SynthesizePlayer({
         topic: finalTopic,
+        reference_url: refUrl,
         niche_id: selectedNicheId,
         target_duration_s: duration,
         aspect_ratio: aspect,
@@ -1320,13 +1364,31 @@ export default function V2StudioPage() {
                 <label style={{ display: "block", fontWeight: 600, fontSize: "0.84rem", marginBottom: 4 }}>
                   3B.1 Reference Media URL (YouTube, Shorts, Reels, TikTok, PDF, Slide Deck):
                 </label>
-                <input
-                  type="text"
-                  value={referenceUrl}
-                  onChange={e => setReferenceUrl(e.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=... or https://instagram.com/reel/..."
-                  style={{ width: "100%", padding: 10, borderRadius: 6, border: "1px solid var(--line)", background: "var(--panel-alt)" }}
-                />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <input
+                    type="text"
+                    value={referenceUrl}
+                    onChange={e => setReferenceUrl(e.target.value)}
+                    placeholder="https://www.youtube.com/shorts/... or https://youtube.com/watch?v=..."
+                    style={{ flex: 1, padding: 10, borderRadius: 6, border: "1px solid var(--line)", background: "var(--panel-alt)" }}
+                  />
+                  <button
+                    type="button"
+                    className="btn"
+                    disabled={deconstructingUrl || !referenceUrl.trim()}
+                    onClick={handleDeconstructUrl}
+                    style={{
+                      background: "linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)",
+                      color: "#fff",
+                      fontWeight: 700,
+                      fontSize: "0.82rem",
+                      padding: "0 14px",
+                      whiteSpace: "nowrap"
+                    }}
+                  >
+                    {deconstructingUrl ? "🔍 Extracting..." : "🔍 Deconstruct URL"}
+                  </button>
+                </div>
               </div>
 
               <div>
@@ -1346,6 +1408,68 @@ export default function V2StudioPage() {
                 </select>
               </div>
             </div>
+
+            {/* Extracted URL Knowledge Inspector Card */}
+            {deconstructedInfo && (
+              <div style={{
+                background: "rgba(16, 24, 38, 0.95)",
+                border: "1px solid rgba(56, 189, 248, 0.4)",
+                borderRadius: 8,
+                padding: "12px 16px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                  <div style={{ fontWeight: 800, color: "#38bdf8", fontSize: "0.88rem" }}>
+                    🎯 Deconstructed URL Knowledge &amp; Context:
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {deconstructedInfo.channel && (
+                      <span className="badge" style={{ background: "rgba(255, 214, 10, 0.15)", color: "#ffd60a", border: "1px solid #ffd60a" }}>
+                        👤 Channel: {deconstructedInfo.channel}
+                      </span>
+                    )}
+                    {deconstructedInfo.suggested_niche && (
+                      <span className="badge" style={{ background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8", border: "1px solid #38bdf8" }}>
+                        📁 Best Archetype: {deconstructedInfo.suggested_niche}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ fontSize: "0.96rem", fontWeight: 700, color: "#ffffff" }}>
+                  {deconstructedInfo.title}
+                </div>
+
+                {deconstructedInfo.key_facts && deconstructedInfo.key_facts.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 4 }}>
+                    <span style={{ fontSize: "0.76rem", fontWeight: 700, color: "var(--dim)" }}>Extracted Core Facts &amp; Narrative Anchors:</span>
+                    <ul style={{ margin: 0, paddingLeft: 18, fontSize: "0.82rem", color: "#e2e8f0" }}>
+                      {deconstructedInfo.key_facts.map((fact: string, idx: number) => (
+                        <li key={idx} style={{ marginBottom: 2 }}>{fact}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {deconstructedInfo.transcript && (
+                  <div style={{
+                    marginTop: 6,
+                    background: "rgba(0,0,0,0.4)",
+                    borderRadius: 6,
+                    padding: 8,
+                    fontSize: "0.76rem",
+                    color: "#94a3b8",
+                    maxHeight: 90,
+                    overflowY: "auto",
+                    fontFamily: "monospace"
+                  }}>
+                    <strong>Spoken Transcript Snippet:</strong> {deconstructedInfo.transcript.slice(0, 400)}...
+                  </div>
+                )}
+              </div>
+            )}
 
             <div>
               <label style={{ display: "block", fontWeight: 600, fontSize: "0.84rem", marginBottom: 4 }}>
@@ -1464,13 +1588,24 @@ export default function V2StudioPage() {
               <label style={{ display: "block", fontWeight: 600, fontSize: "0.84rem", marginBottom: 4 }}>
                 3C.8 Attached Reference Media URL &amp; External Link (Optional):
               </label>
-              <input
-                type="text"
-                value={manualReferenceUrl}
-                onChange={e => setManualReferenceUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=... or Shorts, Reels, TikTok, PDF, Slide Deck, or article link"
-                style={{ width: "100%", padding: 10, borderRadius: 6, border: "1px solid var(--line)", background: "var(--panel-alt)" }}
-              />
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  type="text"
+                  value={manualReferenceUrl}
+                  onChange={e => setManualReferenceUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=... or Shorts, Reels, TikTok, PDF, Slide Deck, or article link"
+                  style={{ flex: 1, padding: 10, borderRadius: 6, border: "1px solid var(--line)", background: "var(--panel-alt)" }}
+                />
+                <button
+                  type="button"
+                  className="btn secondary"
+                  disabled={deconstructingUrl || !manualReferenceUrl.trim()}
+                  onClick={handleDeconstructUrl}
+                  style={{ whiteSpace: "nowrap", fontSize: "0.82rem" }}
+                >
+                  {deconstructingUrl ? "Extracting..." : "🔍 Extract Facts"}
+                </button>
+              </div>
               <div className="muted" style={{ fontSize: "0.72rem", marginTop: 4 }}>
                 Attach any external video or document link so the AI factors in its pacing and facts along with your manual placeholders.
               </div>

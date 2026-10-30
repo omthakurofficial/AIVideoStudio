@@ -30,7 +30,7 @@ import soundfile as sf
 from packages.creator_engine.audio import find_kokoro_python, synthesize_narration, duck_and_mix
 from packages.creator_engine.music_composer import master_film_audio_bus
 from packages.creator_engine.renderer import render_html_to_mp4
-from packages.creator_engine.templates import TOP_10_NICHES, NICHE_BY_ID
+from packages.creator_engine.templates import TOP_10_NICHES, NICHE_BY_ID, synthesize_topic_scenes
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXPORTS_DIR = REPO_ROOT / "exports" / "v2_studio"
@@ -84,6 +84,8 @@ def build_live_v2_html_player(
     scenes: List[Dict[str, Any]],
     words_timings: List[Dict[str, Any]],
     audio_base64: str,
+    html_file_path: str = "",
+    master_wav_path: str = "",
 ) -> str:
     """Generate high-retention, niche-specialized HTML5 canvas animation with embedded audio and real kinetic motion."""
     niche = NICHE_BY_ID.get(niche_id, TOP_10_NICHES[0])
@@ -98,7 +100,7 @@ def build_live_v2_html_player(
     sec_col = colors["secondary"]
     hi_col = colors["highlight"]
 
-    # Format word timings into clean karaoke captions
+    # Format word timings into clean karaoke captions with preserved spacing
     clean_words = [w_item for w_item in words_timings if w_item.get("word", "").strip() not in [".", ",", "!", "?", ":", ";"]]
     captions: List[Dict[str, Any]] = []
     if clean_words:
@@ -201,7 +203,7 @@ canvas#stage {{
   display: flex;
   align-items: center;
   padding: 0 18px;
-  gap: 14px;
+  gap: 12px;
   z-index: 50;
 }}
 button.ctrl-btn {{
@@ -217,8 +219,24 @@ button.ctrl-btn {{
   align-items: center;
   gap: 6px;
   transition: transform 0.1s ease;
+  white-space: nowrap;
 }}
 button.ctrl-btn:hover {{ transform: scale(1.04); }}
+button.render-action-btn {{
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+  border: 0;
+  font-weight: 800;
+  padding: 8px 16px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}}
+button.render-action-btn:hover {{ opacity: 0.92; }}
 button.icon-btn {{
   background: #20202a;
   color: #fff;
@@ -228,6 +246,7 @@ button.icon-btn {{
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
+  white-space: nowrap;
 }}
 button.icon-btn:hover {{ background: #2a2a38; }}
 input.scrubber {{
@@ -267,6 +286,7 @@ input.scrubber {{
   <input type="range" class="scrubber" id="scrubber" min="0" max="{target_duration_s}" step="0.05" value="0">
   <div class="time-disp" id="timeDisp">00:00 / {f'{target_duration_s//60:02d}:{target_duration_s%60:02d}'}</div>
   <span class="badge-pill">{niche['badge']} · {aspect_ratio}</span>
+  <button class="render-action-btn" id="renderMp4Btn">⚡ Render Local MP4</button>
   <button class="icon-btn" id="fsBtn" title="Toggle Fullscreen">⛶ Fullscreen</button>
 </div>
 
@@ -274,6 +294,10 @@ input.scrubber {{
 
 <script>
 window.DURATION = {target_duration_s};
+window.HTML_FILE_PATH = "{html_file_path}";
+window.MASTER_WAV_PATH = "{master_wav_path}";
+window.ASPECT_RATIO = "{aspect_ratio}";
+
 const IS_VERT = {'true' if is_vert else 'false'};
 const W = {w};
 const H = {h};
@@ -293,6 +317,7 @@ const scrubber = document.getElementById('scrubber');
 const timeDisp = document.getElementById('timeDisp');
 const fsBtn = document.getElementById('fsBtn');
 const stageWrap = document.getElementById('stageWrap');
+const renderMp4Btn = document.getElementById('renderMp4Btn');
 
 let isPlaying = false;
 let animReq = null;
@@ -304,6 +329,24 @@ function ezOut(t) {{ t = clamp(t); return 1 - Math.pow(1 - t, 3); }}
 function ezIn(t) {{ t = clamp(t); return t * t * t; }}
 function ezBack(t, c = 1.70158) {{ t = clamp(t); return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2); }}
 
+function wrapLines(ctx, text, maxW) {{
+  const words = text.split(' ');
+  const lines = [];
+  let cur = words[0];
+  for (let i = 1; i < words.length; i++) {{
+    const w = words[i];
+    const testW = ctx.measureText(cur + ' ' + w).width;
+    if (testW <= maxW) {{
+      cur += ' ' + w;
+    }} else {{
+      lines.push(cur);
+      cur = w;
+    }}
+  }}
+  lines.push(cur);
+  return lines;
+}}
+
 // --------------------------------------------------------------------------
 // 10 UNIQUE NICHE BACKGROUND RENDERERS
 // --------------------------------------------------------------------------
@@ -312,19 +355,17 @@ function drawBackground(c, t) {{
   c.fillRect(0, 0, W, H);
 
   if (NICHE_ID === 'youtube_growth') {{
-    // High-tech red/yellow studio grid with animated laser streaks
     c.strokeStyle = 'rgba(255, 0, 0, 0.04)';
     c.lineWidth = 1;
     for (let x = 0; x < W; x += 70) {{ c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }}
     for (let y = 0; y < H; y += 70) {{ c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }}
-    // Red glowing pulse orb
     const g = c.createRadialGradient(W / 2, H * 0.45, 20, W / 2, H * 0.45, W * 0.6);
     g.addColorStop(0, 'rgba(255, 0, 0, 0.08)');
     g.addColorStop(1, 'rgba(0,0,0,0)');
     c.fillStyle = g; c.fillRect(0, 0, W, H);
   }}
-  else if (NICHE_ID === 'vox_explainer') {{
-    // Archival Paper Texture + Subtle Ruled Lines & Halftone Grain
+  else if (NICHE_ID === 'vox_explainer' || NICHE_ID === 'geopolitics_maps') {{
+    // Archival Paper / Map Texture + Subtle Ruled Lines & Halftone Grain
     c.fillStyle = 'rgba(245, 242, 235, 0.04)';
     c.fillRect(0, 0, W, H);
     c.strokeStyle = 'rgba(255, 214, 0, 0.045)';
@@ -334,12 +375,10 @@ function drawBackground(c, t) {{
     }}
   }}
   else if (NICHE_ID === 'finance_wealth') {{
-    // Bloomberg Terminal Dark Matrix + Moving Candlestick Chart Grid
     c.strokeStyle = 'rgba(0, 230, 118, 0.04)';
     c.lineWidth = 1;
     for (let x = 0; x < W; x += 80) {{ c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }}
     for (let y = 0; y < H; y += 60) {{ c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }}
-    // Candlesticks in background
     for (let i = 0; i < 14; i++) {{
       const cxPos = 60 + i * (W / 14);
       const isUp = (i + Math.floor(t * 1.5)) % 2 === 0;
@@ -347,22 +386,7 @@ function drawBackground(c, t) {{
       c.fillRect(cxPos, H * 0.42 + Math.sin(i + t) * 45, 12, 55);
     }}
   }}
-  else if (NICHE_ID === 'geopolitics_maps') {{
-    // Radar sweep pulse + satellite hex coordinates
-    c.save();
-    c.strokeStyle = 'rgba(56, 189, 248, 0.08)';
-    c.beginPath(); c.arc(W / 2, H * 0.48, Math.min(W, H) * 0.4, 0, Math.PI * 2); c.stroke();
-    c.beginPath(); c.arc(W / 2, H * 0.48, Math.min(W, H) * 0.24, 0, Math.PI * 2); c.stroke();
-    // Sweeping Radar Hand
-    const angle = (t * 1.8) % (Math.PI * 2);
-    c.strokeStyle = 'rgba(56, 189, 248, 0.22)'; c.lineWidth = 2.5;
-    c.beginPath(); c.moveTo(W / 2, H * 0.48);
-    c.lineTo(W / 2 + Math.cos(angle) * W * 0.42, H * 0.48 + Math.sin(angle) * H * 0.42);
-    c.stroke();
-    c.restore();
-  }}
   else if (NICHE_ID === 'podcast_avatar') {{
-    // Lo-Fi Studio Acoustic Foam Panels & Warm Studio Bokeh
     c.strokeStyle = 'rgba(236, 72, 153, 0.05)';
     c.lineWidth = 1.5;
     for (let x = 0; x < W; x += 90) {{
@@ -370,28 +394,23 @@ function drawBackground(c, t) {{
         c.strokeRect(x + 10, y + 10, 70, 70);
       }}
     }}
-    // 'ON AIR' subtle glow in corner
     c.fillStyle = 'rgba(239, 68, 68, 0.8)';
     c.font = '800 14px "Inter", sans-serif';
     c.fillText('● ON AIR STUDIO', W - 140, IS_VERT ? 240 : 45);
   }}
   else if (NICHE_ID === 'saas_tech_3d') {{
-    // Cyan Hex Grid & Matrix Terminal Streams
     c.strokeStyle = 'rgba(56, 189, 248, 0.05)';
     c.lineWidth = 1;
     for (let x = 0; x < W; x += 60) {{ c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }}
     for (let y = 0; y < H; y += 60) {{ c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }}
-    // Code glow
     c.fillStyle = 'rgba(56, 189, 248, 0.04)';
     c.font = '12px monospace';
     c.fillText('> deploy_cluster --scale=infinite --region=global', 40, IS_VERT ? 250 : 50);
   }}
   else if (NICHE_ID === 'mindset_motivation') {{
-    // Stark brutalist industrial grain & ECG Heartbeat Line
     c.strokeStyle = 'rgba(255, 255, 255, 0.04)';
     c.lineWidth = 1;
     for (let x = 0; x < W; x += 120) {{ c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }}
-    // Red heartbeat pulse across stage
     c.strokeStyle = 'rgba(239, 68, 68, 0.18)';
     c.lineWidth = 2;
     c.beginPath();
@@ -403,34 +422,7 @@ function drawBackground(c, t) {{
     }}
     c.stroke();
   }}
-  else if (NICHE_ID === 'true_crime') {{
-    // Cork investigation board texture + red yarn strings
-    c.fillStyle = '#0a0a0c';
-    c.fillRect(0, 0, W, H);
-    // Flashlight circular beam
-    const fX = W / 2 + Math.cos(t * 0.8) * 120;
-    const fY = H * 0.45 + Math.sin(t * 0.8) * 80;
-    const g = c.createRadialGradient(fX, fY, 30, fX, fY, 340);
-    g.addColorStop(0, 'rgba(255, 240, 200, 0.12)');
-    g.addColorStop(1, 'rgba(0,0,0,0)');
-    c.fillStyle = g; c.fillRect(0, 0, W, H);
-    // Red connecting yarn
-    c.strokeStyle = 'rgba(220, 38, 38, 0.25)'; c.lineWidth = 2;
-    c.beginPath(); c.moveTo(120, H * 0.3); c.lineTo(W - 120, H * 0.55); c.stroke();
-  }}
-  else if (NICHE_ID === 'science_tech') {{
-    // Deep Space Quantum Particle Field
-    c.fillStyle = '#030712';
-    c.fillRect(0, 0, W, H);
-    c.fillStyle = 'rgba(56, 189, 248, 0.35)';
-    for (let i = 0; i < 40; i++) {{
-      const px = (i * 137 + t * 15) % W;
-      const py = (i * 93 + Math.sin(t + i) * 20) % H;
-      c.beginPath(); c.arc(px, py, (i % 3) + 1, 0, Math.PI * 2); c.fill();
-    }}
-  }}
   else {{
-    // Luxury Editorial Velvet & Gold Ambient Glare
     const g = c.createRadialGradient(W / 2, H * 0.4, 40, W / 2, H * 0.4, Math.max(W, H) * 0.75);
     g.addColorStop(0, 'rgba(212, 175, 55, 0.07)');
     g.addColorStop(1, 'rgba(0,0,0,0)');
@@ -439,7 +431,7 @@ function drawBackground(c, t) {{
 }}
 
 // --------------------------------------------------------------------------
-// 10 UNIQUE KINETIC VISUAL SCENE CHOREOGRAPHIES
+// DYNAMIC KINETIC SCENE RENDERER (NO INTERNAL DEBUG LABELS)
 // --------------------------------------------------------------------------
 function drawKineticScene(c, t) {{
   let curScene = SCENES[0];
@@ -453,52 +445,96 @@ function drawKineticScene(c, t) {{
   c.scale(punchZoom, punchZoom);
   c.translate(-W / 2, -H / 2);
 
-  // 1. Scene Header Badge (Safe Margins Enforced)
-  const badgeY = IS_VERT ? 310 : 70;
+  // 1. Subtle Category Watermark (Strict Safe Zones Y: 300px - 1460px)
+  const headerY = IS_VERT ? 310 : 70;
   c.fillStyle = ACCENT;
-  c.fillRect(IS_VERT ? 80 : 70, badgeY, 10, 10);
+  c.fillRect(IS_VERT ? 80 : 70, headerY, 10, 10);
   c.font = '700 ' + (IS_VERT ? 22 : 18) + 'px "Inter", sans-serif';
   c.fillStyle = 'rgba(255, 255, 255, 0.55)';
   c.textAlign = 'left';
-  c.fillText('{niche["badge"]} · SCENE ' + String(curScene.scene_number).padStart(2, '0'), IS_VERT ? 102 : 92, badgeY + 9);
+  c.fillText('● BREAKING INVESTIGATION', IS_VERT ? 102 : 92, headerY + 9);
 
-  // 2. Kinetic Scene Headline
+  // 2. Multi-line Kinetic Headline (Zero Overflow Guarantee)
   const titleY = IS_VERT ? H * 0.38 : H * 0.34;
-  const animProgress = ezOut(sceneT / 0.4);
-  const titleScale = 1.45 - 0.45 * animProgress;
+  const animProgress = ezOut(sceneT / 0.45);
+  const titleScale = 1.35 - 0.35 * animProgress;
 
   c.save();
   c.translate(W / 2, titleY);
   c.scale(titleScale, titleScale);
 
-  c.font = '900 ' + (IS_VERT ? 68 : 76) + 'px "Anton", Impact, sans-serif';
+  const headline = (curScene.headline || curScene.title).toUpperCase();
+  const maxTextW = IS_VERT ? 820 : 960;
+  let fontPx = IS_VERT ? 68 : 72;
+  c.font = `900 ${{fontPx}}px "Anton", Impact, sans-serif`;
+
+  let lines = wrapLines(c, headline, maxTextW);
+  if (lines.length > 2) {{
+    fontPx = IS_VERT ? 54 : 58;
+    c.font = `900 ${{fontPx}}px "Anton", Impact, sans-serif`;
+    lines = wrapLines(c, headline, maxTextW);
+  }}
+
   c.textAlign = 'center';
   c.fillStyle = '#f4f1ea';
   c.shadowColor = 'rgba(0,0,0,0.85)';
   c.shadowBlur = 30;
 
-  const parts = curScene.title.split(': ');
-  const mainText = parts[1] ? parts[1].toUpperCase() : curScene.title.toUpperCase();
-  // Safe line wrapping for long titles
-  if (mainText.length > 28) {{
-    const words = mainText.split(' ');
-    const half = Math.ceil(words.length / 2);
-    const line1 = words.slice(0, half).join(' ');
-    const line2 = words.slice(half).join(' ');
-    c.fillText(line1, 0, -35);
-    c.fillText(line2, 0, 35);
-  }} else {{
-    c.fillText(mainText, 0, 0);
-  }}
+  const lineH = fontPx * 1.08;
+  const totalH = lines.length * lineH;
+  lines.forEach((ln, idx) => {{
+    const yOff = (idx * lineH) - (totalH / 2) + (lineH / 2);
+    c.fillText(ln, 0, yOff);
+  }});
   c.restore();
 
-  // 3. Niche Visual Props & Animated Action (Strict Safe Zone Y: 46% - 66%)
+  // 3. Dynamic Visual Props & Topic-Adaptive Graphics (Safe Zone Y: 48% - 66%)
   const propY = IS_VERT ? H * 0.53 : H * 0.54;
   c.save();
   c.translate(W / 2, propY);
 
-  if (NICHE_ID === 'youtube_growth') {{
-    // 3D YouTube Thumbnail Mockup Card + Spiking CTR Retention Curve
+  if (NICHE_ID === 'podcast_avatar') {{
+    // 2D/3D Animated Cartoon Avatar Character
+    const bounce = Math.sin(t * 8) * 6;
+    const isMouthOpen = Math.abs(Math.sin(t * 14)) > 0.45;
+    const isBlink = (Math.floor(t * 2.5) % 8) === 0;
+
+    // Head
+    c.fillStyle = '#ffcc80';
+    c.beginPath(); c.arc(0, -25 + bounce, 55, 0, Math.PI * 2); c.fill();
+    // Hair
+    c.fillStyle = '#263238';
+    c.beginPath(); c.arc(0, -55 + bounce, 55, Math.PI, Math.PI * 2); c.fill();
+
+    // Eyes
+    c.fillStyle = '#1e293b';
+    if (isBlink) {{
+      c.fillRect(-24, -30 + bounce, 16, 3);
+      c.fillRect(8, -30 + bounce, 16, 3);
+    }} else {{
+      c.beginPath(); c.arc(-16, -28 + bounce, 7, 0, Math.PI * 2); c.fill();
+      c.beginPath(); c.arc(16, -28 + bounce, 7, 0, Math.PI * 2); c.fill();
+    }}
+
+    // Mouth
+    c.fillStyle = '#b91c1c';
+    if (isMouthOpen) {{
+      c.beginPath(); c.ellipse(0, -4 + bounce, 12, 10, 0, 0, Math.PI * 2); c.fill();
+    }} else {{
+      c.fillRect(-10, -6 + bounce, 20, 4);
+    }}
+
+    // Body
+    c.fillStyle = '#6366f1';
+    c.beginPath(); c.roundRect(-60, 40 + bounce, 120, 60, [25, 25, 0, 0]); c.fill();
+
+    // Microphone
+    c.fillStyle = '#475569';
+    c.fillRect(45, -10 + bounce, 18, 50);
+    c.beginPath(); c.arc(54, -20 + bounce, 16, 0, Math.PI * 2); c.fill();
+  }}
+  else if (NICHE_ID === 'youtube_growth') {{
+    // 3D YouTube Thumbnail Mockup + Spiking Retention Curve
     const cardScale = ezBack(sceneT / 0.45);
     c.scale(cardScale, cardScale);
     c.fillStyle = '#18181f';
@@ -506,7 +542,6 @@ function drawKineticScene(c, t) {{
     c.lineWidth = 3;
     c.beginPath(); c.roundRect(-240, -75, 480, 150, 16); c.fill(); c.stroke();
 
-    // YouTube Red Play Button
     c.fillStyle = '#ff0000';
     c.beginPath(); c.roundRect(-210, -50, 80, 56, 12); c.fill();
     c.fillStyle = '#ffffff';
@@ -521,38 +556,15 @@ function drawKineticScene(c, t) {{
     c.fillStyle = '#ffd60a';
     c.fillText('+100K SUBSCRIBERS REVEAL', -110, 8);
 
-    // Spiking CTR curve
     c.strokeStyle = '#30d158'; c.lineWidth = 4;
     c.beginPath();
     c.moveTo(-110, 48);
     c.quadraticCurveTo(0, 55, 120, 25);
     c.stroke();
   }}
-  else if (NICHE_ID === 'vox_explainer') {{
-    // Archival Paper Cutout Card with White Border & Drop Shadow + Highlighter Wipe
-    const cardScale = ezBack(sceneT / 0.5);
-    c.scale(cardScale, cardScale);
-    c.fillStyle = '#ffffff';
-    c.shadowColor = 'rgba(0,0,0,0.6)'; c.shadowBlur = 25;
-    c.beginPath(); c.roundRect(-230, -65, 460, 130, 8); c.fill();
-
-    c.fillStyle = '#111111';
-    c.font = '700 24px "Inter", sans-serif';
-    c.textAlign = 'center';
-    c.fillText('VOX ARCHIVAL EVIDENCE #' + curScene.scene_number, 0, -14);
-
-    // Yellow fluorescent highlighter wipe over text
-    const hiProg = ezOut(clamp((sceneT - 0.35) / 0.6));
-    c.fillStyle = 'rgba(255, 214, 0, 0.78)';
-    c.fillRect(-190, 8, 380 * hiProg, 30);
-    c.fillStyle = '#000000';
-    c.font = '800 18px "Inter", sans-serif';
-    c.fillText(curScene.broll_layers || 'DECONSTRUCTING THE PHENOMENON', 0, 29);
-  }}
   else if (NICHE_ID === 'finance_wealth') {{
-    // Bloomberg Terminal Live Ticker & Golden Currency Lock
     const statVal = Math.round(ezOut(sceneT / 1.5) * 85);
-    c.font = '900 ' + (IS_VERT ? 100 : 90) + 'px "Anton", sans-serif';
+    c.font = '900 ' + (IS_VERT ? 96 : 88) + 'px "Anton", sans-serif';
     c.fillStyle = '#00e676';
     c.shadowColor = 'rgba(0, 230, 118, 0.55)'; c.shadowBlur = 35;
     c.textAlign = 'center';
@@ -562,187 +574,38 @@ function drawKineticScene(c, t) {{
     c.fillStyle = '#ffd700';
     c.fillText('Alpha Portfolio Benchmark Outperformance', 0, 48);
   }}
-  else if (NICHE_ID === 'geopolitics_maps') {{
-    // Satellite Radar Target Reticle & Missile Vector Arc
-    const rot = t * 0.9;
-    c.strokeStyle = '#38bdf8'; c.lineWidth = 3;
-    c.beginPath(); c.arc(0, 0, 75, 0, Math.PI * 2); c.stroke();
-    // Crosshairs
-    c.beginPath(); c.moveTo(-95, 0); c.lineTo(95, 0); c.stroke();
-    c.beginPath(); c.moveTo(0, -95); c.lineTo(0, 95); c.stroke();
-
-    c.fillStyle = 'rgba(239, 68, 68, 0.85)';
-    c.beginPath(); c.arc(Math.cos(rot) * 45, Math.sin(rot) * 45, 10, 0, Math.PI * 2); c.fill();
-
-    c.font = '800 20px "Space Grotesk", sans-serif';
-    c.fillStyle = '#38bdf8';
-    c.textAlign = 'center';
-    c.fillText('STRATEGIC CHOKEPOINT COORDINATE', 0, 110);
-  }}
-  else if (NICHE_ID === 'podcast_avatar') {{
-    // 2D/3D Animated Cartoon Avatar Character with Talking Mouth & Emotion
-    const bounce = Math.sin(t * 8) * 6;
-    const isMouthOpen = Math.abs(Math.sin(t * 14)) > 0.45;
-    const isBlink = (Math.floor(t * 2.5) % 8) === 0;
-
-    // Head
-    c.fillStyle = '#ffcc80';
-    c.beginPath(); c.arc(0, -25 + bounce, 55, 0, Math.PI * 2); c.fill();
-    // Stylized Hair
-    c.fillStyle = '#263238';
-    c.beginPath(); c.arc(0, -55 + bounce, 55, Math.PI, Math.PI * 2); c.fill();
-
-    // Eyes (Blinking)
-    c.fillStyle = '#1e293b';
-    if (isBlink) {{
-      c.fillRect(-24, -30 + bounce, 16, 3);
-      c.fillRect(8, -30 + bounce, 16, 3);
-    }} else {{
-      c.beginPath(); c.arc(-16, -28 + bounce, 7, 0, Math.PI * 2); c.fill();
-      c.beginPath(); c.arc(16, -28 + bounce, 7, 0, Math.PI * 2); c.fill();
-    }}
-
-    // Animated Talking Mouth
-    c.fillStyle = '#b91c1c';
-    if (isMouthOpen) {{
-      c.beginPath(); c.ellipse(0, -4 + bounce, 12, 10, 0, 0, Math.PI * 2); c.fill();
-    }} else {{
-      c.fillRect(-10, -6 + bounce, 20, 4);
-    }}
-
-    // Body / Hoodie
-    c.fillStyle = '#6366f1';
-    c.beginPath(); c.roundRect(-60, 40 + bounce, 120, 60, [25, 25, 0, 0]); c.fill();
-
-    // Studio Microphone
-    c.fillStyle = '#475569';
-    c.fillRect(45, -10 + bounce, 18, 50);
-    c.beginPath(); c.arc(54, -20 + bounce, 16, 0, Math.PI * 2); c.fill();
-
-    // Emotional Reaction Emoji
-    c.font = '36px sans-serif';
-    c.textAlign = 'center';
-    c.fillText(curScene.scene_number % 2 === 0 ? '🔥' : '💡', -70, -40 + bounce);
-  }}
-  else if (NICHE_ID === 'saas_tech_3d') {{
-    // Glassmorphic SaaS Window with Typing Terminal Code
-    const cardScale = ezBack(sceneT / 0.4);
-    c.scale(cardScale, cardScale);
-    c.fillStyle = 'rgba(10, 15, 30, 0.9)';
-    c.strokeStyle = '#38bdf8';
-    c.lineWidth = 2;
-    c.beginPath(); c.roundRect(-240, -70, 480, 140, 12); c.fill(); c.stroke();
-
-    // Window controls
-    c.fillStyle = '#ef4444'; c.beginPath(); c.arc(-215, -48, 6, 0, Math.PI * 2); c.fill();
-    c.fillStyle = '#f59e0b'; c.beginPath(); c.arc(-195, -48, 6, 0, Math.PI * 2); c.fill();
-    c.fillStyle = '#10b981'; c.beginPath(); c.arc(-175, -48, 6, 0, Math.PI * 2); c.fill();
-
-    c.textAlign = 'left';
-    c.font = '700 16px monospace';
-    c.fillStyle = '#38bdf8';
-    c.fillText('~/saas-engine $ git push origin production', -210, -15);
-    c.fillStyle = '#34d399';
-    c.fillText('✔ 100,000 Microservices Scaled [0.04ms]', -210, 15);
-    c.fillStyle = '#ffd60a';
-    c.fillText('✔ ARR Growth Rate: +320% Year-over-Year', -210, 42);
-  }}
-  else if (NICHE_ID === 'mindset_motivation') {{
-    // Heavy Brutalist Dynamic Strike-Through Stamp (Evolves per Scene)
-    const cardScale = ezBack(sceneT / 0.4);
-    c.scale(cardScale, cardScale);
-
-    const sceneStamps = [
-      ['THE 30-DAY WALL', '★ NO EXCUSES ACCEPTED ★'],
-      ['THE SILENT PLATEAU', '★ EMBRACE THE GRIND ★'],
-      ['THE BREAKTHROUGH', '★ PATTERN INTERRUPT ★'],
-      ['MASSIVE ACCELERATION', '★ 90% RETENTION ★'],
-      ['OBSOLETE HABITS', '★ REJECT THE NOISE ★'],
-      ['FINAL MASTERY', '★ CLAIM YOUR SUCCESS ★']
-    ];
-    const pair = sceneStamps[(curScene.scene_number - 1) % sceneStamps.length];
-
-    c.font = '900 ' + (IS_VERT ? 64 : 60) + 'px "Anton", sans-serif';
-    c.fillStyle = '#ffffff';
-    c.textAlign = 'center';
-    c.fillText(pair[0], 0, -10);
-
-    // Red Strike Line
-    c.strokeStyle = '#ef4444'; c.lineWidth = 8;
-    c.beginPath(); c.moveTo(-220, -25); c.lineTo(220, -25); c.stroke();
-
-    // Red Rubber Stamp Effect
-    c.save();
-    c.rotate(-0.08);
-    c.strokeStyle = '#ef4444';
-    c.lineWidth = 4;
-    c.strokeRect(-190, 10, 380, 48);
-    c.fillStyle = '#ef4444';
-    c.font = '800 22px "Inter", sans-serif';
-    c.fillText(pair[1], 0, 42);
-    c.restore();
-  }}
-  else if (NICHE_ID === 'true_crime') {{
-    // Crime Scene Polaroid Photo Pinned with Red Pushpin
-    const cardScale = ezBack(sceneT / 0.45);
-    c.scale(cardScale, cardScale);
-    c.fillStyle = '#f8fafc';
-    c.shadowColor = 'rgba(0,0,0,0.8)'; c.shadowBlur = 30;
-    c.beginPath(); c.roundRect(-160, -85, 320, 170, 4); c.fill();
-
-    c.fillStyle = '#0f172a';
-    c.fillRect(-145, -70, 290, 105);
-
-    c.fillStyle = '#dc2626';
-    c.beginPath(); c.arc(0, -85, 9, 0, Math.PI * 2); c.fill();
-
-    c.fillStyle = '#0f172a';
-    c.font = '800 18px "Inter", sans-serif';
-    c.textAlign = 'center';
-    c.fillText('EVIDENCE EXHIBIT #' + curScene.scene_number, 0, 65);
-  }}
-  else if (NICHE_ID === 'science_tech') {{
-    // 3D Atom Model with Orbiting Glowing Electrons
-    const atomRot = t * 1.6;
-    c.strokeStyle = '#38bdf8'; c.lineWidth = 2.5;
-    // Electron ring 1
-    c.save(); c.rotate(atomRot); c.scale(1, 0.4);
-    c.beginPath(); c.arc(0, 0, 90, 0, Math.PI * 2); c.stroke();
-    c.fillStyle = '#ffd60a'; c.beginPath(); c.arc(90, 0, 7, 0, Math.PI * 2); c.fill();
-    c.restore();
-    // Electron ring 2
-    c.save(); c.rotate(-atomRot * 1.3); c.scale(0.4, 1);
-    c.beginPath(); c.arc(0, 0, 90, 0, Math.PI * 2); c.stroke();
-    c.fillStyle = '#30d158'; c.beginPath(); c.arc(0, 90, 7, 0, Math.PI * 2); c.fill();
-    c.restore();
-    // Nucleus
-    c.fillStyle = '#f43f5e';
-    c.beginPath(); c.arc(0, 0, 18, 0, Math.PI * 2); c.fill();
-
-    c.font = '700 20px "Space Grotesk", sans-serif';
-    c.fillStyle = '#38bdf8';
-    c.textAlign = 'center';
-    c.fillText('QUANTUM ENTANGLEMENT THRESHOLD', 0, 115);
-  }}
   else {{
-    // Luxury Editorial Gold Crest Seal & Serif Typography
-    const pillScale = ezBack(sceneT / 0.45);
-    c.scale(pillScale, pillScale);
-    c.strokeStyle = '#d4af37';
-    c.lineWidth = 2.5;
-    c.beginPath(); c.arc(0, -20, 50, 0, Math.PI * 2); c.stroke();
-    c.font = '700 28px "Instrument Serif", serif';
-    c.fillStyle = '#d4af37';
-    c.textAlign = 'center';
-    c.fillText('✦ LVMH ✦', 0, -12);
+    // Permanent Magnet & High-Tech Geopolitical / Technical Indicator
+    c.fillStyle = '#ef4444';
+    c.beginPath(); c.roundRect(-160, -45, 150, 90, [12, 0, 0, 12]); c.fill();
+    c.fillStyle = '#3b82f6';
+    c.beginPath(); c.roundRect(10, -45, 150, 90, [0, 12, 12, 0]); c.fill();
 
-    c.font = 'italic 700 36px "Instrument Serif", serif';
     c.fillStyle = '#ffffff';
-    c.fillText(curScene.broll_layers || 'The Engineering of Absolute Scarcity', 0, 60);
+    c.font = '900 36px "Inter", sans-serif';
+    c.textAlign = 'center';
+    c.fillText('N', -85, 12);
+    c.fillText('S', 85, 12);
+
+    // Magnetic Flux Curves
+    c.strokeStyle = 'rgba(255, 214, 0, 0.4)';
+    c.lineWidth = 2;
+    c.beginPath(); c.arc(0, 0, 190, 0, Math.PI, true); c.stroke();
+    c.beginPath(); c.arc(0, 0, 190, 0, Math.PI, false); c.stroke();
+
+    // On-Screen Metric Badge
+    c.fillStyle = '#111116';
+    c.strokeStyle = ACCENT;
+    c.lineWidth = 2;
+    c.beginPath(); c.roundRect(-220, 68, 440, 52, 10); c.fill(); c.stroke();
+
+    c.font = '800 20px "Inter", sans-serif';
+    c.fillStyle = '#ffffff';
+    c.fillText(curScene.visual_badge || '⚡ REPM STRATEGIC BREAKTHROUGH', 0, 101);
   }}
   c.restore();
 
-  // 4. Word-by-Word Pop-in Karaoke Captions (Strict Safe Zones Y: 300px - 1460px)
+  // 4. Word-by-Word Pop-in Karaoke Captions (Safe Margin Y = 1440px in 9:16)
   drawKaraokeCaptions(c, t);
 
   c.restore();
@@ -765,7 +628,7 @@ function drawKaraokeCaptions(c, t) {{
   totalW += gap * (group.words.length - 1);
 
   // Background pill
-  const pillW = totalW + (IS_VERT ? 50 : 36);
+  const pillW = Math.min(W - 120, totalW + (IS_VERT ? 50 : 36));
   const pillH = fontSize + (IS_VERT ? 30 : 20);
   c.fillStyle = 'rgba(10, 10, 14, 0.94)';
   c.strokeStyle = 'rgba(255, 255, 255, 0.16)';
@@ -831,7 +694,6 @@ function loop(timestamp = performance.now()) {{
   const dt = (timestamp - lastTimestamp) / 1000;
   lastTimestamp = timestamp;
 
-  // Use audio position if available and advancing, else fallback clock
   let t = 0;
   if (audio && !audio.paused && !isNaN(audio.currentTime) && audio.currentTime > 0) {{
     t = audio.currentTime;
@@ -877,6 +739,46 @@ fsBtn.addEventListener('click', () => {{
   }}
 }});
 
+if (renderMp4Btn) {{
+  renderMp4Btn.addEventListener('click', async () => {{
+    renderMp4Btn.disabled = true;
+    renderMp4Btn.textContent = '⏳ Rendering MP4...';
+    try {{
+      const res = await fetch('/api/v2/templates/render-mp4', {{
+        method: 'POST',
+        headers: {{ 'Content-Type': 'application/json' }},
+        body: JSON.stringify({{
+          html_file: window.HTML_FILE_PATH,
+          master_wav: window.MASTER_WAV_PATH,
+          aspect_ratio: window.ASPECT_RATIO
+        }})
+      }});
+      const data = await res.json();
+      if (data.ok && data.mp4_file) {{
+        renderMp4Btn.textContent = '✅ Downloading...';
+        const a = document.createElement('a');
+        a.href = data.download_url || ('/api/v2/templates/download-video?path=' + encodeURIComponent(data.mp4_file));
+        a.download = data.filename || 'video.mp4';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => {{
+          renderMp4Btn.textContent = '⚡ Re-Render MP4';
+          renderMp4Btn.disabled = false;
+        }}, 3000);
+      }} else {{
+        alert('Rendering failed: ' + (data.detail || JSON.stringify(data)));
+        renderMp4Btn.textContent = '⚡ Render Local MP4';
+        renderMp4Btn.disabled = false;
+      }}
+    }} catch(e) {{
+      alert('Render request failed: ' + e);
+      renderMp4Btn.textContent = '⚡ Render Local MP4';
+      renderMp4Btn.disabled = false;
+    }}
+  }});
+}}
+
 // Initial render
 renderFrame(0);
 updateUI(0);
@@ -892,71 +794,42 @@ async def produce_v2_video(
     target_duration_s: int = 60,
     aspect_ratio: str = "9:16",
     voice_id: str = "kokoro:am_michael",
-    custom_instructions: Optional[str] = None
+    custom_instructions: Optional[str] = None,
+    reference_info: Optional[Dict[str, Any]] = None,
+    scenes: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
     """Complete End-to-End Producer: TTS Voiceover + Beat + Karaoke Captions + HTML Player + Local MP4 Render."""
+    # Auto-deconstruct URL if topic is a link
+    if not reference_info and ("http://" in topic or "https://" in topic):
+        from services.api.aivs.url_extractor import deconstruct_reference_media
+        reference_info = deconstruct_reference_media(topic)
+
+    # Adapt niche if URL extraction suggested another niche and user didn't customize
+    if reference_info and reference_info.get("suggested_niche") and niche_id == "youtube_growth":
+        niche_id = reference_info["suggested_niche"]
+
+    display_topic = reference_info.get("title") if (reference_info and reference_info.get("title")) else topic
     niche = NICHE_BY_ID.get(niche_id, TOP_10_NICHES[0])
-    safe_slug = re.sub(r"[^a-zA-Z0-9]+", "_", topic.lower())[:35].strip("_")
+    safe_slug = re.sub(r"[^a-zA-Z0-9]+", "_", display_topic.lower())[:35].strip("_")
     timestamp = int(time.time())
     proj_dir = EXPORTS_DIR / f"{safe_slug}_{timestamp}"
     proj_dir.mkdir(parents=True, exist_ok=True)
 
-    # 1. Pacing & Script Outline
     wpm = 150
-    target_words = int((target_duration_s / 60.0) * wpm)
     scene_count = max(4, min(30, int(math.ceil(target_duration_s / 10.0))))
-    dur_per_scene = target_duration_s / scene_count
 
-    scenes: List[Dict[str, Any]] = []
-    script_paragraphs: List[str] = []
+    # 1. Pacing & Script Outline
+    if not scenes:
+        scenes = synthesize_topic_scenes(
+            topic=display_topic,
+            niche=niche,
+            scene_count=scene_count,
+            target_duration_s=target_duration_s,
+            wpm=wpm,
+            reference_info=reference_info
+        )
 
-    archetype_roles = [
-        ("Hook & High-Stakes Intrigue", "SLAM, RED_STRIKE, SERIF_ACCENT"),
-        ("The Underlying Problem & Friction", "3D_MOCKUP, RED_BLOAT, SHAKE"),
-        ("The Paradigm Shift / Mechanism", "ISOMETRIC_FLOW, GREEN_GLOW, COUNTER"),
-        ("Real-World Proof & Data Benchmark", "ROLLING_STAT, SPEED_TIMER, CHECKMARKS"),
-        ("Flat Rejection of Obsolete Ways", "RUBBER_STAMP, DEPRECATED, FLASH"),
-        ("Final Breakthrough & Master Takeaway", "GOLDEN_CTA, 3_POINT_CHECKLIST, ORBIT")
-    ]
-
-    for i in range(scene_count):
-        role_idx = i % len(archetype_roles)
-        role_title, choreo = archetype_roles[role_idx]
-        st = round(i * dur_per_scene, 1)
-        en = round(min(target_duration_s, (i + 1) * dur_per_scene), 1)
-
-        # Generate contextual punchy narration line
-        if i == 0:
-            narr = f"Most creators fail before they ever start. They hit what top editors call the invisible wall."
-        elif i == 1:
-            narr = f"Every minute of video forces massive drop-off. You are losing eighty percent of viewers right at second three."
-        elif i == 2:
-            narr = f"The secret is rapid pattern interrupts. Instead of boring slides, deploy kinetic slams and high-energy motion."
-        elif i == 3:
-            narr = f"That simple shift locks ninety percent audience retention, skyrocketing your watch time across algorithms."
-        elif i == 4:
-            narr = f"Stop using outdated static templates. Upgrade your entire production suite to next-generation motion graphics."
-        else:
-            narr = f"Claim your breakthrough today. Package your story, hook your audience, and build the audience you deserve."
-
-        script_paragraphs.append(narr)
-        scenes.append({
-            "scene_number": i + 1,
-            "title": f"Scene {i+1:02d}: {role_title}",
-            "start_s": st,
-            "end_s": en,
-            "duration_s": round(en - st, 1),
-            "target_word_count": len(narr.split()),
-            "spoken_narration": narr,
-            "character_acting": "None" if niche_id != "podcast_avatar" else "[LAUGH] & fist pump",
-            "visual_choreography": choreo,
-            "broll_layers": niche["visual_elements"][i % len(niche["visual_elements"])],
-            "camera_move": "Punch zoom + screen shake" if i == 0 else "Slow continuous cinematic push",
-            "transition_out": "Whip Pan Right" if i % 2 == 0 else "RGB Glitch Cut",
-            "sound_effects": ["[SFX: slam]", "[SFX: boom]", "[SFX: shimmer]"][i % 3]
-        })
-
-    full_script = " ".join(script_paragraphs)
+    full_script = " ".join([s["spoken_narration"] for s in scenes])
 
     # 2. Synthesize Natural Speech Audio
     vocal_wav = proj_dir / "voiceover.wav"
@@ -986,22 +859,25 @@ async def produce_v2_video(
     audio_base64 = "data:audio/mp3;base64," + base64.b64encode(master_mp3.read_bytes()).decode("utf-8")
 
     # 4. Generate Interactive Standalone HTML Player
+    html_file = proj_dir / f"{safe_slug}_{aspect_ratio.replace(':', 'x')}_player.html"
     html_content = build_live_v2_html_player(
-        project_title=topic,
+        project_title=display_topic,
         niche_id=niche_id,
         target_duration_s=target_duration_s,
         aspect_ratio=aspect_ratio,
         scenes=scenes,
         words_timings=words_timings,
-        audio_base64=audio_base64
+        audio_base64=audio_base64,
+        html_file_path=str(html_file),
+        master_wav_path=str(master_wav),
     )
-    html_file = proj_dir / f"{safe_slug}_{aspect_ratio.replace(':', 'x')}_player.html"
     html_file.write_text(html_content, encoding="utf-8")
 
     return {
         "status": "success",
-        "project_title": topic,
+        "project_title": display_topic,
         "niche": niche,
+        "reference_info": reference_info,
         "target_duration_s": target_duration_s,
         "aspect_ratio": aspect_ratio,
         "voice_id": voice_id,

@@ -425,6 +425,20 @@ export const api = {
 
   // V2 Templates Studio API
   v2Niches: () => req<{ niches: V2NicheItem[]; voices: V2VoiceItem[]; models?: V2BedrockModelItem[]; max_duration_s: number }>("/api/v2/templates/niches"),
+  v2DeconstructUrl: (url: string) =>
+    req<{
+      is_url: boolean;
+      platform: string;
+      url: string;
+      title: string;
+      channel?: string;
+      duration_s?: number;
+      view_count?: number;
+      description?: string;
+      transcript?: string;
+      key_facts?: string[];
+      suggested_niche?: string;
+    }>("/api/v2/deconstruct-url", { method: "POST", body: JSON.stringify({ url }) }),
   v2GenerateTemplate: (body: {
     topic: string;
     niche_id: string;
@@ -435,6 +449,7 @@ export const api = {
     model_id?: string;
     synthesize_audio?: boolean;
     custom_instructions?: string;
+    reference_url?: string;
   }) => req<V2TemplateBlueprint>("/api/v2/templates/generate", { method: "POST", body: JSON.stringify(body) }),
   v2SynthesizePlayer: (body: {
     topic: string;
@@ -445,6 +460,7 @@ export const api = {
     voice_id?: string;
     model_id?: string;
     custom_instructions?: string;
+    reference_url?: string;
   }) => req<V2TemplateBlueprint>("/api/v2/templates/synthesize-player", { method: "POST", body: JSON.stringify(body) }),
   v2SavePreviewHtml: (html: string) => req<{ ok: boolean; url: string }>("/api/v2/templates/render-html-preview", { method: "POST", body: JSON.stringify({ html }) }),
   v2RenderMp4: (body: { html_file: string; master_wav: string; aspect_ratio: string }) =>

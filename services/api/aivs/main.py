@@ -51,9 +51,10 @@ class V2TemplateGenerateRequest(BaseModel):
     aspect_ratio: str = Field(default="9:16")
     mode: str = Field(default="master_auto")
     voice_id: str | None = Field(default="kokoro:am_michael")
-    model_id: str | None = Field(default="apac.anthropic.claude-3-5-sonnet-20241022-v2:0")
+    model_id: str | None = Field(default="au.anthropic.claude-sonnet-4-6")
     synthesize_audio: bool = Field(default=False)
     custom_instructions: str | None = None
+    reference_url: str | None = None
 
 
 DEFAULT_USER_SETTINGS = {
@@ -578,11 +579,26 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
             "max_duration_s": 600  # Up to 10 Minutes (600 seconds)
         }
 
+    @app.post("/api/v2/deconstruct-url")
+    def deconstruct_url(body: dict):
+        """Extract deep context, channel, description, and transcript from YouTube/web URL."""
+        from services.api.aivs.url_extractor import deconstruct_reference_media
+        url = body.get("url") or body.get("topic") or ""
+        return deconstruct_reference_media(url)
+
     @app.post("/api/v2/templates/generate")
     async def generate_v2_template(req: V2TemplateGenerateRequest):
         from packages.creator_engine.templates import TemplateGenerator
         from packages.creator_engine.v2_producer import produce_v2_video
         from services.api.aivs.pricing import calculate_call_cost
+        from services.api.aivs.url_extractor import deconstruct_reference_media, is_url
+
+        ref_input = req.reference_url or req.topic
+        ref_info = None
+        if is_url(ref_input) or req.mode == "url_reference_remix":
+            ref_info = deconstruct_reference_media(ref_input)
+            if ref_info.get("suggested_niche") and req.niche_id == "youtube_growth":
+                req.niche_id = ref_info["suggested_niche"]
 
         # 1. First generate template blueprint (Master Script & Choreography - Instant & Token Efficient)
         generator = TemplateGenerator()
@@ -593,7 +609,8 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
             aspect_ratio=req.aspect_ratio,
             mode=req.mode,
             voice_id=req.voice_id or "kokoro:am_michael",
-            custom_instructions=req.custom_instructions
+            custom_instructions=req.custom_instructions,
+            reference_info=ref_info
         )
 
         # Calculate exact Bedrock Token & Cost Telemetry
@@ -615,7 +632,9 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
                     target_duration_s=req.target_duration_s,
                     aspect_ratio=req.aspect_ratio,
                     voice_id=req.voice_id or "kokoro:am_michael",
-                    custom_instructions=req.custom_instructions
+                    custom_instructions=req.custom_instructions,
+                    reference_info=ref_info,
+                    scenes=blueprint.get("scenes")
                 )
                 blueprint["standalone_html_code"] = prod_res["html_code"]
                 blueprint["audio_base64"] = prod_res["audio_base64"]

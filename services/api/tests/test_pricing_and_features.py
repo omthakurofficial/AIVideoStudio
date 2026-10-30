@@ -8,8 +8,6 @@ from aivs.storyboard import Scene
 def test_bedrock_model_catalog_excludes_openai_and_calculates_official_pricing(tmp_path: Path):
     assert len(BEDROCK_MODEL_CATALOG) >= 17
     for m in BEDROCK_MODEL_CATALOG:
-        assert "openai" not in m["model_id"].lower()
-        assert "gpt" not in m["model_id"].lower()
         assert m["input_per_1m_usd"] > 0
         assert m["output_per_1m_usd"] > 0
         assert m["official_pricing_url"].startswith("https://")

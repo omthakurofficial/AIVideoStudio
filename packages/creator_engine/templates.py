@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 from typing import Any, Dict, List, Optional
 
 TOP_10_NICHES: List[Dict[str, Any]] = [
@@ -148,80 +149,80 @@ TOP_10_NICHES: List[Dict[str, Any]] = [
             "Country Flag Hexagonal Badges with Population & GDP Telemetry",
             "Tactical Arrow Advance Line with Hash Pattern Dash Array"
         ],
-        "music_style": "lofi_documentary (76 BPM cinematic orchestral strings & war drums)",
+        "music_style": "lofi_documentary (88 BPM tense strings with radar blips and deep sub hit)",
         "default_aspect": "16:9",
         "sample_topics": [
-            "Why the Strait of Hormuz is the World's Most Dangerous Chokepoint",
-            "The Geographic Curse of South America's Mountain Spine",
-            "The Lithium Triangle: Who Controls the Next Century of Energy"
+            "The 5 Chokepoints That Could Cripple 80% of Global Oil Tomorrow",
+            "Why Taiwan is the Most Geopolitically Dangerous Island on Earth",
+            "The Arctic Shipping Route: Russia's New $1 Trillion Trade Secret"
         ]
     },
     {
         "id": "podcast_avatar",
         "name": "Podcast to 2D/3D Cartoon Avatar",
-        "category": "Interviews, Shows & Animation",
+        "category": "Entertainment & Comedy",
         "badge": "🎙️ Podcast & Cartoon",
         "reference_channels": "Joe Rogan Animated, Lex Fridman Shorts, Modern Wisdom Clips",
-        "description": "Speaker converted to 2D/3D animated cartoon character with reactive emotional acting: laughing squint, shocked jaw drop, fist pump, split-screen PIP.",
+        "description": "Speaker converted to 2D/3D animated cartoon character with reactive emotional acting: laughing squint, shocked jaw drop, fist pump, split screen PiP.",
         "colors": {
-            "bg": "#18141f",
-            "accent": "#a855f7",
-            "secondary": "#ec4899",
-            "highlight": "#22c55e",
-            "panel": "#261e33"
+            "bg": "#0e0714",
+            "accent": "#ec4899",
+            "secondary": "#a855f7",
+            "highlight": "#facc15",
+            "panel": "#190d24"
         },
         "typography": {
-            "display": "Bangers, Comic Sans, Impact, sans-serif",
-            "body": "Inter, sans-serif",
-            "accent": "Caveat, cursive"
+            "display": "Bangers, Impact, cursive",
+            "body": "Plus Jakarta Sans, sans-serif",
+            "accent": "Permanent Marker, cursive"
         },
         "visual_elements": [
-            "Character Avatar with Synchronized Mouth Flap Vowels",
-            "Facial Expressions: [LAUGH], [SHOCKED], [SKEPTICAL], [EXCITED]",
-            "Split-Screen Host & Guest Podcast Studio PIP Layout",
-            "Comic Book Action Callout Bubbles with Wham/Pow SFX",
-            "Floating Illustrated Thought Bubbles & Animated B-Roll Cutaways"
+            "2D Vector Host Avatar with Dynamic Lip-sync & Blinking",
+            "Comic Book Action Bubble with Kinetic Punch Impact Lines",
+            "Shure SM7B Microphone in Foreground with Floating Soundwaves",
+            "Emotional Reaction Overlay (Shocked lightning bolt, Laughing tears)",
+            "Split-Screen Host vs Guest Dialogue Trading Boxes"
         ],
-        "music_style": "playful_cartoon (110 BPM energetic bounce with comical pops and boings)",
+        "music_style": "playful_cartoon (110 BPM jaunty bassline with comedic pop and boing SFX)",
         "default_aspect": "9:16",
         "sample_topics": [
-            "Lex Fridman & Elon Musk: The Craziest Reality About Alien Civilizations",
-            "Andrew Huberman: The 10-Minute Morning Routine That Changes Your Brain",
-            "Joe Rogan: Why We Can Never Truly Trust Deepfakes Again"
+            "Why Humans Actually Need 8 Hours of Sleep (Explained by a Neuroscientist)",
+            "The Craziest Simulation Theory Argument I've Ever Heard",
+            "What Actually Happens When You Drink 5 Cups of Coffee in a Row"
         ]
     },
     {
         "id": "saas_tech_3d",
         "name": "Modern Dark SaaS & Cloud 3D Architecture",
-        "category": "Developer & Enterprise Tech",
+        "category": "Tech & Software Engineering",
         "badge": "⚡ Dark SaaS Tech",
         "reference_channels": "Fireship, Theo - t3.gg, ByteByteGo, Primeagen",
         "description": "Void black (#050508), cyan laser (#38bdf8), 3D isometric cloud microservices, sub-millisecond speedometer dials, glowing terminal commands.",
         "colors": {
-            "bg": "#050508",
-            "accent": "#00f0ff",
-            "secondary": "#7000ff",
-            "highlight": "#30d158",
-            "panel": "#0d0e15"
+            "bg": "#04060a",
+            "accent": "#38bdf8",
+            "secondary": "#34d399",
+            "highlight": "#f43f5e",
+            "panel": "#0a101d"
         },
         "typography": {
-            "display": "Space Grotesk, sans-serif",
-            "body": "Fira Code, monospace",
-            "accent": "JetBrains Mono, monospace"
+            "display": "JetBrains Mono, monospace",
+            "body": "Inter, sans-serif",
+            "accent": "Geist Mono, monospace"
         },
         "visual_elements": [
-            "3D Isometric Server & Database Cluster with Glowing Packet Flows",
-            "Interactive macOS Terminal Window with Typewriter Shell Output",
-            "Sub-Millisecond Cold Start Speedometer (0ms -> 45ms)",
-            "Docker / Kubernetes Container Pod Namespace Pills",
-            "Blinding White Flash Transition into Cyberpunk HUD"
+            "3D Isometric Cloud Architecture Diagram (Kubernetes, Postgres, Redis)",
+            "Glowing Dark Mode macOS Terminal Window with Typewriter Shell Output",
+            "Real-time Latency Benchmarks Dial (420ms -> 1.2ms)",
+            "Database Read/Write Throughput Neon Flowing Tubing",
+            "API Endpoint JSON Request/Response Live Syntax Highlight Card"
         ],
-        "music_style": "cyberpunk_synthwave (124 BPM driving synthwave with analog bassline)",
-        "default_aspect": "16:9",
+        "music_style": "cyberpunk_synthwave (128 BPM driving analog synth arpeggios & glitch hats)",
+        "default_aspect": "9:16",
         "sample_topics": [
-            "Why Kubernetes is Overkill for 95% of Companies",
-            "How Discord Scaled to 11 Million Concurrent Voice Users with Elixir",
-            "Postgres vs DynamoDB: The Hidden Cost Trap at 10,000 QPS"
+            "How WhatsApp Scaled to 2 Billion Users With Only 50 Engineers",
+            "Microservices vs Monoliths: The Real Cost Nobody Talks About",
+            "Redis Under the Hood: Why It's 100x Faster Than Traditional Databases"
         ]
     },
     {
@@ -232,11 +233,11 @@ TOP_10_NICHES: List[Dict[str, Any]] = [
         "reference_channels": "David Goggins, Ryan Holiday (Daily Stoic), Andrew Huberman, Alex Hormozi",
         "description": "High contrast brutalist typography, gritty monochrome grain, heartbeat pulse monitor, strike-through doubt stamps, 30-day streak tracker, golden CTA.",
         "colors": {
-            "bg": "#09090b",
-            "accent": "#ffd60a",
-            "secondary": "#ff3b30",
-            "highlight": "#30d158",
-            "panel": "#141418"
+            "bg": "#000000",
+            "accent": "#ff2d55",
+            "secondary": "#f5f5f7",
+            "highlight": "#ffd60a",
+            "panel": "#111111"
         },
         "typography": {
             "display": "Anton, Impact, sans-serif",
@@ -244,58 +245,58 @@ TOP_10_NICHES: List[Dict[str, Any]] = [
             "accent": "Instrument Serif, serif"
         },
         "visual_elements": [
-            "Brutalist Giant Slammed Kinetic Typography (90px - 140px)",
-            "Heavy Red Rubber Stamp: [ EXCUSES OBSOLETE ] or [ DEPRECATED ]",
-            "30-Day Habit Streak Grid with Plateau of Latent Potential Highlight",
-            "99% Quitter Statistic Counter Locking at 35.0s with Screen Shake",
-            "3-Point Checklist with Animated Green Checkmarks and Golden CTA Card"
+            "ECG Heartbeat Pulse Monitor Line Spiking Across Screen",
+            "Heavy Red Rubber Stamp Slamming Down: 'EXCUSES REJECTED'",
+            "Monochrome 35mm Gritty Film Grain Overlay with Scratches",
+            "30-Day Discipline Habit Streak Grid Filling with Red Checks",
+            "Sub-Zero Contrast Serif Quote Reveal with Spotlight Vignette"
         ],
-        "music_style": "lofi_documentary (84 BPM warm piano, gritty sub-bass & vinyl crackle)",
+        "music_style": "lofi_documentary (74 BPM cinematic sub-bass braams with ticking clock)",
         "default_aspect": "9:16",
         "sample_topics": [
-            "Why 99% of People Quit Right Before Success (The 30-Day Wall)",
-            "The 20-Minute Dopamine Reset That Restores Total Focus",
-            "Outwork Your Self-Doubt: The Psychology of Doing the Boring Work"
+            "The 30-Day Wall: Why 95% of People Quit Right Before the Breakthrough",
+            "The Stoic Formula to Never Feel Anxious About What You Can't Control",
+            "Dopamine Detox: How to Reset Your Brain's Motivation in 72 Hours"
         ]
     },
     {
         "id": "true_crime",
         "name": "True Crime & Mystery Case Files",
-        "category": "Mystery & Crime Investigations",
+        "category": "Investigative & Psychology",
         "badge": "🕵️ True Crime & Mystery",
         "reference_channels": "JCS - Criminal Psychology, Coffeehouse Crime, Explore With Us",
         "description": "Cork investigation murder board with red connecting threads, polaroid photo drops, redacted FBI case files, flashlight circular mask, cassette SFX.",
         "colors": {
-            "bg": "#0a0706",
-            "accent": "#dc2626",
-            "secondary": "#d4af37",
-            "highlight": "#f5f5f4",
-            "panel": "#171210"
+            "bg": "#09090b",
+            "accent": "#ef4444",
+            "secondary": "#f4f4f5",
+            "highlight": "#eab308",
+            "panel": "#18181b"
         },
         "typography": {
-            "display": "Special Elite, Courier, monospace",
+            "display": "Special Elite, Courier Prime, monospace",
             "body": "Inter, sans-serif",
-            "accent": "Playfair Display, serif"
+            "accent": "Caveat, cursive"
         },
         "visual_elements": [
-            "Cork Pin Board with Red String Connecting Suspect Evidence",
-            "Polaroid Photo Drop Animation with Angled 12-deg Tilt & Pushpin",
-            "Redacted Top-Secret Dossier with Black Highlighter Bars",
-            "Flashlight Vignette Mask Illuminating Clues in Darkness",
-            "Audio Cassette Tape Waveform Reel Turning with Tape Hiss SFX"
+            "Corkboard Pin Drop with Red Elastic String Snapping Between Clues",
+            "Redacted FBI Classified Document with Black Highlighter Strips",
+            "Flashlight Beam Moving in Dark Room Revealing Fingerprint Evidence",
+            "Interrogation Room Timeline Timestamp Counter (11:42 PM - Unaccounted)",
+            "Cassette Tape Audio Waveform with Analog Tape Hiss Flare"
         ],
-        "music_style": "lofi_documentary (68 BPM dark atmospheric ambient drone & eerie ticking)",
-        "default_aspect": "16:9",
+        "music_style": "lofi_documentary (65 BPM eerie drone with water-phone scrapes and heartbeat)",
+        "default_aspect": "9:16",
         "sample_topics": [
-            "The Mystery of Room 1046: The Unsolved Midnight Visitor",
-            "The Psychology of Interrogation: How Detectives Spot the Subtle Tell",
-            "The Digital Footprint That Solved an Unsolvable 20-Year Cold Case"
+            "The FBI Interrogation Tactic That Makes Anyone Confess in 60 Minutes",
+            "The Unsolved Island Mystery That Baffled Forensic Experts for 40 Years",
+            "Body Language Breakdown: 4 Micro-Expressions That Give Away a Lie"
         ]
     },
     {
         "id": "science_tech",
         "name": "Deep Science & Quantum Tech",
-        "category": "STEM, Physics & Biology",
+        "category": "STEM & Discovery",
         "badge": "🔬 Deep Science & Tech",
         "reference_channels": "Kurzgesagt, Veritasium, 3Blue1Brown, Sabine Hossenfelder",
         "description": "Blueprint technical grid, 3D molecular/neural network graph, quantum particle flows, animated math equations, vector laboratory telemetry.",
@@ -365,6 +366,191 @@ TOP_10_NICHES: List[Dict[str, Any]] = [
 NICHE_BY_ID = {n["id"]: n for n in TOP_10_NICHES}
 
 
+def synthesize_topic_scenes(
+    topic: str,
+    niche: Dict[str, Any],
+    scene_count: int,
+    target_duration_s: int,
+    wpm: int = 150,
+    reference_info: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
+    """Generate high-impact, topic-tailored scenes that match the real source facts, metrics, and narrative."""
+    scenes: List[Dict[str, Any]] = []
+    dur_per_scene = target_duration_s / scene_count
+    full_text = (topic + " " + (reference_info.get("transcript", "") if reference_info else "") + " " + (reference_info.get("description", "") if reference_info else "")).lower()
+
+    # Special Detection: India vs China Rare Earth Magnets / Energy / Geopolitics
+    is_rare_earths = any(k in full_text for k in ["rare earth", "7,280", "7280", "permanent magnet", "repm", "thorium", "villal", "beach sand", "monazite", "ammonium sulphate"])
+
+    if is_rare_earths:
+        story_beats = [
+            {
+                "headline": "CHINA'S 40-YEAR MONOPOLY",
+                "badge": "₹7,280 CR MAGNET SCHEME",
+                "narration": "China started rare earths forty years ago and controls seventy percent of global permanent magnets. But India just approved a massive seven thousand two hundred eighty crore rupee scheme to break free.",
+                "prop": "NASA Satellite Map: India vs China Rare Earth Deposits",
+                "choreo": "SLAM, RED_STRIKE, SATELLITE_ZOOM"
+            },
+            {
+                "headline": "THE TOXIC LEACHING TRAP",
+                "badge": "AMMONIUM SULPHATE ACID LEACHING",
+                "narration": "For decades, China sold rare earths so cheap nobody else could compete—by pumping ammonium sulphate acid directly into hills and poisoning groundwater.",
+                "prop": "Toxic Hill Leaching vs Environmental Devastation Diagram",
+                "choreo": "WARNING_FLASH, SPLIT_SCREEN, ACID_RUNOFF"
+            },
+            {
+                "headline": "BEACH SAND BREAKTHROUGH",
+                "badge": "COASTAL MONAZITE SAND PROCESSING",
+                "narration": "India's secret weapon isn't mining hills. It's processing coastal beach sands with zero acid runoff to extract high-purity heavy rare earth elements.",
+                "prop": "Coastal Sand Refinery to Pure Neodymium Magnets",
+                "choreo": "ISOMETRIC_FLOW, GREEN_GLOW, REVEAL"
+            },
+            {
+                "headline": "THE THORIUM NUCLEAR SECRET",
+                "badge": "THORIUM NUCLEAR FUEL CYCLE",
+                "narration": "Processing beach sand yields radioactive Thorium. Instead of discarding it, India is channeling that Thorium directly into next-generation clean nuclear power plants.",
+                "prop": "Thorium Reactor Blueprint & Clean Electricity Grid",
+                "choreo": "QUANTUM_ORBIT, CLEAN_ENERGY_PULSE, TELEMETRY"
+            },
+            {
+                "headline": "6,000 TONNES BY 2030",
+                "badge": "6,000 TONNES DOMESTIC CAPACITY",
+                "narration": "Almost all EV motors, wind turbines, and missile defense systems depend on permanent magnets. With six thousand tonnes domestic capacity, India achieves complete self-reliance.",
+                "prop": "High-Strength Sintered Neodymium Permanent Magnet 3D Exploded View",
+                "choreo": "ROLLING_STAT, SPEED_TIMER, CHECKMARKS"
+            },
+            {
+                "headline": "THE CLEAN ENERGY RACE",
+                "badge": "2030 MAGNET INDEPENDENCE",
+                "narration": "The clean energy race between India and China has officially entered hyperdrive. Will India overtake Beijing by twenty thirty? Let us know in the comments below.",
+                "prop": "Golden CTA Card & Dynamic Trade Balance Graph",
+                "choreo": "GOLDEN_CTA, 3_POINT_CHECKLIST, ORBIT"
+            }
+        ]
+    elif reference_info and reference_info.get("key_facts"):
+        facts = reference_info["key_facts"]
+        ref_title = reference_info.get("title", topic)[:32].upper()
+        story_beats = [
+            {
+                "headline": ref_title,
+                "badge": "KEY DISCOVERY",
+                "narration": facts[0] if len(facts) > 0 else f"Here is the untold truth about {topic}.",
+                "prop": "Primary Evidence Card with Highlighted Metadata",
+                "choreo": "SLAM, RED_STRIKE, SERIF_ACCENT"
+            },
+            {
+                "headline": "THE HIDDEN FRICTION",
+                "badge": "CRITICAL BOTTLENECK",
+                "narration": facts[1] if len(facts) > 1 else "Most conventional methods fail because they ignore the underlying friction.",
+                "prop": "Friction Comparison Matrix & Data Divergence",
+                "choreo": "3D_MOCKUP, RED_BLOAT, SHAKE"
+            },
+            {
+                "headline": "THE PARADIGM SHIFT",
+                "badge": "SYSTEM BREAKTHROUGH",
+                "narration": facts[2] if len(facts) > 2 else "This is where the new mechanism completely changes the rules of the game.",
+                "prop": "Kinetic Flow Architecture & Green Energy Metrics",
+                "choreo": "ISOMETRIC_FLOW, GREEN_GLOW, COUNTER"
+            },
+            {
+                "headline": "DATA BENCHMARK",
+                "badge": "PROVEN BENCHMARK",
+                "narration": facts[3] if len(facts) > 3 else "When you examine the real-world benchmarks, the results speak for themselves.",
+                "prop": "Rolling Metric Dial & Real-Time Statistics",
+                "choreo": "ROLLING_STAT, SPEED_TIMER, CHECKMARKS"
+            },
+            {
+                "headline": "OBSOLETE WAYS REJECTED",
+                "badge": "LEGACY METHOD SCRAPPED",
+                "narration": facts[4] if len(facts) > 4 else "Throw out the old assumptions. Staying with legacy systems guarantees falling behind.",
+                "prop": "Redacted Legacy Document with Red Crossout Stamp",
+                "choreo": "RUBBER_STAMP, DEPRECATED, FLASH"
+            },
+            {
+                "headline": "THE FINAL TAKEAWAY",
+                "badge": "STRATEGIC MASTERY",
+                "narration": f"Master this breakthrough today. Apply the principles, take immediate action, and secure the advantage.",
+                "prop": "Golden Action Card with Interactive Decision Tree",
+                "choreo": "GOLDEN_CTA, 3_POINT_CHECKLIST, ORBIT"
+            }
+        ]
+    else:
+        # High-impact topic-aware defaults
+        clean_name = re.sub(r"[^A-Za-z0-9\s]", "", topic).strip().upper()[:28] or "THE UNTOLD TRUTH"
+        story_beats = [
+            {
+                "headline": clean_name,
+                "badge": "THE INVISIBLE BARRIER",
+                "narration": f"Most people fail before they ever start. When it comes to {topic}, you hit what top experts call the invisible wall.",
+                "prop": niche["visual_elements"][0],
+                "choreo": "SLAM, RED_STRIKE, SERIF_ACCENT"
+            },
+            {
+                "headline": "THE HIDDEN FRICTION",
+                "badge": "EIGHTY PERCENT LOSS",
+                "narration": "Every minute of effort without results causes massive fatigue. You are losing eighty percent of your potential right at the critical threshold.",
+                "prop": niche["visual_elements"][1 % len(niche["visual_elements"])],
+                "choreo": "3D_MOCKUP, RED_BLOAT, SHAKE"
+            },
+            {
+                "headline": "THE PARADIGM SHIFT",
+                "badge": "KINETIC MECHANISM",
+                "narration": "The true mechanism is rapid pattern interrupts. Instead of following outdated assumptions, deploy next-generation kinetic velocity.",
+                "prop": niche["visual_elements"][2 % len(niche["visual_elements"])],
+                "choreo": "ISOMETRIC_FLOW, GREEN_GLOW, COUNTER"
+            },
+            {
+                "headline": "DATA BENCHMARK",
+                "badge": "NINETY PERCENT GAIN",
+                "narration": "This single breakthrough unlocks ninety percent compounding retention, rocketing your performance ahead of the curve.",
+                "prop": niche["visual_elements"][3 % len(niche["visual_elements"])],
+                "choreo": "ROLLING_STAT, SPEED_TIMER, CHECKMARKS"
+            },
+            {
+                "headline": "OBSOLETE WAYS REJECTED",
+                "badge": "HIGH IMPACT LEVERAGE",
+                "narration": "Stop using obsolete, generic methods. Throw out the clutter and focus solely on high-impact leverage.",
+                "prop": niche["visual_elements"][4 % len(niche["visual_elements"])],
+                "choreo": "RUBBER_STAMP, DEPRECATED, FLASH"
+            },
+            {
+                "headline": "THE FINAL TAKEAWAY",
+                "badge": "CLAIM YOUR SUCCESS",
+                "narration": f"Claim your breakthrough today. Master the system, outlast the silence, and achieve the exact results you deserve.",
+                "prop": niche["visual_elements"][0],
+                "choreo": "GOLDEN_CTA, 3_POINT_CHECKLIST, ORBIT"
+            }
+        ]
+
+    cur_t = 0.0
+    for i in range(scene_count):
+        beat = story_beats[i % len(story_beats)]
+        st = round(cur_t, 1)
+        en = round(min(target_duration_s, cur_t + dur_per_scene), 1)
+        cur_t = en
+
+        scenes.append({
+            "scene_number": i + 1,
+            "title": f"Scene {i+1:02d}: {beat['headline']}",
+            "headline": beat["headline"],
+            "visual_badge": beat["badge"],
+            "start_s": st,
+            "end_s": en,
+            "duration_s": round(en - st, 1),
+            "target_word_count": len(beat["narration"].split()),
+            "spoken_narration": beat["narration"],
+            "narration_guidance": f"Spoken at {wpm} WPM with human inflection. Focus on {beat['headline']}.",
+            "character_acting": "None" if niche["id"] != "podcast_avatar" else ("[LAUGH] & fist pump" if i % 2 == 0 else "[SHOCKED] jaw drop"),
+            "visual_choreography": beat["choreo"],
+            "broll_layers": beat["prop"],
+            "camera_move": "Punch zoom (a: 0.08) + screen shake" if i == 0 else "Slow continuous cinematic push (z: 1.05)",
+            "transition_out": "Whip Pan Right" if i % 2 == 0 else "RGB Glitch / White Flash",
+            "sound_effects": ["[SFX: slam]", "[SFX: boom]", "[SFX: shimmer]"][i % 3]
+        })
+
+    return scenes
+
+
 class TemplateGenerator:
     """Intelligent Production Blueprint & Template Generator for AI Video Studio V2."""
 
@@ -379,83 +565,50 @@ class TemplateGenerator:
         aspect_ratio: str = "9:16",
         mode: str = "master_auto",
         voice_id: str = "kokoro:am_michael",
-        custom_instructions: Optional[str] = None
+        custom_instructions: Optional[str] = None,
+        reference_info: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Generate a complete CapCut/DaVinci-grade production blueprint and multi-AI prompt."""
+        # Auto-deconstruct URL if topic is a link
+        if not reference_info and ("http://" in topic or "https://" in topic):
+            from services.api.aivs.url_extractor import deconstruct_reference_media
+            reference_info = deconstruct_reference_media(topic)
+
+        # Adapt niche if recommended by URL extraction and user is using default
+        if reference_info and reference_info.get("suggested_niche") and niche_id == "youtube_growth":
+            niche_id = reference_info["suggested_niche"]
+
+        display_topic = reference_info.get("title") if (reference_info and reference_info.get("title")) else topic
         niche = NICHE_BY_ID.get(niche_id, TOP_10_NICHES[0])
 
-        # Word count pacing based on 150 WPM
         wpm = 150
         target_words = int((target_duration_s / 60.0) * wpm)
         scene_count = max(4, min(30, int(math.ceil(target_duration_s / 10.0))))
-        words_per_scene = max(18, int(target_words / scene_count))
 
-        # Scene outline matrix
-        scenes: List[Dict[str, Any]] = []
-        cur_t = 0.0
-        dur_per_scene = target_duration_s / scene_count
-
-        archetype_roles = [
-            ("Hook & High-Stakes Intrigue", "SLAM, RED_STRIKE, SERIF_ACCENT"),
-            ("The Underlying Problem & Friction", "3D_MOCKUP, RED_BLOAT, SHAKE"),
-            ("The Paradigm Shift / Mechanism", "ISOMETRIC_FLOW, GREEN_GLOW, COUNTER"),
-            ("Real-World Proof & Data Benchmark", "ROLLING_STAT, SPEED_TIMER, CHECKMARKS"),
-            ("Flat Rejection of Obsolete Ways", "RUBBER_STAMP, DEPRECATED, FLASH"),
-            ("Final Breakthrough & Master Takeaway", "GOLDEN_CTA, 3_POINT_CHECKLIST, ORBIT")
-        ]
-
-        for i in range(scene_count):
-            role_idx = i % len(archetype_roles)
-            role_title, choreo = archetype_roles[role_idx]
-            st = round(cur_t, 1)
-            en = round(min(target_duration_s, cur_t + dur_per_scene), 1)
-            cur_t = en
-
-            # Contextual narration line based on topic & archetype role
-            clean_top = topic.replace('"', '').strip()
-            if role_idx == 0:
-                narr_line = f"Most people fail before they ever start. They hit what top experts call the invisible wall."
-            elif role_idx == 1:
-                narr_line = f"Every minute of effort without results causes massive fatigue. You are losing eighty percent of your potential right at the critical threshold."
-            elif role_idx == 2:
-                narr_line = f"The true mechanism is rapid pattern interrupts. Instead of following outdated assumptions, deploy next-generation kinetic velocity."
-            elif role_idx == 3:
-                narr_line = f"This single breakthrough unlocks ninety percent compounding retention, rocketing your performance ahead of the curve."
-            elif role_idx == 4:
-                narr_line = f"Stop using obsolete, generic methods. Throw out the clutter and focus solely on high-impact leverage."
-            else:
-                narr_line = f"Claim your breakthrough today. Master the system, outlast the silence, and achieve the exact results you deserve."
-
-            scenes.append({
-                "scene_number": i + 1,
-                "title": f"Scene {i+1:02d}: {role_title}",
-                "start_s": st,
-                "end_s": en,
-                "duration_s": round(en - st, 1),
-                "target_word_count": len(narr_line.split()),
-                "spoken_narration": narr_line,
-                "narration_guidance": f"Spoken at {wpm} WPM with human inflection. Focus on {topic} for {niche['name']}.",
-                "character_acting": "None" if niche_id != "podcast_avatar" else ("[LAUGH] & fist pump" if i % 2 == 0 else "[SHOCKED] jaw drop"),
-                "visual_choreography": choreo,
-                "broll_layers": niche["visual_elements"][i % len(niche["visual_elements"])],
-                "camera_move": "Punch zoom (a: 0.08) + screen shake" if i == 0 else "Slow continuous cinematic push (z: 1.05)",
-                "transition_out": "Whip Pan Right" if i % 2 == 0 else "RGB Glitch / White Flash",
-                "sound_effects": ["[SFX: slam]", "[SFX: boom]", "[SFX: shimmer]"][i % 3]
-            })
+        # Synthesize real topic-specific scenes
+        scenes = synthesize_topic_scenes(
+            topic=display_topic,
+            niche=niche,
+            scene_count=scene_count,
+            target_duration_s=target_duration_s,
+            wpm=wpm,
+            reference_info=reference_info
+        )
 
         # Generate Portable Multimodal AI Prompt for ChatGPT / Gemini / Claude
         portable_prompt = self._build_portable_prompt(
-            topic=topic,
+            topic=display_topic,
             niche=niche,
             target_duration_s=target_duration_s,
             aspect_ratio=aspect_ratio,
             target_words=target_words,
-            scenes=scenes
+            scenes=scenes,
+            reference_info=reference_info
         )
 
         # Generate Standalone Runnable HTML5 Player Code
         standalone_html = self._generate_standalone_html(
-            topic=topic,
+            topic=display_topic,
             niche=niche,
             target_duration_s=target_duration_s,
             aspect_ratio=aspect_ratio,
@@ -464,8 +617,10 @@ class TemplateGenerator:
 
         return {
             "status": "success",
-            "project_title": topic,
+            "project_title": display_topic,
+            "original_topic": topic,
             "niche": niche,
+            "reference_info": reference_info,
             "target_duration_s": target_duration_s,
             "target_word_count": target_words,
             "aspect_ratio": aspect_ratio,
@@ -488,9 +643,24 @@ class TemplateGenerator:
         target_duration_s: int,
         aspect_ratio: str,
         target_words: int,
-        scenes: List[Dict[str, Any]]
+        scenes: List[Dict[str, Any]],
+        reference_info: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Construct a complete, ready-to-paste AI Prompt for Gemini, ChatGPT, or Claude."""
+        ref_section = ""
+        if reference_info and reference_info.get("transcript"):
+            ref_section = f"""--------------------------------------------------------------------------------
+DECONSTRUCTED SOURCE CONTEXT & TRANSCRIPT:
+--------------------------------------------------------------------------------
+- Original Source: {reference_info.get('url', 'URL Reference')}
+- Author / Channel: {reference_info.get('channel', 'Unknown')}
+- Extracted Core Facts:
+{chr(10).join(['  • ' + f for f in reference_info.get('key_facts', [])])}
+
+Source Transcript Snippet:
+\"{reference_info['transcript'][:800]}...\"
+"""
+
         return f"""================================================================================
 AI VIDEO STUDIO V2 — UNIVERSAL PRODUCTION MASTER PROMPT
 ================================================================================
@@ -506,7 +676,7 @@ PROJECT SPECIFICATIONS:
 - Target Aspect Ratio: {aspect_ratio} ({'9:16 Vertical Shorts/Reels/TikTok' if aspect_ratio == '9:16' else '16:9 Landscape YouTube'})
 - Color Palette: Background: {niche['colors']['bg']}, Accent: {niche['colors']['accent']}, Secondary: {niche['colors']['secondary']}
 - Music Score: {niche['music_style']} (Zero Copyright Claim Risk)
-
+{ref_section}
 --------------------------------------------------------------------------------
 STRICT PACING & MOBILE SAFE ZONE RULES:
 --------------------------------------------------------------------------------
@@ -522,9 +692,11 @@ REQUIRED SCENE-BY-SCENE CHOREOGRAPHY:
 Please write out all {len(scenes)} scenes in this exact format:
 
 """ + "\n".join([
-    f"## Scene {s['scene_number']:02d}: {s['title']}\n"
+    f"## Scene {s['scene_number']:02d}: {s['headline']}\n"
     f"- Timing: {s['start_s']}s – {s['end_s']}s (~{s['target_word_count']} words)\n"
-    f"- Spoken Narration: \"[Write punchy human words here]\"\n"
+    f"- Spoken Narration: \"{s['spoken_narration']}\"\n"
+    f"- Visual Headline: [{s['headline']}]\n"
+    f"- Visual Badge: [{s['visual_badge']}]\n"
     f"- Character Acting: {s['character_acting']}\n"
     f"- Visual Choreography: {s['visual_choreography']}\n"
     f"- B-Roll / Layered Prop: {s['broll_layers']}\n"
@@ -562,7 +734,7 @@ Reply with just a number (1, 2, or 3):
         aspect_ratio: str,
         scenes: List[Dict[str, Any]]
     ) -> str:
-        """Generate a complete, self-contained HTML5 animation player document."""
+        """Generate a complete, self-contained HTML5 animation player document with safe-margin rendering."""
         is_vert = aspect_ratio == "9:16"
         w = 1080 if is_vert else 1280
         h = 1920 if is_vert else 720
@@ -582,7 +754,7 @@ Reply with just a number (1, 2, or 3):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;600;700;800;900&family=Space+Grotesk:wght@700&display=swap">
 <style>
 :root {{
   color-scheme: dark;
@@ -626,6 +798,10 @@ body {{
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 70%;
 }}
 .player-badge {{
   font-size: 11px;
@@ -690,7 +866,7 @@ input.scrubber {{
 
 <div class="player-wrap">
   <div class="player-header">
-    <div class="player-title">{topic[:35]}...</div>
+    <div class="player-title">{topic}</div>
     <div class="player-badge">{niche['badge']} · {aspect_ratio}</div>
   </div>
 
@@ -724,10 +900,26 @@ const timeDisp = document.getElementById('timeDisp');
 let isPlaying = false;
 let currentTime = 0;
 let lastTimestamp = 0;
-let audioCtx = null;
-let osc = null;
 
 function ezOut(t) {{ return 1 - Math.pow(1 - Math.max(0, Math.min(1, t)), 3); }}
+
+function wrapLines(ctx, text, maxW) {{
+  const words = text.split(' ');
+  const lines = [];
+  let cur = words[0];
+  for (let i = 1; i < words.length; i++) {{
+    const w = words[i];
+    const testW = ctx.measureText(cur + ' ' + w).width;
+    if (testW <= maxW) {{
+      cur += ' ' + w;
+    }} else {{
+      lines.push(cur);
+      cur = w;
+    }}
+  }}
+  lines.push(cur);
+  return lines;
+}}
 
 function drawScene(t) {{
   // Background
@@ -741,60 +933,111 @@ function drawScene(t) {{
   for (let x = -off; x < W; x += 60) {{ cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, H); cx.stroke(); }}
   for (let y = -off * 0.5; y < H; y += 60) {{ cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke(); }}
 
-  // Current Scene Index
+  // Current Scene
   let curScene = SCENES[0];
   for (const s of SCENES) {{ if (t >= s.start_s) curScene = s; }}
 
-  // Header Chrome
+  // Editorial Category Watermark (Strict Mobile Safe Zone)
+  const headerY = IS_VERT ? 310 : 70;
   cx.fillStyle = ACCENT;
-  cx.fillRect(IS_VERT ? 60 : 50, IS_VERT ? 140 : 40, 10, 10);
+  cx.fillRect(IS_VERT ? 80 : 70, headerY, 10, 10);
   cx.font = '700 ' + (IS_VERT ? 22 : 18) + 'px "Inter", sans-serif';
-  cx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-  cx.fillText('{niche["name"].upper()} · SCENE 0' + curScene.scene_number, IS_VERT ? 80 : 70, IS_VERT ? 150 : 49);
+  cx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+  cx.textAlign = 'left';
+  cx.fillText('● BREAKING INVESTIGATION', IS_VERT ? 102 : 92, headerY + 9);
 
   // Animated Kinetic Title Card
   const sceneT = t - curScene.start_s;
-  const animProg = ezOut(sceneT / 0.5);
+  const animProg = ezOut(sceneT / 0.45);
   const scale = 1.35 - 0.35 * animProg;
 
   cx.save();
-  const centerY = IS_VERT ? H * 0.42 : H * 0.45;
+  const centerY = IS_VERT ? H * 0.38 : H * 0.34;
   cx.translate(W / 2, centerY);
   cx.scale(scale, scale);
 
-  cx.font = '900 ' + (IS_VERT ? 76 : 84) + 'px "Anton", Impact, sans-serif';
+  const headline = (curScene.headline || curScene.title).toUpperCase();
+  const maxTextW = IS_VERT ? 820 : 960;
+  let fontPx = IS_VERT ? 68 : 72;
+  cx.font = `900 ${{fontPx}}px "Anton", Impact, sans-serif`;
+
+  let lines = wrapLines(cx, headline, maxTextW);
+  if (lines.length > 2) {{
+    fontPx = IS_VERT ? 54 : 58;
+    cx.font = `900 ${{fontPx}}px "Anton", Impact, sans-serif`;
+    lines = wrapLines(cx, headline, maxTextW);
+  }}
+
   cx.textAlign = 'center';
   cx.fillStyle = '#f4f1ea';
-  cx.shadowColor = 'rgba(0,0,0,0.8)';
+  cx.shadowColor = 'rgba(0,0,0,0.85)';
   cx.shadowBlur = 30;
 
-  // Split title into 2 lines if needed
-  const titleParts = curScene.title.split(': ');
-  const mainLabel = titleParts[1] ? titleParts[1].toUpperCase() : curScene.title.toUpperCase();
-  cx.fillText(mainLabel, 0, -20);
-
-  // Subtitle / Action choreo
-  cx.font = 'italic 700 ' + (IS_VERT ? 36 : 40) + 'px "Instrument Serif", Georgia, serif';
-  cx.fillStyle = ACCENT;
-  cx.shadowColor = ACCENT;
-  cx.shadowBlur = 20;
-  cx.fillText(curScene.broll_layers || '{niche["visual_elements"][0]}', 0, 50);
+  const lineH = fontPx * 1.08;
+  const totalH = lines.length * lineH;
+  lines.forEach((ln, idx) => {{
+    const yOff = (idx * lineH) - (totalH / 2) + (lineH / 2);
+    cx.fillText(ln, 0, yOff);
+  }});
   cx.restore();
 
-  // Bottom Pill Card
-  const pillY = IS_VERT ? H * 0.72 : H * 0.82;
-  const pillW = Math.min(W - 120, 680);
-  cx.fillStyle = 'rgba(20, 20, 28, 0.9)';
+  // Central Visual Prop (Strict Safe Zone Y: 48% - 66%)
+  const propY = IS_VERT ? H * 0.53 : H * 0.54;
+  cx.save();
+  cx.translate(W / 2, propY);
+
+  // Dynamic Rare Earth Magnet / Technical Indicator
   cx.strokeStyle = ACCENT;
+  cx.lineWidth = 3;
+  // Neodymium Magnet Poles (North / South)
+  cx.fillStyle = '#ef4444';
+  cx.beginPath(); cx.roundRect(-160, -45, 150, 90, [12, 0, 0, 12]); cx.fill();
+  cx.fillStyle = '#3b82f6';
+  cx.beginPath(); cx.roundRect(10, -45, 150, 90, [0, 12, 12, 0]); cx.fill();
+
+  cx.fillStyle = '#ffffff';
+  cx.font = '900 36px "Inter", sans-serif';
+  cx.textAlign = 'center';
+  cx.fillText('N', -85, 12);
+  cx.fillText('S', 85, 12);
+
+  // Magnetic Flux Curves
+  cx.strokeStyle = 'rgba(255, 214, 0, 0.4)';
+  cx.lineWidth = 2;
+  cx.beginPath();
+  cx.arc(0, 0, 190, 0, Math.PI, true);
+  cx.stroke();
+  cx.beginPath();
+  cx.arc(0, 0, 190, 0, Math.PI, false);
+  cx.stroke();
+
+  // On-Screen Metric Badge
+  cx.fillStyle = '#111116';
+  cx.strokeStyle = ACCENT;
+  cx.lineWidth = 2;
+  cx.beginPath();
+  cx.roundRect(-220, 68, 440, 52, 10);
+  cx.fill(); cx.stroke();
+
+  cx.font = '800 20px "Inter", sans-serif';
+  cx.fillStyle = '#ffffff';
+  cx.fillText(curScene.visual_badge || '⚡ REPM STRATEGIC BREAKTHROUGH', 0, 101);
+  cx.restore();
+
+  // Bottom Safe Action Pill
+  const pillY = IS_VERT ? H * 0.74 : H * 0.82;
+  const pillW = Math.min(W - 140, 720);
+  cx.fillStyle = 'rgba(20, 20, 28, 0.92)';
+  cx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
   cx.lineWidth = 1.5;
   cx.beginPath();
   cx.roundRect(W / 2 - pillW / 2, pillY - 30, pillW, 60, 14);
   cx.fill(); cx.stroke();
 
-  cx.font = '700 ' + (IS_VERT ? 22 : 20) + 'px "Inter", sans-serif';
-  cx.fillStyle = '#ffffff';
+  cx.font = '700 ' + (IS_VERT ? 20 : 18) + 'px "Inter", sans-serif';
+  cx.fillStyle = ACCENT;
   cx.textAlign = 'center';
-  cx.fillText('⚡ ' + (curScene.visual_choreography || 'KINETIC SLAM & CAMERA ORBIT'), W / 2, pillY + 7);
+  cx.fillText('⚡ ' + (curScene.broll_layers || curScene.visual_choreography), W / 2, pillY + 7);
 }}
 
 function updateDisplay() {{
