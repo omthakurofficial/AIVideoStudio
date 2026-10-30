@@ -20,6 +20,8 @@ import os
 import re
 from typing import Any, Dict, List, Optional
 
+from packages.creator_engine.cartoon_engine import get_cartoon_dom_assets, get_cartoon_js_engine
+
 TOP_10_NICHES: List[Dict[str, Any]] = [
     {
         "id": "youtube_growth",
@@ -159,17 +161,17 @@ TOP_10_NICHES: List[Dict[str, Any]] = [
     },
     {
         "id": "podcast_avatar",
-        "name": "Podcast to 2D/3D Cartoon Avatar",
-        "category": "Entertainment & Comedy",
-        "badge": "🎙️ Podcast & Cartoon",
-        "reference_channels": "Joe Rogan Animated, Lex Fridman Shorts, Modern Wisdom Clips",
-        "description": "Speaker converted to 2D/3D animated cartoon character with reactive emotional acting: laughing squint, shocked jaw drop, fist pump, split screen PiP.",
+        "name": "2D/3D Cartoon & Animated History",
+        "category": "Animation, Cartoon & Comedy History",
+        "badge": "🎨 2D Cartoon & Animated History",
+        "reference_channels": "Animated History, OverSimplified, Simple History, Joe Rogan Animated",
+        "description": "2D comedy cartoon animation, expressive cartoon characters with stick limbs, living animated maps, synchronized comic speech bubbles, and historical stages.",
         "colors": {
-            "bg": "#0e0714",
-            "accent": "#ec4899",
-            "secondary": "#a855f7",
-            "highlight": "#facc15",
-            "panel": "#190d24"
+            "bg": "#120a10",
+            "accent": "#ef4444",
+            "secondary": "#facc15",
+            "highlight": "#38bdf8",
+            "panel": "#1a0f19"
         },
         "typography": {
             "display": "Bangers, Impact, cursive",
@@ -793,6 +795,17 @@ Reply with just a number (1, 2, or 3):
 
         scenes_json = json.dumps(scenes)
 
+        is_cartoon = (
+            niche.get("id") == "podcast_avatar" or
+            "chinese history" in topic.lower() or
+            "history" in topic.lower() or
+            "cartoon" in topic.lower() or
+            "animated" in topic.lower() or
+            any("cartoon" in (s.get("visual_choreography") or "").lower() for s in scenes)
+        )
+        cartoon_dom = get_cartoon_dom_assets() if is_cartoon else ""
+        cartoon_js = get_cartoon_js_engine() if is_cartoon else ""
+
         return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -910,6 +923,7 @@ input.scrubber {{
 </style>
 </head>
 <body>
+{cartoon_dom}
 
 <div class="player-wrap">
   <div class="player-header">
@@ -931,6 +945,7 @@ input.scrubber {{
 <script>
 const DURATION = {target_duration_s};
 const IS_VERT = {'true' if is_vert else 'false'};
+const IS_CARTOON = {'true' if is_cartoon else 'false'};
 const W = {w};
 const H = {h};
 const ACCENT = '{accent_col}';
@@ -968,7 +983,17 @@ function wrapLines(ctx, text, maxW) {{
   return lines;
 }}
 
+{cartoon_js}
+
 function drawScene(t) {{
+  let curScene = SCENES[0];
+  for (const s of SCENES) {{ if (t >= s.start_s) curScene = s; }}
+
+  if (IS_CARTOON) {{
+    draw2DCartoonHistoryScene(cx, t, curScene);
+    return;
+  }}
+
   // Background
   cx.fillStyle = '{bg_col}';
   cx.fillRect(0, 0, W, H);

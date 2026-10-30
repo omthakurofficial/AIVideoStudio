@@ -28,6 +28,7 @@ import numpy as np
 import soundfile as sf
 
 from packages.creator_engine.audio import find_kokoro_python, synthesize_narration, duck_and_mix
+from packages.creator_engine.cartoon_engine import get_cartoon_dom_assets, get_cartoon_js_engine
 from packages.creator_engine.music_composer import master_film_audio_bus
 from packages.creator_engine.renderer import render_html_to_mp4
 from packages.creator_engine.templates import TOP_10_NICHES, NICHE_BY_ID, synthesize_topic_scenes
@@ -99,6 +100,17 @@ def build_live_v2_html_player(
     accent_col = colors["accent"]
     sec_col = colors["secondary"]
     hi_col = colors["highlight"]
+
+    is_cartoon = (
+        niche_id == "podcast_avatar" or
+        "chinese history" in project_title.lower() or
+        "history" in project_title.lower() or
+        "cartoon" in project_title.lower() or
+        "animated" in project_title.lower() or
+        any("cartoon" in (s.get("visual_choreography") or "").lower() for s in scenes)
+    )
+    cartoon_dom = get_cartoon_dom_assets() if is_cartoon else ""
+    cartoon_js = get_cartoon_js_engine() if is_cartoon else ""
 
     # Format word timings into clean karaoke captions with preserved spacing
     clean_words = [w_item for w_item in words_timings if w_item.get("word", "").strip() not in [".", ",", "!", "?", ":", ";"]]
@@ -276,6 +288,7 @@ input.scrubber {{
 </style>
 </head>
 <body>
+{cartoon_dom}
 
 <div class="stage-wrap" id="stageWrap">
   <canvas id="stage" width="{w}" height="{h}"></canvas>
@@ -299,6 +312,7 @@ window.MASTER_WAV_PATH = "{master_wav_path}";
 window.ASPECT_RATIO = "{aspect_ratio}";
 
 const IS_VERT = {'true' if is_vert else 'false'};
+const IS_CARTOON = {'true' if is_cartoon else 'false'};
 const W = {w};
 const H = {h};
 const NICHE_ID = '{niche_id}';
@@ -705,9 +719,18 @@ function drawKaraokeCaptions(c, t) {{
   c.restore();
 }}
 
+{cartoon_js}
+
 function renderFrame(t) {{
-  drawBackground(cx, t);
-  drawKineticScene(cx, t);
+  let curScene = SCENES[0];
+  for (const s of SCENES) {{ if (t >= s.start_s) curScene = s; }}
+
+  if (IS_CARTOON) {{
+    draw2DCartoonHistoryScene(cx, t, curScene);
+  }} else {{
+    drawBackground(cx, t);
+    drawKineticScene(cx, t);
+  }}
 }}
 
 function updateUI(t) {{
@@ -879,6 +902,15 @@ async def produce_v2_video(
     # 2. Synthesize Natural Speech Audio
     vocal_wav = proj_dir / "voiceover.wav"
     dur, words_timings = await synthesize_voice_audio(full_script, voice_id, vocal_wav)
+
+    # Re-scale scenes to align accurately with speech audio if duration differs
+    if dur > 0 and scenes:
+        scale_ratio = dur / float(target_duration_s)
+        for s in scenes:
+            s["start_s"] = round(s["start_s"] * scale_ratio, 2)
+            s["end_s"] = round(s["end_s"] * scale_ratio, 2)
+            s["duration_s"] = round(s["end_s"] - s["start_s"], 2)
+        target_duration_s = int(math.ceil(dur))
 
     # 3. Master Film Audio Bus (Royalty-Free Procedural Music + Ducking)
     genre_map = {

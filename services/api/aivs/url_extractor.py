@@ -132,9 +132,12 @@ def deconstruct_youtube_url(url: str) -> Dict[str, Any]:
             logger.warning(f"Raw page scraping fallback failed: {e}")
 
     # 3. Extract core facts and determine best niche
-    full_text = f"{result['title']} {result['description']} {result['transcript']}".lower()
+    full_text = f"{result.get('channel', '')} {result['title']} {result['description']} {result['transcript']}".lower()
 
-    if any(k in full_text for k in ["rare earth", "china", "india", "geopolitic", "treaty", "military", "warfare", "chokepoint", "sanction", "map"]):
+    if any(k in full_text for k in ["animated history", "oversimplified", "simple history", "cartoon", "animation", "animated", "stick figure"]):
+        result["suggested_niche"] = "podcast_avatar"
+        result["is_cartoon"] = True
+    elif any(k in full_text for k in ["rare earth", "india", "geopolitic", "treaty", "military", "warfare", "chokepoint", "sanction"]):
         result["suggested_niche"] = "geopolitics_maps"
     elif any(k in full_text for k in ["stock", "crypto", "inflation", "wealth", "invest", "market", "billionaire", "money"]):
         result["suggested_niche"] = "finance_wealth"
@@ -146,6 +149,8 @@ def deconstruct_youtube_url(url: str) -> Dict[str, Any]:
         result["suggested_niche"] = "saas_tech_3d"
     elif any(k in full_text for k in ["stoic", "discipline", "mindset", "motivation", "grind", "huberman", "goggins"]):
         result["suggested_niche"] = "mindset_motivation"
+    elif "china" in full_text:
+        result["suggested_niche"] = "geopolitics_maps"
     else:
         result["suggested_niche"] = "vox_explainer"
 
