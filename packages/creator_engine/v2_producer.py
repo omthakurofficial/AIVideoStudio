@@ -53,7 +53,8 @@ async def synthesize_voice_audio(
 
     # Edge TTS (Indian, Nepali, Global)
     import edge_tts
-    comm = edge_tts.Communicate(text, voice_id, boundary="WordBoundary")
+    clean_voice = voice_id.replace("edge:", "")
+    comm = edge_tts.Communicate(text, clean_voice, boundary="WordBoundary")
     words_out: List[Dict[str, Any]] = []
     mp3_tmp = out_wav.with_suffix(".mp3")
 

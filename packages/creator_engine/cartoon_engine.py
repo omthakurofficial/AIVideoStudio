@@ -312,7 +312,7 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
     }
 
     // Fortress Towers & Battlements
-    const fortY = H * 0.58;
+    const fortY = IS_VERT ? H * 0.58 : H * 0.60;
     c.fillStyle = '#655750';
     c.strokeStyle = '#29211e';
     c.lineWidth = 4;
@@ -343,7 +343,7 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
     });
 
     // Earth Ground
-    const groundY = H * 0.63;
+    const groundY = IS_VERT ? H * 0.63 : H * 0.66;
     c.fillStyle = '#8f6f54';
     c.strokeStyle = '#261c16';
     c.lineWidth = 4;
@@ -354,7 +354,7 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
     // Battered China Map Character
     c.save();
     const mapX = W * 0.48;
-    const mapY = groundY + 130;
+    const mapY = groundY + (IS_VERT ? 130 : 75);
     c.translate(mapX, mapY);
     c.rotate(-0.05);
 
@@ -368,7 +368,7 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
     c.beginPath(); c.moveTo(120, 60); c.lineTo(190, 110); c.lineTo(220, 90); c.stroke();
     c.beginPath(); c.moveTo(-120, -60); c.lineTo(-210, -80); c.lineTo(-240, -50); c.stroke();
 
-    drawChinaMapShape(c, 0.95);
+    drawChinaMapShape(c, IS_VERT ? 0.95 : 0.70);
 
     // Dizzy X X Eyes
     c.strokeStyle = '#18181b';
@@ -518,21 +518,23 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
     });
 
     // Open Stone Window on Right
-    const winX = W * 0.72;
-    const winY = IS_VERT ? 380 : 100;
+    const winX = W * (IS_VERT ? 0.72 : 0.75);
+    const winY = IS_VERT ? 380 : 90;
+    const winW = IS_VERT ? 240 : 200;
+    const winH = IS_VERT ? 320 : 210;
     c.fillStyle = '#d4be9e';
-    c.fillRect(winX, winY, 240, 320);
+    c.fillRect(winX, winY, winW, winH);
     c.fillStyle = '#9e8062';
     c.beginPath();
-    c.moveTo(winX, winY + 220);
-    c.quadraticCurveTo(winX + 120, winY + 160, winX + 240, winY + 200);
-    c.lineTo(winX + 240, winY + 320); c.lineTo(winX, winY + 320);
+    c.moveTo(winX, winY + winH * 0.7);
+    c.quadraticCurveTo(winX + winW * 0.5, winY + winH * 0.5, winX + winW, winY + winH * 0.65);
+    c.lineTo(winX + winW, winY + winH); c.lineTo(winX, winY + winH);
     c.fill();
     c.strokeStyle = '#4a3321'; c.lineWidth = 8;
-    c.strokeRect(winX, winY, 240, 320);
+    c.strokeRect(winX, winY, winW, winH);
 
     // Floor
-    const floorY = H * 0.64;
+    const floorY = IS_VERT ? H * 0.64 : H * 0.66;
     c.fillStyle = '#5c4028';
     c.fillRect(0, floorY, W, H - floorY);
     c.strokeStyle = '#2d1c0f'; c.lineWidth = 5;
@@ -646,7 +648,7 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
 
     // Speech Bubble
     const popScale2 = ezBack(Math.min(1.0, sceneT / 0.45));
-    drawComicSpeechBubble(c, W * 0.68, floorY - 210, "Should we attack? Ask grandma!\\n(Oracle Bone: Fire says YES 🔥)", 'down-left', popScale2);
+    drawComicSpeechBubble(c, W * (IS_VERT ? 0.68 : 0.64), floorY - (IS_VERT ? 210 : 150), "Should we attack? Ask grandma!\\n(Oracle Bone: Fire says YES 🔥)", 'down-left', IS_VERT ? popScale2 : popScale2 * 0.82);
 
     // Title Banner
     c.save();
@@ -670,10 +672,10 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
     c.strokeRect(30, 30, W - 60, H - 60);
 
     // Photographic Confucius Statue
-    const confX = IS_VERT ? W * 0.45 : W * 0.52;
-    const confY = IS_VERT ? H * 0.38 : H * 0.22;
-    const confW = IS_VERT ? 520 : 420;
-    const confH = IS_VERT ? 640 : 520;
+    const confX = IS_VERT ? W * 0.45 : W * 0.54;
+    const confY = IS_VERT ? H * 0.38 : 110;
+    const confW = IS_VERT ? 520 : 330;
+    const confH = IS_VERT ? 640 : 390;
 
     c.save();
     c.fillStyle = 'rgba(234, 179, 8, 0.12)';
@@ -703,8 +705,8 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
 
     // Stick Figure Narrator
     c.save();
-    const stickX = IS_VERT ? W * 0.24 : W * 0.22;
-    const stickY = IS_VERT ? H * 0.65 : H * 0.58;
+    const stickX = IS_VERT ? W * 0.24 : W * 0.25;
+    const stickY = IS_VERT ? H * 0.65 : 420;
     c.translate(stickX, stickY);
 
     c.strokeStyle = '#18181b'; c.lineWidth = 6; c.lineCap = 'round';
@@ -764,7 +766,7 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
 
     // Speech Bubble
     const popScale3 = ezBack(Math.min(1.0, sceneT / 0.45));
-    drawComicSpeechBubble(c, W * 0.32, IS_VERT ? H * 0.52 : H * 0.42, "Heaven says:\\n'Corrupt ruler? You have\\nthe divine right to REBEL!'", 'down-left', popScale3);
+    drawComicSpeechBubble(c, W * 0.32, IS_VERT ? H * 0.52 : 230, "Heaven says:\\n'Corrupt ruler? You have\\nthe divine right to REBEL!'", 'down-left', IS_VERT ? popScale3 : popScale3 * 0.82);
 
     // Title Banner
     c.save();
@@ -885,7 +887,7 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
 
     // Speech Bubble
     const popScale4 = ezBack(Math.min(1.0, sceneT / 0.45));
-    drawComicSpeechBubble(c, W * 0.48, groundY4 - 190, "ONE EMPIRE! ONE WRITING!\\nONE CURRENCY! NO EXCEPTIONS!", 'down-left', popScale4);
+    drawComicSpeechBubble(c, W * 0.48, groundY4 - (IS_VERT ? 190 : 145), "ONE EMPIRE! ONE WRITING!\\nONE CURRENCY! NO EXCEPTIONS!", 'down-left', IS_VERT ? popScale4 : popScale4 * 0.82);
 
     // Title Banner
     c.save();
@@ -976,7 +978,7 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
 
     // Speech Bubble
     const popScale5 = ezBack(Math.min(1.0, sceneT / 0.45));
-    drawComicSpeechBubble(c, W / 2, groundY5 - 190, "Hundreds of millions died...\\nBUT CHINA ALWAYS PULLED ITSELF BACK!", 'down', popScale5);
+    drawComicSpeechBubble(c, W / 2, groundY5 - (IS_VERT ? 190 : 145), "Hundreds of millions died...\\nBUT CHINA ALWAYS PULLED ITSELF BACK!", 'down', IS_VERT ? popScale5 : popScale5 * 0.82);
 
     // Title Banner
     c.save();
@@ -1093,7 +1095,7 @@ function draw2DCartoonHistoryScene(c, t, curScene) {
 
     // CTA Speech Bubble
     const popScale6 = ezBack(Math.min(1.0, sceneT / 0.45));
-    drawComicSpeechBubble(c, W / 2, daisY - 210, "4,000 YEARS AND STILL HERE! 👑\\nWhat was China's most powerful dynasty?\\n👇 DROP YOUR VOTE IN COMMENTS!", 'down', popScale6);
+    drawComicSpeechBubble(c, W / 2, daisY - (IS_VERT ? 210 : 155), "4,000 YEARS AND STILL HERE! 👑\\nWhat was China's most powerful dynasty?\\n👇 DROP YOUR VOTE IN COMMENTS!", 'down', IS_VERT ? popScale6 : popScale6 * 0.82);
 
     // Title Banner
     c.save();
