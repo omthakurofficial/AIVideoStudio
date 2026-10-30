@@ -50,6 +50,7 @@ class V2TemplateGenerateRequest(BaseModel):
     target_duration_s: int = Field(default=60, ge=15, le=600)
     aspect_ratio: str = Field(default="9:16")
     mode: str = Field(default="master_auto")
+    voice_id: str | None = Field(default="kokoro:am_michael")
     custom_instructions: str | None = None
 
 
@@ -544,7 +545,11 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
     @app.get("/api/v2/templates/niches")
     def get_v2_niches():
         from packages.creator_engine.templates import TOP_10_NICHES
-        return {"niches": TOP_10_NICHES}
+        return {
+            "niches": TOP_10_NICHES,
+            "voices": AVAILABLE_VOICES,
+            "max_duration_s": 600  # Up to 10 Minutes (600 seconds)
+        }
 
     @app.post("/api/v2/templates/generate")
     def generate_v2_template(req: V2TemplateGenerateRequest):
@@ -556,9 +561,29 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
             target_duration_s=req.target_duration_s,
             aspect_ratio=req.aspect_ratio,
             mode=req.mode,
+            voice_id=req.voice_id or "kokoro:am_michael",
             custom_instructions=req.custom_instructions
         )
         return blueprint
+
+    @app.post("/api/v2/templates/render-html-preview")
+    def render_v2_html_preview(req: dict):
+        """Render standalone HTML into a preview file for the inline iframe player."""
+        html_content = req.get("html", "")
+        if not html_content:
+            raise HTTPException(400, "HTML content is required")
+        preview_dir = REPO_ROOT / "exports" / "v2_previews"
+        preview_dir.mkdir(parents=True, exist_ok=True)
+        preview_file = preview_dir / "live_player.html"
+        preview_file.write_text(html_content, encoding="utf-8")
+        return {"ok": True, "url": "/api/v2/templates/preview-file"}
+
+    @app.get("/api/v2/templates/preview-file")
+    def get_v2_preview_file():
+        preview_file = REPO_ROOT / "exports" / "v2_previews" / "live_player.html"
+        if not preview_file.is_file():
+            raise HTTPException(404, "Preview player not found")
+        return FileResponse(preview_file, media_type="text/html")
 
     return app
 

@@ -1,17 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   api,
   type V2NicheItem,
+  type V2VoiceItem,
   type V2TemplateBlueprint,
   type V2SceneBlueprint,
 } from "@/lib/api";
 
 export default function V2StudioPage() {
   const [niches, setNiches] = useState<V2NicheItem[]>([]);
+  const [voices, setVoices] = useState<V2VoiceItem[]>([]);
   const [selectedNicheId, setSelectedNicheId] = useState<string>("youtube_growth");
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>("kokoro:am_michael");
   const [inputMode, setInputMode] = useState<"master" | "manual">("master");
 
   // Master Mode Fields
@@ -31,13 +34,15 @@ export default function V2StudioPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [blueprint, setBlueprint] = useState<V2TemplateBlueprint | null>(null);
-  const [activeInspectorTab, setActiveInspectorTab] = useState<"html" | "prompt" | "storyboard" | "audio" | "raw">("html");
+  const [activeInspectorTab, setActiveInspectorTab] = useState<"player" | "html" | "prompt" | "storyboard" | "audio" | "raw">("player");
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [copiedHtml, setCopiedHtml] = useState(false);
+  const [liveHtmlSrcDoc, setLiveHtmlSrcDoc] = useState<string>("");
 
   useEffect(() => {
     api.v2Niches().then(res => {
       setNiches(res.niches);
+      if (res.voices) setVoices(res.voices);
       if (res.niches.length > 0) {
         setSelectedNicheId(res.niches[0].id);
         setTopic(res.niches[0].sample_topics[0]);
@@ -83,10 +88,14 @@ export default function V2StudioPage() {
         target_duration_s: duration,
         aspect_ratio: aspect,
         mode: inputMode === "master" ? "master_auto" : "manual_placeholders",
+        voice_id: selectedVoiceId,
         custom_instructions: customNotes,
       });
       setBlueprint(res);
-      setActiveInspectorTab("prompt");
+      if (res.standalone_html_code) {
+        setLiveHtmlSrcDoc(res.standalone_html_code);
+        setActiveInspectorTab("player");
+      }
     } catch (err) {
       setError((err as Error).message || "Template generation failed.");
     } finally {
@@ -151,12 +160,15 @@ export default function V2StudioPage() {
               </span>
               <span className="badge ok">10 Top Earning Niches</span>
               <span className="badge">Dual 16:9 &amp; 9:16 Engine</span>
+              <span className="badge" style={{ background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8", border: "1px solid #38bdf8" }}>
+                30s to 10 Min Max
+              </span>
             </div>
             <h1 style={{ margin: "4px 0", fontSize: "1.75rem", fontFamily: "var(--font-display, inherit)", letterSpacing: "0.02em" }}>
-              AI Video Studio V2 · Pro Template &amp; Blueprint Engine
+              AI Video Studio V2 · Live Play &amp; Blueprint Engine
             </h1>
-            <p className="muted" style={{ margin: 0, fontSize: "0.92rem", maxWidth: 880 }}>
-              Generate DaVinci / CapCut-grade viral motion templates for any topic (30s to 5 min). Export portable prompt bundles for <strong>ChatGPT, Google Gemini, Claude</strong>, or render 1080x1920 MP4s directly in <strong>Antigravity</strong>!
+            <p className="muted" style={{ margin: 0, fontSize: "0.92rem", maxWidth: 900 }}>
+              Generate viral templates with <strong>direct interactive HTML live play</strong>, natural neural TTS (Kokoro, Indian Male/Female, Nepali Male/Female, Whisper sync), and 1-click downloads for YouTube, Reels &amp; TikTok.
             </p>
           </div>
           <div style={{ display: "flex", gap: 10 }}>
@@ -178,7 +190,7 @@ export default function V2StudioPage() {
               onClick={generateBlueprint}
               style={{ background: "#ffd60a", color: "#000", fontWeight: 700 }}
             >
-              {busy ? "Generating Blueprint..." : "✨ Generate Master Blueprint"}
+              {busy ? "Generating Blueprint..." : "✨ Generate & Live Play"}
             </button>
           </div>
         </div>
@@ -266,9 +278,9 @@ export default function V2StudioPage() {
         </div>
       </section>
 
-      {/* 2. Format & Pacing Bar */}
+      {/* 2. Format, Voice & Pacing Bar */}
       <section className="card" style={{ marginBottom: 24, background: "var(--panel)" }}>
-        <h2 style={{ margin: "0 0 12px", fontSize: "1.1rem" }}>2. Duration &amp; Aspect Ratio Safe Margins</h2>
+        <h2 style={{ margin: "0 0 12px", fontSize: "1.1rem" }}>2. Audio Narration &amp; Duration Safe Margins (30s to 10 Min)</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
           {/* Aspect Ratio */}
           <div>
@@ -297,23 +309,76 @@ export default function V2StudioPage() {
             </div>
           </div>
 
-          {/* Duration Matrix */}
+          {/* Voice Selector: Kokoro + Indian + Nepali + Global */}
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
               <label style={{ fontWeight: 600, fontSize: "0.85rem" }}>
-                Target Duration:
+                🎙️ Natural Neural Voice (Male / Female / Indian / Nepali):
               </label>
-              <span className="badge ok" style={{ fontWeight: 700 }}>
-                {duration}s ({Math.round(duration * (150 / 60))} Words @ 150 WPM)
+              <span className="badge ok" style={{ fontSize: "0.72rem" }}>
+                $0.00 Free TTS
               </span>
             </div>
-            <div style={{ display: "flex", gap: 6 }}>
+            <select
+              value={selectedVoiceId}
+              onChange={e => setSelectedVoiceId(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1px solid var(--line)",
+                background: "var(--panel-alt)",
+                color: "var(--text)",
+                fontSize: "0.85rem"
+              }}
+            >
+              <optgroup label="🇺🇸 & 🇬🇧 Local Kokoro Neural Voices ($0.00)">
+                <option value="kokoro:am_michael">Michael (US Deep Documentary Male)</option>
+                <option value="kokoro:af_heart">Heart (US Warm Expressive Female)</option>
+                <option value="kokoro:af_bella">Bella (US Storyteller Female)</option>
+                <option value="kokoro:am_adam">Adam (US Gritty Motivation Male)</option>
+                <option value="kokoro:bm_george">George (UK BBC Documentary Male)</option>
+                <option value="kokoro:bf_emma">Emma (UK Elegant Presenter Female)</option>
+              </optgroup>
+              <optgroup label="🇮🇳 Indian English & Hindi Neural Voices ($0.00)">
+                <option value="en-IN-PrabhatNeural">Prabhat (Indian English Male — Natural)</option>
+                <option value="en-IN-NeerjaExpressiveNeural">Neerja (Indian English Female — Expressive)</option>
+                <option value="hi-IN-MadhurNeural">Madhur (Hindi Indian Male — Storyteller)</option>
+                <option value="hi-IN-SwaraNeural">Swara (Hindi Indian Female — Conversational)</option>
+              </optgroup>
+              <optgroup label="🇳🇵 Nepali Authentic Neural Voices ($0.00)">
+                <option value="ne-NP-SagarNeural">Sagar (Nepali Male — Authentic Himalayan)</option>
+                <option value="ne-NP-HemkalaNeural">Hemkala (Nepali Female — Authentic Himalayan)</option>
+              </optgroup>
+              <optgroup label="🌐 Global Tech & Explainer Voices ($0.00)">
+                <option value="en-US-GuyNeural">Guy (US Tech / SaaS Explainer Male)</option>
+                <option value="en-US-AriaNeural">Aria (US Dynamic Presenter Female)</option>
+                <option value="en-GB-RyanNeural">Ryan (UK Fast Documentary Male)</option>
+              </optgroup>
+            </select>
+            <div className="muted" style={{ fontSize: "0.74rem", marginTop: 4 }}>
+              ⚡ Word-level karaoke captions synchronized via Kokoro phonemes &amp; Whisper speech boundaries.
+            </div>
+          </div>
+
+          {/* Duration Matrix (30s to 10 Minutes Max) */}
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+              <label style={{ fontWeight: 600, fontSize: "0.85rem" }}>
+                Target Duration (30s to 10 Minutes Max):
+              </label>
+              <span className="badge ok" style={{ fontWeight: 700 }}>
+                {duration >= 60 ? `${duration / 60} Min (${duration}s)` : `${duration}s`} · ~{Math.round(duration * (150 / 60))} Words @ 150 WPM
+              </span>
+            </div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
               {[
                 { s: 30, label: "30s Short" },
                 { s: 60, label: "60s Viral" },
                 { s: 120, label: "2 Min Explainer" },
-                { s: 180, label: "3 Min Deep" },
+                { s: 180, label: "3 Min Breakdown" },
                 { s: 300, label: "5 Min Masterclass" },
+                { s: 600, label: "10 Min Deep Documentary (Max)" },
               ].map(d => (
                 <button
                   key={d.s}
@@ -322,11 +387,13 @@ export default function V2StudioPage() {
                   onClick={() => setDuration(d.s)}
                   style={{
                     flex: 1,
-                    fontSize: "0.75rem",
-                    padding: "8px 4px",
+                    minWidth: 120,
+                    fontSize: "0.78rem",
+                    padding: "9px 6px",
                     textAlign: "center",
-                    border: duration === d.s ? "1px solid #ffd60a" : undefined,
-                    color: duration === d.s ? "#ffd60a" : undefined
+                    border: duration === d.s ? "2px solid #ffd60a" : undefined,
+                    color: duration === d.s ? "#ffd60a" : undefined,
+                    fontWeight: duration === d.s ? 700 : 500
                   }}
                 >
                   {d.label}
@@ -397,7 +464,7 @@ export default function V2StudioPage() {
                 onClick={generateBlueprint}
                 style={{ background: "#ffd60a", color: "#000", fontWeight: 700 }}
               >
-                {busy ? "Synthesizing Template..." : "✨ Generate Template & Blueprint"}
+                {busy ? "Synthesizing Template..." : "✨ Generate & Live Play"}
               </button>
             </div>
           </div>
@@ -505,14 +572,14 @@ export default function V2StudioPage() {
                 onClick={generateBlueprint}
                 style={{ background: "#ffd60a", color: "#000", fontWeight: 700 }}
               >
-                {busy ? "Synthesizing Template..." : "✨ Generate Custom Blueprint"}
+                {busy ? "Synthesizing Template..." : "✨ Generate & Live Play"}
               </button>
             </div>
           </div>
         )}
       </section>
 
-      {/* 4. Generated Blueprint Inspector & AI Prompt Exporter */}
+      {/* 4. Generated Blueprint Inspector, Direct Live Player & Exporter */}
       {blueprint && (
         <section className="card" style={{
           background: "linear-gradient(180deg, var(--panel) 0%, rgba(12, 12, 18, 0.98) 100%)",
@@ -522,10 +589,13 @@ export default function V2StudioPage() {
           {/* Action Header */}
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 16 }}>
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span className="badge ok">✓ Blueprint Ready</span>
                 <span className="badge">{blueprint.niche.badge}</span>
                 <span className="badge">{blueprint.target_duration_s}s ({blueprint.scenes.length} Scenes)</span>
+                <span className="badge" style={{ background: "rgba(255, 214, 10, 0.15)", color: "#ffd60a", border: "1px solid #ffd60a" }}>
+                  🎙️ {selectedVoiceId}
+                </span>
               </div>
               <h2 style={{ margin: "4px 0 0", fontSize: "1.3rem" }}>
                 {blueprint.project_title}
@@ -536,17 +606,18 @@ export default function V2StudioPage() {
               <button
                 type="button"
                 className="btn"
-                onClick={copyHtmlToClipboard}
-                style={{ background: copiedHtml ? "#30d158" : "#ffd60a", color: "#000", fontWeight: 700 }}
+                onClick={downloadHtmlFile}
+                style={{ background: "#ffd60a", color: "#000", fontWeight: 700 }}
               >
-                {copiedHtml ? "✓ Copied HTML Player!" : "🌐 Copy HTML Player Code"}
+                💾 Download .html Player
               </button>
               <button
                 type="button"
-                className="btn secondary"
-                onClick={downloadHtmlFile}
+                className="btn"
+                onClick={copyHtmlToClipboard}
+                style={{ background: copiedHtml ? "#30d158" : "#22c55e", color: "#000", fontWeight: 700 }}
               >
-                💾 Download .html Player
+                {copiedHtml ? "✓ Copied HTML Player!" : "🌐 Copy HTML Player Code"}
               </button>
               <button
                 type="button"
@@ -570,10 +641,18 @@ export default function V2StudioPage() {
           <div className="tab-bar" style={{ marginBottom: 16 }}>
             <button
               type="button"
+              className={`tab-btn ${activeInspectorTab === "player" ? "active" : ""}`}
+              onClick={() => setActiveInspectorTab("player")}
+              style={{ fontWeight: 700, color: activeInspectorTab === "player" ? "#ffd60a" : undefined }}
+            >
+              ▶️ Interactive Live Video Player
+            </button>
+            <button
+              type="button"
               className={`tab-btn ${activeInspectorTab === "html" ? "active" : ""}`}
               onClick={() => setActiveInspectorTab("html")}
             >
-              🌐 Standalone HTML5 Player Code
+              🌐 Standalone HTML5 Code
             </button>
             <button
               type="button"
@@ -605,7 +684,66 @@ export default function V2StudioPage() {
             </button>
           </div>
 
-          {/* Tab 0: Standalone HTML Player Code */}
+          {/* Tab 0: Direct Interactive Live Player in UI */}
+          {activeInspectorTab === "player" && (
+            <div>
+              <div style={{
+                background: "rgba(255, 214, 10, 0.08)",
+                border: "1px solid rgba(255, 214, 10, 0.25)",
+                borderRadius: 8,
+                padding: "10px 14px",
+                marginBottom: 14,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 10
+              }}>
+                <div>
+                  <strong>▶️ Direct In-Browser Live Video Player:</strong>
+                  <div className="muted" style={{ fontSize: "0.78rem", marginTop: 2 }}>
+                    Click <strong>Play</strong> below to preview the animation, timeline scrubber, kinetic headings, and sound right inside the Studio.
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={downloadHtmlFile}
+                    style={{ background: "#ffd60a", color: "#000", fontWeight: 700, fontSize: "0.78rem", padding: "6px 14px" }}
+                  >
+                    💾 Download .html Player
+                  </button>
+                </div>
+              </div>
+
+              {/* Responsive Iframe Stage Container */}
+              <div style={{
+                width: "100%",
+                maxWidth: aspect === "9:16" ? "440px" : "1040px",
+                margin: "0 auto",
+                borderRadius: 14,
+                overflow: "hidden",
+                border: "2px solid rgba(255, 214, 10, 0.3)",
+                boxShadow: "0 25px 60px rgba(0,0,0,0.85)",
+                background: "#000"
+              }}>
+                <iframe
+                  title="Live Animation Stage"
+                  srcDoc={liveHtmlSrcDoc || blueprint.standalone_html_code}
+                  style={{
+                    width: "100%",
+                    height: aspect === "9:16" ? "780px" : "585px",
+                    border: 0,
+                    display: "block"
+                  }}
+                  sandbox="allow-scripts allow-same-origin"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Tab 1: Standalone HTML Code */}
           {activeInspectorTab === "html" && (
             <div>
               <div style={{
@@ -620,9 +758,9 @@ export default function V2StudioPage() {
                 alignItems: "center"
               }}>
                 <div>
-                  <strong>⚡ Standalone HTML5 Video Animation Player:</strong>
+                  <strong>⚡ Standalone HTML5 Video Animation Player Code:</strong>
                   <div className="muted" style={{ fontSize: "0.78rem", marginTop: 2 }}>
-                    Self-contained single-file HTML document with interactive scrubber, canvas render loop, and responsive safe margin preview. Double-click or open in any browser!
+                    Self-contained single-file HTML document with interactive scrubber, canvas render loop, and responsive safe margin preview.
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 8 }}>
@@ -662,7 +800,7 @@ export default function V2StudioPage() {
             </div>
           )}
 
-          {/* Tab 1: AI Prompt Box */}
+          {/* Tab 2: AI Prompt Box */}
           {activeInspectorTab === "prompt" && (
             <div>
               <div style={{
@@ -722,7 +860,7 @@ export default function V2StudioPage() {
             </div>
           )}
 
-          {/* Tab 2: Storyboard Breakdown */}
+          {/* Tab 3: Storyboard Breakdown */}
           {activeInspectorTab === "storyboard" && (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 14 }}>
               {blueprint.scenes.map(s => (
@@ -765,7 +903,7 @@ export default function V2StudioPage() {
             </div>
           )}
 
-          {/* Tab 3: Audio Bus */}
+          {/* Tab 4: Audio Bus */}
           {activeInspectorTab === "audio" && (
             <div style={{ background: "var(--panel-alt)", border: "1px solid var(--line)", borderRadius: 8, padding: 18 }}>
               <h3 style={{ margin: "0 0 10px", fontSize: "1.1rem" }}>🎵 Film Audio Bus Scoring (100% Royalty-Free)</h3>
@@ -778,18 +916,22 @@ export default function V2StudioPage() {
                   <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#38bdf8" }}>{blueprint.music_bus.genre}</div>
                 </div>
                 <div style={{ background: "rgba(0,0,0,0.3)", padding: 12, borderRadius: 6 }}>
+                  <div className="muted" style={{ fontSize: "0.76rem" }}>VOICE PROFILE</div>
+                  <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#ffd60a" }}>{selectedVoiceId}</div>
+                </div>
+                <div style={{ background: "rgba(0,0,0,0.3)", padding: 12, borderRadius: 6 }}>
                   <div className="muted" style={{ fontSize: "0.76rem" }}>SIDECHAIN DUCKING</div>
                   <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#30d158" }}>{blueprint.music_bus.sidechain_ducking}</div>
                 </div>
                 <div style={{ background: "rgba(0,0,0,0.3)", padding: 12, borderRadius: 6 }}>
                   <div className="muted" style={{ fontSize: "0.76rem" }}>BROADCAST TARGET</div>
-                  <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#ffd60a" }}>{blueprint.music_bus.master_lufs} LUFS (YouTube &amp; TikTok Standard)</div>
+                  <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "#f43f5e" }}>{blueprint.music_bus.master_lufs} LUFS (Broadcast Standard)</div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Tab 4: Raw JSON */}
+          {/* Tab 5: Raw JSON */}
           {activeInspectorTab === "raw" && (
             <pre style={{
               background: "#08080c",

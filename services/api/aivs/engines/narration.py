@@ -16,15 +16,28 @@ KOKORO_PYTHON_CANDIDATES = [
 ]
 
 AVAILABLE_VOICES = [
-    {"id": "kokoro:am_michael", "name": "Kokoro Michael (US Documentary Male — Local Neural)", "label": "Kokoro-82M (Local $0.00) — Michael (US Documentary Male)", "provider": "kokoro_local", "cost_usd": 0.0},
-    {"id": "kokoro:af_heart", "name": "Kokoro Heart (US Warm Female — Local Neural)", "label": "Kokoro-82M (Local $0.00) — Heart (US Expressive Female)", "provider": "kokoro_local", "cost_usd": 0.0},
-    {"id": "kokoro:af_bella", "name": "Kokoro Bella (US Storyteller Female — Local Neural)", "label": "Kokoro-82M (Local $0.00) — Bella (US Storyteller Female)", "provider": "kokoro_local", "cost_usd": 0.0},
-    {"id": "kokoro:am_adam", "name": "Kokoro Adam (US Deep Male — Local Neural)", "label": "Kokoro-82M (Local $0.00) — Adam (US Deep Male)", "provider": "kokoro_local", "cost_usd": 0.0},
-    {"id": "kokoro:bm_george", "name": "Kokoro George (UK Documentary Male — Local Neural)", "label": "Kokoro-82M (Local $0.00) — George (UK Documentary Male)", "provider": "kokoro_local", "cost_usd": 0.0},
-    {"id": "kokoro:bf_emma", "name": "Kokoro Emma (UK Presenter Female — Local Neural)", "label": "Kokoro-82M (Local $0.00) — Emma (UK Presenter Female)", "provider": "kokoro_local", "cost_usd": 0.0},
-    {"id": "en-US-GuyNeural", "name": "Microsoft Guy (US Neural — Edge TTS)", "label": "Microsoft Edge Neural ($0.00) — Guy (US Male)", "provider": "edge_tts", "cost_usd": 0.0},
-    {"id": "en-US-AriaNeural", "name": "Microsoft Aria (US Neural — Edge TTS)", "label": "Microsoft Edge Neural ($0.00) — Aria (US Female)", "provider": "edge_tts", "cost_usd": 0.0},
-    {"id": "en-GB-RyanNeural", "name": "Microsoft Ryan (UK Neural — Edge TTS)", "label": "Microsoft Edge Neural ($0.00) — Ryan (UK Male)", "provider": "edge_tts", "cost_usd": 0.0},
+    # Top Neural Voices (Local Kokoro-82M $0.00)
+    {"id": "kokoro:am_michael", "name": "Kokoro Michael (US Documentary Male — Local Neural)", "label": "Kokoro-82M — Michael (US Documentary Male)", "provider": "kokoro_local", "cost_usd": 0.0, "gender": "male", "accent": "US"},
+    {"id": "kokoro:af_heart", "name": "Kokoro Heart (US Warm Female — Local Neural)", "label": "Kokoro-82M — Heart (US Expressive Female)", "provider": "kokoro_local", "cost_usd": 0.0, "gender": "female", "accent": "US"},
+    {"id": "kokoro:af_bella", "name": "Kokoro Bella (US Storyteller Female — Local Neural)", "label": "Kokoro-82M — Bella (US Storyteller Female)", "provider": "kokoro_local", "cost_usd": 0.0, "gender": "female", "accent": "US"},
+    {"id": "kokoro:am_adam", "name": "Kokoro Adam (US Deep Gritty Male — Local Neural)", "label": "Kokoro-82M — Adam (US Motivation Male)", "provider": "kokoro_local", "cost_usd": 0.0, "gender": "male", "accent": "US"},
+    {"id": "kokoro:bm_george", "name": "Kokoro George (UK BBC Documentary Male — Local Neural)", "label": "Kokoro-82M — George (UK BBC Male)", "provider": "kokoro_local", "cost_usd": 0.0, "gender": "male", "accent": "UK"},
+    {"id": "kokoro:bf_emma", "name": "Kokoro Emma (UK Presenter Female — Local Neural)", "label": "Kokoro-82M — Emma (UK Presenter Female)", "provider": "kokoro_local", "cost_usd": 0.0, "gender": "female", "accent": "UK"},
+
+    # Indian Voices (English & Hindi Natural Neural TTS)
+    {"id": "en-IN-PrabhatNeural", "name": "Prabhat (Indian English Male — Natural Neural)", "label": "Indian English — Prabhat (Male Natural)", "provider": "edge_tts", "cost_usd": 0.0, "gender": "male", "accent": "IN"},
+    {"id": "en-IN-NeerjaExpressiveNeural", "name": "Neerja (Indian English Female — Expressive Neural)", "label": "Indian English — Neerja (Female Expressive)", "provider": "edge_tts", "cost_usd": 0.0, "gender": "female", "accent": "IN"},
+    {"id": "hi-IN-MadhurNeural", "name": "Madhur (Hindi Indian Male — Storyteller Neural)", "label": "Hindi Indian — Madhur (Male Storyteller)", "provider": "edge_tts", "cost_usd": 0.0, "gender": "male", "accent": "IN"},
+    {"id": "hi-IN-SwaraNeural", "name": "Swara (Hindi Indian Female — Conversational Neural)", "label": "Hindi Indian — Swara (Female Conversational)", "provider": "edge_tts", "cost_usd": 0.0, "gender": "female", "accent": "IN"},
+
+    # Nepali Voices (Authentic Himalayan Neural TTS)
+    {"id": "ne-NP-SagarNeural", "name": "Sagar (Nepali Male — Authentic Neural)", "label": "Nepali — Sagar (Male Authentic)", "provider": "edge_tts", "cost_usd": 0.0, "gender": "male", "accent": "NP"},
+    {"id": "ne-NP-HemkalaNeural", "name": "Hemkala (Nepali Female — Authentic Neural)", "label": "Nepali — Hemkala (Female Authentic)", "provider": "edge_tts", "cost_usd": 0.0, "gender": "female", "accent": "NP"},
+
+    # Global High-Retention Narrators
+    {"id": "en-US-GuyNeural", "name": "Guy (US Tech / Explainer Male — Edge Neural)", "label": "Microsoft Edge — Guy (US Male Explainer)", "provider": "edge_tts", "cost_usd": 0.0, "gender": "male", "accent": "US"},
+    {"id": "en-US-AriaNeural", "name": "Aria (US Dynamic Presenter Female — Edge Neural)", "label": "Microsoft Edge — Aria (US Female Presenter)", "provider": "edge_tts", "cost_usd": 0.0, "gender": "female", "accent": "US"},
+    {"id": "en-GB-RyanNeural", "name": "Ryan (UK Documentary Male — Edge Neural)", "label": "Microsoft Edge — Ryan (UK Male)", "provider": "edge_tts", "cost_usd": 0.0, "gender": "male", "accent": "UK"},
 ]
 
 KOKORO_VOICE_MAP = {

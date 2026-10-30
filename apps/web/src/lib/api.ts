@@ -424,15 +424,27 @@ export const api = {
   cancel: (id: string) => req<Job>(`/api/jobs/${id}/cancel`, { method: "POST" }),
 
   // V2 Templates Studio API
-  v2Niches: () => req<{ niches: V2NicheItem[] }>("/api/v2/templates/niches"),
+  v2Niches: () => req<{ niches: V2NicheItem[]; voices: V2VoiceItem[]; max_duration_s: number }>("/api/v2/templates/niches"),
   v2GenerateTemplate: (body: {
     topic: string;
     niche_id: string;
     target_duration_s: number;
     aspect_ratio: string;
     mode: string;
+    voice_id?: string;
     custom_instructions?: string;
   }) => req<V2TemplateBlueprint>("/api/v2/templates/generate", { method: "POST", body: JSON.stringify(body) }),
+  v2SavePreviewHtml: (html: string) => req<{ ok: boolean; url: string }>("/api/v2/templates/render-html-preview", { method: "POST", body: JSON.stringify({ html }) }),
+};
+
+export type V2VoiceItem = {
+  id: string;
+  name: string;
+  label: string;
+  provider: string;
+  cost_usd: number;
+  gender?: "male" | "female";
+  accent?: string;
 };
 
 export type V2NicheItem = {

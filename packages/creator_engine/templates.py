@@ -378,6 +378,7 @@ class TemplateGenerator:
         target_duration_s: int = 60,
         aspect_ratio: str = "9:16",
         mode: str = "master_auto",
+        voice_id: str = "kokoro:am_michael",
         custom_instructions: Optional[str] = None
     ) -> Dict[str, Any]:
         """Generate a complete CapCut/DaVinci-grade production blueprint and multi-AI prompt."""
@@ -452,6 +453,7 @@ class TemplateGenerator:
             "target_duration_s": target_duration_s,
             "target_word_count": target_words,
             "aspect_ratio": aspect_ratio,
+            "voice_id": voice_id,
             "mode": mode,
             "scenes": scenes,
             "music_bus": {
