@@ -461,6 +461,8 @@ export type V2BedrockModelItem = {
   output_cost_per_1m: number;
   speed: string;
   description: string;
+  is_best?: boolean;
+  status?: string;
 };
 
 export type V2TokenTelemetry = {

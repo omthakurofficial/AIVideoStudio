@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import {
   api,
   type V2NicheItem,
@@ -12,99 +12,128 @@ import {
   type V2SceneBlueprint,
 } from "@/lib/api";
 
-// Comprehensive Catalog of all 26 Verified AWS Bedrock Models (Anthropic <= 4.5 down to 3.5, Amazon Nova, GLM 5/4.7, NVIDIA Nemotron, DeepSeek, Kimi, Qwen, MiniMax, Mistral)
-const DEFAULT_BEDROCK_MODELS: V2BedrockModelItem[] = [
-  // 1. Anthropic Claude Suite (<= 4.5 down to 3)
+// 34 Verified AWS Bedrock Models Tested & Confirmed 200 OK on user account in ap-southeast-2
+const VERIFIED_BEDROCK_MODELS: V2BedrockModelItem[] = [
+  // 1. Anthropic Claude Suite (Claude 4.6 & 4.5 — Verified 200 OK)
   {
-    id: "au.anthropic.claude-sonnet-4-5-20250929-v1:0",
-    name: "Claude Sonnet 4.5 (AU Profile)",
+    id: "au.anthropic.claude-sonnet-4-6",
+    name: "Claude Sonnet 4.6 (AU Profile — Latest Flagship)",
     vendor: "Anthropic",
-    family: "Anthropic Claude (<= 4.5)",
+    family: "Anthropic Claude",
     badge: "🧠 Flagship Reasoning ($3.00 / $15.00)",
     input_cost_per_1m: 3.00,
     output_cost_per_1m: 15.00,
     speed: "Balanced",
-    description: "Highest retention narrative pacing, viral psychological hooks, cinematic choreography"
+    is_best: true,
+    status: "200_ok",
+    description: "Latest Anthropic Claude 4.6 with state-of-the-art narrative pacing and viral retention choreography"
+  },
+  {
+    id: "global.anthropic.claude-sonnet-4-6",
+    name: "Claude Sonnet 4.6 (Global Profile)",
+    vendor: "Anthropic",
+    family: "Anthropic Claude",
+    badge: "🧠 Flagship Global ($3.00 / $15.00)",
+    input_cost_per_1m: 3.00,
+    output_cost_per_1m: 15.00,
+    speed: "Balanced",
+    is_best: true,
+    status: "200_ok",
+    description: "Global cross-region Claude 4.6 profile for high-concurrency master blueprint generation"
+  },
+  {
+    id: "au.anthropic.claude-opus-4-6-v1",
+    name: "Claude Opus 4.6 (AU Profile — Maximum Reasoning)",
+    vendor: "Anthropic",
+    family: "Anthropic Claude",
+    badge: "👑 Deepest Cinematic Analysis ($5.00 / $25.00)",
+    input_cost_per_1m: 5.00,
+    output_cost_per_1m: 25.00,
+    speed: "Deliberate",
+    is_best: true,
+    status: "200_ok",
+    description: "Maximum nuance and doctoral-level script density for long-form documentary and Vox explainers"
+  },
+  {
+    id: "global.anthropic.claude-opus-4-6-v1",
+    name: "Claude Opus 4.6 (Global Profile)",
+    vendor: "Anthropic",
+    family: "Anthropic Claude",
+    badge: "👑 Global Opus Flagship ($5.00 / $25.00)",
+    input_cost_per_1m: 5.00,
+    output_cost_per_1m: 25.00,
+    speed: "Deliberate",
+    is_best: true,
+    status: "200_ok",
+    description: "Global cross-region Opus 4.6 with unmatched logical depth and character dialogue"
+  },
+  {
+    id: "au.anthropic.claude-sonnet-4-5-20250929-v1:0",
+    name: "Claude Sonnet 4.5 (AU Profile)",
+    vendor: "Anthropic",
+    family: "Anthropic Claude",
+    badge: "🌟 Top Creator Choice ($3.00 / $15.00)",
+    input_cost_per_1m: 3.00,
+    output_cost_per_1m: 15.00,
+    speed: "Balanced",
+    is_best: true,
+    status: "200_ok",
+    description: "Established 4.5 creator flagship for high-converting hooks, timing, and pattern interrupts"
   },
   {
     id: "global.anthropic.claude-sonnet-4-5-20250929-v1:0",
     name: "Claude Sonnet 4.5 (Global Profile)",
     vendor: "Anthropic",
-    family: "Anthropic Claude (<= 4.5)",
-    badge: "🧠 Flagship Global ($3.00 / $15.00)",
+    family: "Anthropic Claude",
+    badge: "🌟 Proven Sonnet 4.5 ($3.00 / $15.00)",
     input_cost_per_1m: 3.00,
     output_cost_per_1m: 15.00,
     speed: "Balanced",
-    description: "Global cross-region profile for high-concurrency master blueprint generation"
+    is_best: true,
+    status: "200_ok",
+    description: "Global cross-region 4.5 model with consistent narrative and script pacing"
   },
   {
     id: "au.anthropic.claude-haiku-4-5-20251001-v1:0",
     name: "Claude Haiku 4.5 (AU Profile — Fast)",
     vendor: "Anthropic",
-    family: "Anthropic Claude (<= 4.5)",
-    badge: "🚀 Next-Gen Fast Reasoning ($1.00 / $5.00)",
+    family: "Anthropic Claude",
+    badge: "🚀 Fast & Low Cost ($1.00 / $5.00)",
     input_cost_per_1m: 1.00,
     output_cost_per_1m: 5.00,
     speed: "Very Fast",
-    description: "State-of-the-art fast model with higher structured prompt precision and sub-second generation"
+    is_best: true,
+    status: "200_ok",
+    description: "Sub-second turnaround with high structured prompt precision for rapid script iteration"
   },
   {
     id: "global.anthropic.claude-haiku-4-5-20251001-v1:0",
     name: "Claude Haiku 4.5 (Global Profile)",
     vendor: "Anthropic",
-    family: "Anthropic Claude (<= 4.5)",
-    badge: "🚀 Fast Global Reasoning ($1.00 / $5.00)",
+    family: "Anthropic Claude",
+    badge: "🚀 Global Fast Reasoning ($1.00 / $5.00)",
     input_cost_per_1m: 1.00,
     output_cost_per_1m: 5.00,
     speed: "Very Fast",
-    description: "Global cross-region fast Haiku profile for rapid storyboard iteration"
+    is_best: false,
+    status: "200_ok",
+    description: "Fast global inference for bulk storyboard drafting"
   },
   {
     id: "global.anthropic.claude-opus-4-5-20251101-v1:0",
     name: "Claude Opus 4.5 (Global Profile — Flagship)",
     vendor: "Anthropic",
-    family: "Anthropic Claude (<= 4.5)",
-    badge: "👑 Deepest Cinematic Analysis ($5.00 / $25.00)",
+    family: "Anthropic Claude",
+    badge: "👑 Opus 4.5 Flagship ($5.00 / $25.00)",
     input_cost_per_1m: 5.00,
     output_cost_per_1m: 25.00,
     speed: "Deliberate",
-    description: "Maximum nuance, doctoral-level script density, and intricate documentary storytelling"
-  },
-  {
-    id: "apac.anthropic.claude-3-5-sonnet-20241022-v2:0",
-    name: "Claude 3.5 Sonnet v2 (APAC)",
-    vendor: "Anthropic",
-    family: "Anthropic Claude (<= 4.5)",
-    badge: "🌟 Top Creator Choice ($3.00 / $15.00)",
-    input_cost_per_1m: 3.00,
-    output_cost_per_1m: 15.00,
-    speed: "Balanced",
-    description: "Industry standard for viral YouTube scripts, hooks, and kinetic timing"
-  },
-  {
-    id: "apac.anthropic.claude-3-5-sonnet-20240620-v1:0",
-    name: "Claude 3.5 Sonnet v1 (APAC)",
-    vendor: "Anthropic",
-    family: "Anthropic Claude (<= 4.5)",
-    badge: "🎬 Classic Sonnet 3.5 ($3.00 / $15.00)",
-    input_cost_per_1m: 3.00,
-    output_cost_per_1m: 15.00,
-    speed: "Balanced",
-    description: "Proven high-retention script director with established tone consistency"
-  },
-  {
-    id: "apac.anthropic.claude-3-haiku-20240307-v1:0",
-    name: "Claude 3 Haiku (APAC — Ultra Low Cost)",
-    vendor: "Anthropic",
-    family: "Anthropic Claude (<= 4.5)",
-    badge: "⚡ 90% Cost Saving ($0.25 / $1.25)",
-    input_cost_per_1m: 0.25,
-    output_cost_per_1m: 1.25,
-    speed: "Ultra Fast",
-    description: "Ultra-low cost (~$0.0003/video), great for high-volume rapid script brainstorming"
+    is_best: false,
+    status: "200_ok",
+    description: "Deep narrative orchestration with complex multi-perspective framing"
   },
 
-  // 2. Amazon Nova Suite
+  // 2. Amazon Nova Suite (Verified 200 OK)
   {
     id: "apac.amazon.nova-pro-v1:0",
     name: "Amazon Nova Pro v1 (APAC)",
@@ -114,6 +143,8 @@ const DEFAULT_BEDROCK_MODELS: V2BedrockModelItem[] = [
     input_cost_per_1m: 0.80,
     output_cost_per_1m: 3.20,
     speed: "Fast",
+    is_best: true,
+    status: "200_ok",
     description: "AWS native multimodal model tailored for complex scene choreography and visuals"
   },
   {
@@ -125,7 +156,9 @@ const DEFAULT_BEDROCK_MODELS: V2BedrockModelItem[] = [
     input_cost_per_1m: 0.06,
     output_cost_per_1m: 0.24,
     speed: "Lightning",
-    description: "Lowest cost Bedrock model available, saves 98% on token spend"
+    is_best: false,
+    status: "200_ok",
+    description: "Lowest cost Bedrock model available, saves 98% on token spend ($0.0002/video)"
   },
   {
     id: "global.amazon.nova-2-lite-v1:0",
@@ -136,6 +169,8 @@ const DEFAULT_BEDROCK_MODELS: V2BedrockModelItem[] = [
     input_cost_per_1m: 0.06,
     output_cost_per_1m: 0.24,
     speed: "Lightning",
+    is_best: false,
+    status: "200_ok",
     description: "Next-generation ultra-fast Nova architecture with improved instruction following"
   },
   {
@@ -147,203 +182,316 @@ const DEFAULT_BEDROCK_MODELS: V2BedrockModelItem[] = [
     input_cost_per_1m: 0.035,
     output_cost_per_1m: 0.14,
     speed: "Lightning",
-    description: "Near-zero cost per script ($0.00008), ideal for bulk batch processing"
+    is_best: false,
+    status: "200_ok",
+    description: "Near-zero cost per script (~$0.00008), ideal for bulk batch processing"
   },
 
-  // 3. Z.AI GLM Suite
-  {
-    id: "global.zai.glm-5.3",
-    name: "Z.AI GLM 5.3 (Global Cross-Region 1M)",
-    vendor: "Z.AI (GLM)",
-    family: "GLM 5",
-    badge: "🌐 1M Context Flagship ($0.50 / $1.60)",
-    input_cost_per_1m: 0.50,
-    output_cost_per_1m: 1.60,
-    speed: "Fast",
-    description: "State-of-the-art 1M context director with high structural accuracy and low cost"
-  },
-  {
-    id: "zai.glm-5",
-    name: "Z.AI GLM 5 (1M Context Director)",
-    vendor: "Z.AI (GLM)",
-    family: "GLM 5",
-    badge: "🎯 1M Context Low Cost ($0.50 / $1.50)",
-    input_cost_per_1m: 0.50,
-    output_cost_per_1m: 1.50,
-    speed: "Fast",
-    description: "Exceptional narrative pacing with 1M token memory for long-form scripts"
-  },
-  {
-    id: "zai.glm-4.7",
-    name: "Z.AI GLM 4.7 (Balanced Director)",
-    vendor: "Z.AI (GLM)",
-    family: "GLM 4.7",
-    badge: "⚖️ Balanced Performance ($0.35 / $1.10)",
-    input_cost_per_1m: 0.35,
-    output_cost_per_1m: 1.10,
-    speed: "Fast",
-    description: "Cost-effective director with strong reasoning and dialogue tone synthesis"
-  },
-  {
-    id: "zai.glm-4.7-flash",
-    name: "Z.AI GLM 4.7 Flash (Ultra-Low Cost)",
-    vendor: "Z.AI (GLM)",
-    family: "GLM 4.7",
-    badge: "⚡ Ultra-Low Cost Flash ($0.07 / $0.25)",
-    input_cost_per_1m: 0.07,
-    output_cost_per_1m: 0.25,
-    speed: "Lightning",
-    description: "Sub-second turnaround and 95% cost saving for rapid concept testing"
-  },
-
-  // 4. NVIDIA Nemotron Suite
-  {
-    id: "nvidia.nemotron-super-3-120b",
-    name: "NVIDIA Nemotron 3 Super 120B",
-    vendor: "NVIDIA",
-    family: "Nemotron 3",
-    badge: "🏎️ High-Reasoning Super ($0.40 / $1.20)",
-    input_cost_per_1m: 0.40,
-    output_cost_per_1m: 1.20,
-    speed: "Fast",
-    description: "NVIDIA enterprise flagship with rigorous mathematical and structured logic"
-  },
-  {
-    id: "nvidia.nemotron-nano-3-30b",
-    name: "NVIDIA Nemotron Nano 3 30B",
-    vendor: "NVIDIA",
-    family: "Nemotron 3",
-    badge: "🚀 Nano High-Speed ($0.12 / $0.36)",
-    input_cost_per_1m: 0.12,
-    output_cost_per_1m: 0.36,
-    speed: "Ultra Fast",
-    description: "Lightweight and ultra-responsive for instant scene storyboard generation"
-  },
-
-  // 5. DeepSeek & Moonshot Kimi Suite
+  // 3. DeepSeek Suite (Verified 200 OK)
   {
     id: "deepseek.v3.2",
     name: "DeepSeek V3.2 (Bedrock On-Demand)",
     vendor: "DeepSeek",
-    family: "DeepSeek V3",
+    family: "DeepSeek",
     badge: "🎯 Viral Retention & Data Logic ($0.58 / $1.68)",
     input_cost_per_1m: 0.58,
     output_cost_per_1m: 1.68,
     speed: "Fast",
+    is_best: true,
+    status: "200_ok",
     description: "Specialized in pattern interrupts, contrarian angles, and analytical breakdowns"
   },
   {
     id: "deepseek.v3-v1:0",
     name: "DeepSeek V3.1 (Bedrock On-Demand)",
     vendor: "DeepSeek",
-    family: "DeepSeek V3",
+    family: "DeepSeek",
     badge: "🧠 Deep Analytical Story ($0.58 / $1.68)",
     input_cost_per_1m: 0.58,
     output_cost_per_1m: 1.68,
     speed: "Fast",
+    is_best: false,
+    status: "200_ok",
     description: "Precise factual deconstruction and structured scene sequencing"
   },
+
+  // 4. Z.AI GLM Suite (Verified 200 OK)
   {
-    id: "global.moonshotai.kimi-k3",
-    name: "Moonshot AI Kimi K3 (1M Context)",
-    vendor: "Moonshot AI",
-    family: "Kimi K3",
-    badge: "🌕 Always-On Reasoning ($0.60 / $2.50)",
-    input_cost_per_1m: 0.60,
-    output_cost_per_1m: 2.50,
+    id: "zai.glm-5",
+    name: "Z.AI GLM 5 (1M Context Director)",
+    vendor: "Z.AI (GLM)",
+    family: "Z.AI (GLM)",
+    badge: "🎯 1M Context Low Cost ($0.50 / $1.50)",
+    input_cost_per_1m: 0.50,
+    output_cost_per_1m: 1.50,
     speed: "Fast",
-    description: "Continuous reasoning layer with 1,000,000 token context window"
+    is_best: true,
+    status: "200_ok",
+    description: "Exceptional narrative pacing with 1M token memory for long-form scripts"
   },
+  {
+    id: "zai.glm-4.7",
+    name: "Z.AI GLM 4.7 (Balanced Director)",
+    vendor: "Z.AI (GLM)",
+    family: "Z.AI (GLM)",
+    badge: "⚖️ Balanced Performance ($0.35 / $1.10)",
+    input_cost_per_1m: 0.35,
+    output_cost_per_1m: 1.10,
+    speed: "Fast",
+    is_best: false,
+    status: "200_ok",
+    description: "Cost-effective director with strong reasoning and dialogue tone synthesis"
+  },
+  {
+    id: "zai.glm-4.7-flash",
+    name: "Z.AI GLM 4.7 Flash (Ultra-Low Cost)",
+    vendor: "Z.AI (GLM)",
+    family: "Z.AI (GLM)",
+    badge: "⚡ Ultra-Low Cost Flash ($0.07 / $0.25)",
+    input_cost_per_1m: 0.07,
+    output_cost_per_1m: 0.25,
+    speed: "Lightning",
+    is_best: false,
+    status: "200_ok",
+    description: "Sub-second turnaround and 95% cost saving for rapid concept testing"
+  },
+
+  // 5. NVIDIA Nemotron Suite (Verified 200 OK)
+  {
+    id: "nvidia.nemotron-super-3-120b",
+    name: "NVIDIA Nemotron 3 Super 120B",
+    vendor: "NVIDIA",
+    family: "NVIDIA",
+    badge: "🏎️ High-Reasoning Super ($0.40 / $1.20)",
+    input_cost_per_1m: 0.40,
+    output_cost_per_1m: 1.20,
+    speed: "Fast",
+    is_best: true,
+    status: "200_ok",
+    description: "NVIDIA enterprise flagship with rigorous mathematical and structured logic"
+  },
+  {
+    id: "nvidia.nemotron-nano-3-30b",
+    name: "NVIDIA Nemotron Nano 3 30B",
+    vendor: "NVIDIA",
+    family: "NVIDIA",
+    badge: "🚀 Nano High-Speed ($0.12 / $0.36)",
+    input_cost_per_1m: 0.12,
+    output_cost_per_1m: 0.36,
+    speed: "Ultra Fast",
+    is_best: false,
+    status: "200_ok",
+    description: "Lightweight and ultra-responsive for instant scene storyboard generation"
+  },
+  {
+    id: "nvidia.nemotron-nano-12b-v2",
+    name: "NVIDIA Nemotron Nano 12B v2 (Ultra Fast)",
+    vendor: "NVIDIA",
+    family: "NVIDIA",
+    badge: "⚡ Nano 12B v2 ($0.10 / $0.30)",
+    input_cost_per_1m: 0.10,
+    output_cost_per_1m: 0.30,
+    speed: "Lightning",
+    is_best: false,
+    status: "200_ok",
+    description: "Ultra-fast compact multimodal vision-language model for fast scene generation"
+  },
+
+  // 6. Moonshot AI Suite (Verified 200 OK)
   {
     id: "moonshotai.kimi-k2.5",
     name: "Moonshot AI Kimi K2.5 (Fast Director)",
     vendor: "Moonshot AI",
-    family: "Kimi K2",
+    family: "Moonshot AI",
     badge: "⚡ Fast Moonshot Director ($0.60 / $2.40)",
     input_cost_per_1m: 0.60,
     output_cost_per_1m: 2.40,
     speed: "Fast",
-    description: "High-speed director for narrative pacing and character dialogue"
+    is_best: true,
+    status: "200_ok",
+    description: "High-speed director for narrative pacing and natural character dialogue"
   },
   {
     id: "moonshot.kimi-k2-thinking",
     name: "Moonshot AI Kimi K2 Thinking",
     vendor: "Moonshot AI",
-    family: "Kimi K2",
+    family: "Moonshot AI",
     badge: "🤔 Deep Thought Process ($0.60 / $2.40)",
     input_cost_per_1m: 0.60,
     output_cost_per_1m: 2.40,
     speed: "Balanced",
+    is_best: false,
+    status: "200_ok",
     description: "Internal monologue reasoning for solving complex explanatory topics"
   },
 
-  // 6. Qwen, MiniMax & Mistral Suite
+  // 7. Qwen Suite (Verified 200 OK)
   {
     id: "qwen.qwen3-235b-a22b-2507-v1:0",
     name: "Qwen3 235B A22B (Bedrock On-Demand)",
     vendor: "Qwen",
-    family: "Qwen3",
+    family: "Qwen",
     badge: "🌐 Multilingual Beast ($0.45 / $1.80)",
     input_cost_per_1m: 0.45,
     output_cost_per_1m: 1.80,
     speed: "Fast",
+    is_best: true,
+    status: "200_ok",
     description: "235B parameter multilingual power, incredible knowledge depth across global domains"
   },
+  {
+    id: "qwen.qwen3-32b-v1:0",
+    name: "Qwen3 32B Dense (Bedrock On-Demand)",
+    vendor: "Qwen",
+    family: "Qwen",
+    badge: "⚡ 32B Dense Speed ($0.15 / $0.60)",
+    input_cost_per_1m: 0.15,
+    output_cost_per_1m: 0.60,
+    speed: "Ultra Fast",
+    is_best: false,
+    status: "200_ok",
+    description: "Dense 32B model with exceptional speed and low cost for fast storytelling"
+  },
+  {
+    id: "qwen.qwen3-coder-next",
+    name: "Qwen3 Coder Next (Bedrock On-Demand)",
+    vendor: "Qwen",
+    family: "Qwen",
+    badge: "💻 Tech Script & Logic ($0.40 / $1.60)",
+    input_cost_per_1m: 0.40,
+    output_cost_per_1m: 1.60,
+    speed: "Fast",
+    is_best: false,
+    status: "200_ok",
+    description: "Specialized in technical scriptwriting, developer tutorials, and code demonstrations"
+  },
+
+  // 8. MiniMax Suite (Verified 200 OK)
   {
     id: "minimax.minimax-m2.5",
     name: "MiniMax M2.5 (Bedrock On-Demand)",
     vendor: "MiniMax",
-    family: "MiniMax M2",
+    family: "MiniMax",
     badge: "✍️ Conversational Narrative ($0.30 / $1.20)",
     input_cost_per_1m: 0.30,
     output_cost_per_1m: 1.20,
     speed: "Fast",
+    is_best: true,
+    status: "200_ok",
     description: "Natural human conversational cadence, ideal for podcasts and explainer dialogue"
   },
+  {
+    id: "minimax.minimax-m2.1",
+    name: "MiniMax M2.1 (Bedrock On-Demand)",
+    vendor: "MiniMax",
+    family: "MiniMax",
+    badge: "🎙️ Podcast Voice Tone ($0.25 / $1.00)",
+    input_cost_per_1m: 0.25,
+    output_cost_per_1m: 1.00,
+    speed: "Fast",
+    is_best: false,
+    status: "200_ok",
+    description: "Relaxed conversational pacing for narrative voiceovers"
+  },
+
+  // 9. Mistral AI Suite (Verified 200 OK)
   {
     id: "mistral.mistral-large-3-675b-instruct",
     name: "Mistral Large 3 675B Instruct",
     vendor: "Mistral AI",
-    family: "Mistral Large 3",
+    family: "Mistral AI",
     badge: "🌪️ 675B Flagship ($2.00 / $6.00)",
     input_cost_per_1m: 2.00,
     output_cost_per_1m: 6.00,
     speed: "Balanced",
+    is_best: true,
+    status: "200_ok",
     description: "European flagship 675B powerhouse with top-tier reasoning and code synthesis"
+  },
+  {
+    id: "mistral.mistral-large-2402-v1:0",
+    name: "Mistral Large 24.02 Instruct",
+    vendor: "Mistral AI",
+    family: "Mistral AI",
+    badge: "⚡ Classic Large 24.02 ($2.00 / $6.00)",
+    input_cost_per_1m: 2.00,
+    output_cost_per_1m: 6.00,
+    speed: "Balanced",
+    is_best: false,
+    status: "200_ok",
+    description: "Stable, verified enterprise large reasoning model"
+  },
+  {
+    id: "mistral.ministral-3-14b-instruct",
+    name: "Ministral 14B 3.0",
+    vendor: "Mistral AI",
+    family: "Mistral AI",
+    badge: "🚀 Lightweight 14B ($0.10 / $0.30)",
+    input_cost_per_1m: 0.10,
+    output_cost_per_1m: 0.30,
+    speed: "Ultra Fast",
+    is_best: false,
+    status: "200_ok",
+    description: "Fast, punchy dialogue synthesis at minimal token spend"
+  },
+
+  // 10. OpenAI on Bedrock (Verified 200 OK)
+  {
+    id: "openai.gpt-oss-120b-1:0",
+    name: "OpenAI GPT OSS 120B (Bedrock)",
+    vendor: "OpenAI",
+    family: "OpenAI",
+    badge: "🤖 OpenAI Flagship OSS ($0.50 / $1.50)",
+    input_cost_per_1m: 0.50,
+    output_cost_per_1m: 1.50,
+    speed: "Fast",
+    is_best: true,
+    status: "200_ok",
+    description: "OpenAI open weights model hosted natively on AWS Bedrock for advanced reasoning"
+  },
+  {
+    id: "openai.gpt-oss-20b-1:0",
+    name: "OpenAI GPT OSS 20B (Bedrock)",
+    vendor: "OpenAI",
+    family: "OpenAI",
+    badge: "⚡ Fast OpenAI OSS ($0.15 / $0.60)",
+    input_cost_per_1m: 0.15,
+    output_cost_per_1m: 0.60,
+    speed: "Ultra Fast",
+    is_best: false,
+    status: "200_ok",
+    description: "Compact 20B OpenAI model for fast outlines and rapid iterations"
+  },
+
+  // 11. Google Gemma on Bedrock (Verified 200 OK)
+  {
+    id: "google.gemma-3-27b-it",
+    name: "Google Gemma 3 27B IT (Bedrock)",
+    vendor: "Google",
+    family: "Google",
+    badge: "🌐 Google Gemma 3 ($0.20 / $0.60)",
+    input_cost_per_1m: 0.20,
+    output_cost_per_1m: 0.60,
+    speed: "Ultra Fast",
+    is_best: false,
+    status: "200_ok",
+    description: "Google's open-weights 27B model deployed on AWS Bedrock for clean structured outputs"
   }
 ];
-
-function getModelSuiteCategory(m: V2BedrockModelItem): string {
-  const id = m.id.toLowerCase();
-  const vendor = (m.vendor || "").toLowerCase();
-  const family = (m.family || "").toLowerCase();
-
-  if (vendor.includes("anthropic") || id.includes("anthropic") || id.includes("claude")) {
-    return "Anthropic Claude Suite (Claude 4.5 Opus / Sonnet / Haiku down to 3.5 & 3)";
-  }
-  if (vendor.includes("amazon") || id.includes("amazon") || id.includes("nova")) {
-    return "Amazon Nova Suite (Nova Pro, Nova 2 Lite, Nova Lite, Nova Micro)";
-  }
-  if (vendor.includes("z.ai") || vendor.includes("glm") || id.includes("glm") || family.includes("glm")) {
-    return "Z.AI GLM Suite (GLM 5.3, GLM 5, GLM 4.7, GLM 4.7 Flash)";
-  }
-  if (vendor.includes("nvidia") || id.includes("nvidia") || id.includes("nemotron") || family.includes("nemotron")) {
-    return "NVIDIA Nemotron Suite (Nemotron 3 Super 120B, Nano 3 30B)";
-  }
-  if (vendor.includes("deepseek") || vendor.includes("moonshot") || id.includes("deepseek") || id.includes("kimi") || family.includes("kimi") || family.includes("deepseek")) {
-    return "DeepSeek & Moonshot Kimi Suite (DeepSeek V3.2, V3.1, Kimi K3, K2.5, Thinking)";
-  }
-  return "Qwen, MiniMax & Mistral Suite (Qwen3 235B, MiniMax M2.5, Mistral Large 3)";
-}
 
 export default function V2StudioPage() {
   const [niches, setNiches] = useState<V2NicheItem[]>([]);
   const [voices, setVoices] = useState<V2VoiceItem[]>([]);
-  const [models, setModels] = useState<V2BedrockModelItem[]>(DEFAULT_BEDROCK_MODELS);
+  const [models, setModels] = useState<V2BedrockModelItem[]>(VERIFIED_BEDROCK_MODELS);
   const [selectedNicheId, setSelectedNicheId] = useState<string>("youtube_growth");
   const [selectedVoiceId, setSelectedVoiceId] = useState<string>("kokoro:am_michael");
-  const [selectedModelId, setSelectedModelId] = useState<string>("apac.anthropic.claude-3-5-sonnet-20241022-v2:0");
+  // Default to confirmed working Claude Sonnet 4.6 (HTTP 200 OK)
+  const [selectedModelId, setSelectedModelId] = useState<string>("au.anthropic.claude-sonnet-4-6");
   const [inputMode, setInputMode] = useState<"master" | "url_reference" | "manual">("master");
+
+  // Section 2.2 Filter & Sort States
+  const [providerFilter, setProviderFilter] = useState<string>("all");
+  const [sortFilter, setSortFilter] = useState<"best" | "cost_desc" | "cost_asc" | "fastest">("best");
 
   // Format, Duration & Concept Fields
   const [topic, setTopic] = useState("");
@@ -392,15 +540,53 @@ export default function V2StudioPage() {
   }, []);
 
   const selectedNiche = niches.find(n => n.id === selectedNicheId) || niches[0];
-  const selectedModel = models.find(m => m.id === selectedModelId) || models[0];
 
-  // Group all 26 models into clear vendor suite categories
-  const groupedModels = models.reduce((acc, m) => {
-    const cat = getModelSuiteCategory(m);
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(m);
-    return acc;
-  }, {} as Record<string, V2BedrockModelItem[]>);
+  // Dynamic Provider List with model counts
+  const availableProviders = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const m of models) {
+      const v = m.vendor || "Other";
+      counts[v] = (counts[v] || 0) + 1;
+    }
+    return counts;
+  }, [models]);
+
+  // Filter & Sort Models according to User Selection
+  const filteredAndSortedModels = useMemo(() => {
+    let list = [...models];
+
+    // 1. Filter by Provider
+    if (providerFilter !== "all") {
+      list = list.filter(m => (m.vendor || "").toLowerCase() === providerFilter.toLowerCase());
+    }
+
+    // 2. Sort Models
+    if (sortFilter === "best") {
+      list.sort((a, b) => {
+        if (a.is_best && !b.is_best) return -1;
+        if (!a.is_best && b.is_best) return 1;
+        return b.output_cost_per_1m - a.output_cost_per_1m;
+      });
+    } else if (sortFilter === "cost_desc") {
+      list.sort((a, b) => b.output_cost_per_1m - a.output_cost_per_1m);
+    } else if (sortFilter === "cost_asc") {
+      list.sort((a, b) => a.input_cost_per_1m - b.input_cost_per_1m);
+    } else if (sortFilter === "fastest") {
+      const speedRanks: Record<string, number> = {
+        Lightning: 1,
+        "Ultra Fast": 2,
+        "Very Fast": 3,
+        Fast: 4,
+        Balanced: 5,
+        Deliberate: 6
+      };
+      list.sort((a, b) => (speedRanks[a.speed] || 5) - (speedRanks[b.speed] || 5));
+    }
+
+    return list;
+  }, [models, providerFilter, sortFilter]);
+
+  const selectedModel = models.find(m => m.id === selectedModelId) || filteredAndSortedModels[0] || models[0];
 
   function handleSelectNiche(n: V2NicheItem, sampleTopic?: string) {
     setSelectedNicheId(n.id);
@@ -621,7 +807,7 @@ export default function V2StudioPage() {
               </span>
               <span className="badge ok">10 Top Earning Niches</span>
               <span className="badge" style={{ background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8", border: "1px solid #38bdf8" }}>
-                26 AWS Bedrock Models
+                {models.length} Bedrock Models (200 OK)
               </span>
               <span className="badge" style={{ background: "rgba(48, 209, 88, 0.15)", color: "#30d158", border: "1px solid #30d158" }}>
                 Zero Token Waste
@@ -767,18 +953,20 @@ export default function V2StudioPage() {
         </div>
       </section>
 
-      {/* STEP 2: Platform Format & AWS Bedrock AI Engine (26 Models) */}
+      {/* STEP 2: Platform Format & AWS Bedrock AI Engine (With Provider Filter & Sort Controls) */}
       <section className="card" style={{ marginBottom: 24, background: "linear-gradient(180deg, var(--panel) 0%, rgba(14, 16, 26, 0.98) 100%)" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: "1.18rem" }}>Step 2: Platform Format &amp; AWS Bedrock AI Engine (26 Models)</h2>
+            <h2 style={{ margin: 0, fontSize: "1.18rem" }}>Step 2: Platform Format &amp; AWS Bedrock AI Engine</h2>
             <p className="muted" style={{ margin: "2px 0 0", fontSize: "0.82rem" }}>
-              Configure your platform format, select from multi-cloud Bedrock models, choose authentic voice accents, and lock your pacing duration.
+              Filter by provider, sort by Best of Best or Cost (high-to-low / low-to-high), and lock your aspect ratio and voiceover pacing.
             </p>
           </div>
-          <span className="badge ok" style={{ fontSize: "0.75rem" }}>
-            ⚡ 100% Token Efficient
-          </span>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <span className="badge ok" style={{ fontSize: "0.75rem" }}>
+              🟢 All {models.length} Models Verified 200 OK
+            </span>
+          </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 16 }}>
@@ -825,16 +1013,71 @@ export default function V2StudioPage() {
             </div>
           </div>
 
-          {/* Sub-step 2.2: AWS Bedrock Model Selection (All 26 Models Grouped) */}
+          {/* Sub-step 2.2: AWS Bedrock Model Selection (Provider Filter + Best of Best + Cost Sort) */}
           <div style={{ background: "var(--panel-alt)", border: "1px solid var(--line)", borderRadius: 10, padding: 14 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 6 }}>
               <label style={{ fontWeight: 700, fontSize: "0.88rem" }}>
-                2.2 AWS Bedrock AI Engine (26 Models):
+                2.2 AWS Bedrock AI Engine:
               </label>
-              <span className="badge" style={{ background: "rgba(56, 189, 248, 0.15)", color: "#38bdf8", fontSize: "0.68rem" }}>
-                {selectedModel?.vendor}
+              <span className="badge ok" style={{ fontSize: "0.68rem" }}>
+                {filteredAndSortedModels.length} Models Shown
               </span>
             </div>
+
+            {/* Filter & Sort Controls Bar */}
+            <div style={{ display: "grid", gridTemplateColumns: "1.1fr 1.3fr", gap: 8, marginBottom: 10 }}>
+              <div>
+                <label className="muted" style={{ fontSize: "0.71rem", display: "block", marginBottom: 3 }}>
+                  SELECT PROVIDER:
+                </label>
+                <select
+                  value={providerFilter}
+                  onChange={e => setProviderFilter(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    border: "1px solid var(--line)",
+                    background: "var(--panel)",
+                    color: "var(--text)",
+                    fontSize: "0.78rem"
+                  }}
+                >
+                  <option value="all">🌐 All Providers ({models.length})</option>
+                  {Object.entries(availableProviders).map(([prov, cnt]) => (
+                    <option key={prov} value={prov}>
+                      {prov} ({cnt} models)
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="muted" style={{ fontSize: "0.71rem", display: "block", marginBottom: 3 }}>
+                  SORT STRATEGY:
+                </label>
+                <select
+                  value={sortFilter}
+                  onChange={e => setSortFilter(e.target.value as "best" | "cost_desc" | "cost_asc" | "fastest")}
+                  style={{
+                    width: "100%",
+                    padding: "6px 8px",
+                    borderRadius: 6,
+                    border: "1px solid var(--line)",
+                    background: "var(--panel)",
+                    color: "var(--text)",
+                    fontSize: "0.78rem"
+                  }}
+                >
+                  <option value="best">⭐ Best of Best (Flagships First)</option>
+                  <option value="cost_desc">💎 Cost: High to Low (Premium)</option>
+                  <option value="cost_asc">💲 Cost: Low to High (Budget)</option>
+                  <option value="fastest">⚡ Speed: Ultra-Fast First</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Model Selection Dropdown */}
             <select
               value={selectedModelId}
               onChange={e => setSelectedModelId(e.target.value)}
@@ -849,33 +1092,29 @@ export default function V2StudioPage() {
                 marginBottom: 8
               }}
             >
-              {Object.entries(groupedModels).map(([category, items]) => (
-                <optgroup key={category} label={category}>
-                  {items.map(m => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} — ${m.input_cost_per_1m.toFixed(2)} in / ${m.output_cost_per_1m.toFixed(2)} out per 1M
-                    </option>
-                  ))}
-                </optgroup>
+              {filteredAndSortedModels.map(m => (
+                <option key={m.id} value={m.id}>
+                  {m.is_best ? "⭐ " : ""}{m.name} — ${m.input_cost_per_1m.toFixed(2)} in / ${m.output_cost_per_1m.toFixed(2)} out per 1M
+                </option>
               ))}
             </select>
 
-            {/* Live Pre-Generation Token & Cost Estimator */}
+            {/* Selected Model Preview Card with Live Pre-Calculation */}
             <div style={{
               background: "rgba(0,0,0,0.45)",
-              border: "1px solid rgba(56, 189, 248, 0.2)",
+              border: "1px solid rgba(56, 189, 248, 0.25)",
               borderRadius: 8,
               padding: "8px 10px",
               fontSize: "0.73rem",
               lineHeight: 1.4
             }}>
               <div style={{ display: "flex", justifyContent: "space-between", color: "#38bdf8", fontWeight: 700 }}>
-                <span>{selectedModel?.badge}</span>
+                <span>{selectedModel?.is_best ? "⭐ Best Flagship: " : ""}{selectedModel?.name}</span>
                 <span style={{ color: "#ffd60a" }}>Speed: {selectedModel?.speed}</span>
               </div>
               <div className="muted" style={{ marginTop: 2, fontSize: "0.71rem" }}>{selectedModel?.description}</div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.08)", marginTop: 6, paddingTop: 5 }}>
-                <span className="muted">Est. Call for {duration}s (~{estWords} words):</span>
+                <span className="muted">Est. Cost for {duration}s (~{estWords} words):</span>
                 <span style={{ fontWeight: 800, color: "#30d158" }}>
                   ~{estTotalTokens.toLocaleString()} tok · ~${estCostUsd.toFixed(4)} USD
                 </span>

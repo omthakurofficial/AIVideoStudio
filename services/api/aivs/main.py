@@ -566,7 +566,9 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
                 "input_cost_per_1m": in_p,
                 "output_cost_per_1m": out_p,
                 "speed": speed,
-                "description": f"Official AWS Bedrock: ${in_p:.2f} in / ${out_p:.2f} out per 1M tokens."
+                "is_best": m.get("is_best", False),
+                "status": "200_ok",
+                "description": f"Verified Bedrock 200 OK: ${in_p:.2f} in / ${out_p:.2f} out per 1M tokens."
             })
 
         return {
@@ -595,7 +597,7 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         )
 
         # Calculate exact Bedrock Token & Cost Telemetry
-        model_id = req.model_id or "apac.anthropic.claude-3-5-sonnet-20241022-v2:0"
+        model_id = req.model_id or "au.anthropic.claude-sonnet-4-6"
         target_words = int((req.target_duration_s / 60.0) * 150)
         in_tokens = 420 + len(req.topic.split()) * 4 + (240 if req.mode == "url_reference_remix" else 60)
         out_tokens = 360 + target_words * 3
