@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Creator Motion Graphics — Standalone Master Template</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Standard Style Fonts: Anton, Instrument Serif (italic), Inter -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Instrument+Serif:ital@0;1&family=Inter:wght@400;600;700;800;900&display=block">
+<style>
+/* ==========================================================================
+   STYLE THEME CONFIGURATION (Easily customize for v2, v3, or new styles)
+   ========================================================================== */
+:root {
+  color-scheme: dark;
+  --bg: #09090b;             /* Editing suite near-black */
+  --panel: #131316;          /* Control panel background */
+  --ink: #f4f1ea;            /* Warm off-white statement text */
+  --dim: #8e8d94;            /* Secondary gray labels */
+  --line: #26262e;           /* Subtle border stroke */
+  --accent: #ffd60a;         /* High-retention yellow serif accent */
+  --green: #30d158;          /* Metric & rolling growth green */
+  --red: #ff3b30;            /* Error / rejection stamp red */
+  --cyan: #38bdf8;           /* Tech architecture blue */
+  --display: "Anton", Impact, sans-serif;
+  --serif: "Instrument Serif", Georgia, serif;
+  --body: "Inter", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--body);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+}
+.player-wrap {
+  width: 100%;
+  max-width: 1180px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.player-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.player-title {
+  font-family: var(--display);
+  font-size: clamp(20px, 3.5vw, 30px);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.player-title em {
+  font-family: var(--serif);
+  font-style: italic;
+  color: var(--accent);
+}
+.format-toggle {
+  display: flex;
+  gap: 8px;
+}
+.format-btn {
+  background: #202026;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  font: 700 12px var(--body);
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.format-btn.active {
+  color: #fff;
+  border-color: var(--accent);
+  background: rgba(255, 214, 10, 0.15);
+}
+.stage-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+  transition: max-width 0.3s ease, aspect-ratio 0.3s ease;
+  margin: 0 auto;
+}
+.stage-container.vertical {
+  max-width: 480px;
+  aspect-ratio: 9 / 16;
+}
+.stage-container canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.transport-bar {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+button.play-btn {
+  background: #202026;
+  border: 1px solid #33333e;
+  color: #fff;
+  font: 600 13px var(--body);
+  padding: 6px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+button.play-btn:hover { background: #2a2a34; }
+.time-scrubber {
+  flex: 1;
+  -webkit-appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: #26262e;
+  outline: none;
+  cursor: pointer;
+}
+.time-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+}
+.time-display {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--dim);
+}
+</style>
+</head>
+<body>
+
+<div class="player-wrap">
+  <div class="player-header">
+    <h1 class="player-title" id="titleText">Creator Motion <em>Master Template</em></h1>
+    <div class="format-toggle">
+      <button class="format-btn active" id="btn16x9">16:9 Landscape</button>
+      <button class="format-btn" id="btn9x16">9:16 Shorts</button>
+    </div>
+  </div>
+
+  <div class="stage-container" id="stageBox">
+    <canvas id="stage" width="1280" height="720"></canvas>
+  </div>
+
+  <div class="transport-bar">
+    <button class="play-btn" id="playBtn">Play</button>
+    <input type="range" class="time-scrubber" id="scrubber" min="0" max="32.0" step="0.01" value="0">
+    <div class="time-display" id="timeDisp">00:00 / 00:32</div>
+  </div>
+</div>
+
+<script>
+/* ==========================================================================
+   1. EDITABLE STYLE CONFIG (Change this object to create Style v2, v3, etc.)
+   ========================================================================== */
+const STYLE_CONFIG = {
+  version: "1.0.0",
+  topic: "YOUR TOPIC TITLE",
+  duration: 32.0,
+  colors: {
+    bg: '#09090b',
+    ink: '#f4f1ea',
+    dim: '#8e8d94',
+    panel: '#151518',
+    line: '#26262e',
+    accent: '#ffd60a',
+    green: '#30d158',
+    red: '#ff3b30',
+    cyan: '#38bdf8'
+  },
+  fonts: {
+    display: '"Anton", Impact, sans-serif',
+    serif:   '"Instrument Serif", Georgia, serif',
+    body:    '"Inter", system-ui, sans-serif'
+  }
+};
+
+/* ==========================================================================
+   2. CORE MATHEMATICS & EASING HELPERS (CM)
+   ========================================================================== */
+const CM = {
+  clamp(x, a = 0, b = 1) { return Math.max(a, Math.min(b, x)); },
+  lerp(a, b, t) { return a + (b - a) * t; },
+  span(t, a, b) { return a === b ? (t >= a ? 1 : 0) : CM.clamp((t - a) / (b - a)); },
+  ez: {
+    out3(x) { x = CM.clamp(x); return 1 - Math.pow(1 - x, 3); },
+    inout3(x) { x = CM.clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; },
+    outExpo(x) { return x >= 1 ? 1 : 1 - Math.pow(2, -10 * x); },
+    outBack(x, c = 1.70158) { return 1 + (c + 1) * Math.pow(x - 1, 3) + c * Math.pow(x - 1, 2); }
+  },
+  rng(seed) {
+    let s = (typeof seed === 'string' ? seed.split('').reduce((a, b) => (a << 5) - a + b.charCodeAt(0), 0) : seed) >>> 0 || 1;
+    s = (s ^ (s << 13)) >>> 0; s = (s ^ (s >>> 17)) >>> 0; s = (s ^ (s << 5)) >>> 0;
+    const f = () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+    f.in = (a, b) => a + (b - a) * f();
+    return f;
+  },
+  noise1(seed) {
+    const r = CM.rng(seed);
+    const table = Array.from({ length: 256 }, () => r() * 2 - 1);
+    return (x) => {
+      const i = Math.floor(x) & 255, f = x - Math.floor(x), u = f * f * (3 - 2 * f);
+      return (1 - u) * table[i] + u * table[(i + 1) & 255];
+    };
+  },
+  layer(w, h) {
+    const c = document.createElement('canvas');
+    c.width = w; c.height = h;
+    return c;
+  }
+};
+
+const { clamp, lerp, span, rng, noise1, ez } = CM;
+const C = STYLE_CONFIG.colors;
+const disp = (px) => `${px}px ${STYLE_CONFIG.fonts.display}`;
+const inter = (px, w = 600) => `${w} ${px}px ${STYLE_CONFIG.fonts.body}`;
+const serif = (px) => `italic ${px}px ${STYLE_CONFIG.fonts.serif}`;
+
+/* ==========================================================================
+   3. TIMELINE & CAMERA SPECIFICATION
+   ========================================================================== */
+let IS_VERTICAL = false;
+let W = 1280;
+let HH = 720;
+let DURATION = STYLE_CONFIG.duration;
+
+// Scene Cut Transitions (Whip Pan, RGB Glitch, Flash Cut)
+const CUTS = [
+  { t: 4.5,  d: 0.28, type: 'whip', dir: 1 },
+  { t: 10.5, d: 0.24, type: 'glitch' },
+  { t: 15.5, d: 0.26, type: 'whipV', dir: 1 },
+  { t: 20.5, d: 0.16, type: 'flash' },
+  { t: 27.5, d: 0.24, type: 'glitch' },
+  { t: 30.5, d: 0.26, type: 'whip', dir: -1 }
+];
+
+// Punch Zooms on Key Emphasis Words
+const PUNCH = [
+  { t: 0.25, a: 0.04 }, { t: 1.50, a: 0.09 }, { t: 7.20, a: 0.06 },
+  { t: 16.00, a: 0.05 }, { t: 22.80, a: 0.18, k: 1.6 }, { t: 28.85, a: 0.12 }
+];
+
+// Screen Shake Hits
+const SHAKE = [
+  { t: 1.50, a: 8 }, { t: 7.20, a: 7 }, { t: 22.80, a: 20, k: 6 }, { t: 28.85, a: 18 }
+];
+
+/* ==========================================================================
+   4. VISUAL MOTION PRIMITIVES
+   ========================================================================== */
+const word = (s, t, font, color, extra) => Object.assign({ s, t, font, color: color || C.ink }, extra || {});
+function measure(c, it) { c.font = it.font; return c.measureText(it.s).width; }
+
+function row(c, items, x, y, gap, align = 'center') {
+  let tot = 0; items.forEach(it => { it.w = measure(c, it); tot += it.w; }); tot += gap * (items.length - 1);
+  let cx = align === 'center' ? x - tot / 2 : x;
+  items.forEach(it => { it.x = cx; it.cx = cx + it.w / 2; it.y = y; cx += it.w + gap; });
+  return { x0: align === 'center' ? x - tot / 2 : x, w: tot };
+}
+
+// Kinetic Slam with Expo-Ease & Motion Blur
+function slam(c, it, t, o = {}) {
+  if (t < it.t) return;
+  const u = span(t, it.t, it.t + (o.dur || 0.2)), e = ez.outExpo(u), s = lerp(o.from || 1.45, 1, e);
+  c.save(); c.translate(it.cx, it.y); c.scale(s, s);
+  c.globalAlpha = (o.alpha == null ? 1 : o.alpha) * Math.min(1, u * 3.5);
+  if (u < 1 && !o.noBlur) { const b = (1 - e) * 8; if (b > 0.5) c.filter = `blur(${b.toFixed(1)}px)`; }
+  c.font = it.font; c.textAlign = 'center'; c.textBaseline = it.base || 'middle';
+  if (o.glow) { c.shadowColor = o.glow; c.shadowBlur = o.glowBlur || 35; }
+  c.fillStyle = o.color || it.color; c.fillText(it.s, 0, 0);
+  c.restore();
+}
+
+// Hand-Drawn Red Strikethrough
+function strike(c, x0, x1, y, p, col = C.red, w = 14) {
+  if (p <= 0) return; const e = ez.out3(clamp(p)), x = lerp(x0, x1, e);
+  c.save(); c.strokeStyle = col; c.lineWidth = w; c.lineCap = 'round'; c.shadowColor = col; c.shadowBlur = 12;
+  c.beginPath(); c.moveTo(x0, y); c.lineTo(x, y - 6); c.stroke(); c.restore();
+}
+
+function rr(c, x, y, w, h, r) { c.beginPath(); c.roundRect(x, y, w, h, r); }
+
+// 3D Perspective Projection (drawYaw)
+function drawYaw(c, src, cxCoord, cyCoord, w, h, yaw, alpha = 1.0) {
+  const f = 1500, cs = Math.cos(yaw), sn = Math.sin(yaw);
+  const proj = (x) => { const X = x * cs, Z = x * sn, k = f / (f + Z); return { x: cxCoord + X * k, k }; };
+  const L = proj(-w / 2), R = proj(w / 2);
+  c.save(); c.globalAlpha = alpha;
+  const sw = 4;
+  for (let sx = 0; sx < src.width; sx += sw) {
+    const p0 = proj((sx / src.width - 0.5) * w), p1 = proj(((sx + sw) / src.width - 0.5) * w), hh = (h * (p0.k + p1.k)) / 2;
+    c.drawImage(src, sx, 0, sw, src.height, p0.x, cyCoord - hh / 2, p1.x - p0.x + 0.8, hh);
+  }
+  c.restore();
+}
+
+// Procedural Rubber Stamp Layer
+let STAMP_CACHE = {};
+function getStampLayer(text, color) {
+  if (STAMP_CACHE[text]) return STAMP_CACHE[text];
+  const stamp = CM.layer(420, 200); const x = stamp.getContext('2d');
+  x.strokeStyle = color; x.lineWidth = 12; rr(x, 10, 10, 400, 180, 20); x.stroke();
+  x.fillStyle = color; x.font = disp(110); x.textAlign = 'center'; x.textBaseline = 'middle'; x.letterSpacing = '5px';
+  x.fillText(text, 210, 105);
+  x.globalCompositeOperation = 'destination-out'; const r = rng('stamp' + text);
+  for (let i = 0; i < 400; i++) { x.globalAlpha = r.in(0.3, 1); x.beginPath(); x.arc(r() * 420, r() * 200, r.in(0.8, 3.0), 0, 7); x.fill(); }
+  STAMP_CACHE[text] = stamp;
+  return stamp;
+}
+
+/* ==========================================================================
+   5. BACKGROUND & FINISHING (Vignette + Drifting Grid)
+   ========================================================================== */
+function drawBackground(c, t) {
+  c.fillStyle = C.bg; c.fillRect(0, 0, W, HH);
+  const glow = (x, y, r, col) => { const g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); c.fillStyle = g; c.fillRect(0, 0, W, HH); };
+  glow(W * 0.25, HH * 0.25, 650, 'rgba(56, 189, 248, 0.05)');
+  glow(W * 0.8, HH * 0.75, 650, 'rgba(48, 209, 88, 0.045)');
+
+  // Grid
+  c.save(); c.strokeStyle = 'rgba(244,241,234,0.025)'; c.lineWidth = 1; c.beginPath();
+  const off = (t * 10) % 80;
+  for (let x = -off; x < W; x += 80) { c.moveTo(x, 0); c.lineTo(x, HH); }
+  for (let y = -off * 0.5; y < HH; y += 80) { c.moveTo(0, y); c.lineTo(W, y); }
+  c.stroke(); c.restore();
+}
+
+function drawFinishing(c, t) {
+  const vig = c.createRadialGradient(W / 2, HH / 2, Math.min(W, HH) * 0.45, W / 2, HH / 2, Math.max(W, HH) * 0.85);
+  vig.addColorStop(0, 'rgba(0,0,0,0)'); vig.addColorStop(1, 'rgba(0,0,0,0.65)');
+  c.fillStyle = vig; c.fillRect(0, 0, W, HH);
+}
+
+/* ==========================================================================
+   6. SEVEN CUSTOMIZABLE SCENE SLOTS (Replace text/props for any topic)
+   ========================================================================== */
+
+// Scene 0: Hook (0.0s - 4.5s)
+function scene0_Hook(c, t) {
+  const sy = IS_VERTICAL ? 520 : 200;
+  const r1 = [word('STOP', 0.25, disp(IS_VERTICAL ? 120 : 110), C.ink), word('DEPLOYING', 0.55, disp(IS_VERTICAL ? 120 : 110), C.ink)];
+  const r2 = [word('VIRTUAL', 1.0, disp(IS_VERTICAL ? 150 : 140), C.red), word('MACHINES.', 1.5, disp(IS_VERTICAL ? 150 : 140), C.ink)];
+  row(c, r1, W / 2, sy, 24);
+  const b2 = row(c, r2, W / 2, sy + (IS_VERTICAL ? 140 : 110), 26);
+
+  const dimA = 1 - 0.6 * span(t, 1.9, 2.1);
+  r1.forEach(it => slam(c, it, t, { alpha: dimA }));
+  r2.forEach(it => slam(c, it, t, { alpha: dimA, from: 1.6 }));
+  strike(c, b2.x0 - 24, b2.x0 + b2.w + 24, sy + (IS_VERTICAL ? 140 : 110), span(t, 1.9, 2.1), C.red, 16);
+
+  if (t >= 2.5) {
+    const r3 = [
+      word('just for a', 2.5, inter(IS_VERTICAL ? 40 : 36, 600), C.dim, { base: 'alphabetic' }),
+      word('single service.', 3.3, serif(IS_VERTICAL ? 104 : 92), C.accent, { base: 'alphabetic' })
+    ];
+    row(c, r3, W / 2, sy + (IS_VERTICAL ? 280 : 220), 20);
+    slam(c, r3[0], t, { from: 1.15 });
+    slam(c, r3[1], t, { from: 1.6, glow: 'rgba(255,214,10,0.4)', glowBlur: 40 });
+  }
+}
+
+// Scene 1: Problem / Architecture Bloat (4.5s - 10.5s)
+let PROBLEM_CARD = null;
+function getProblemCard() {
+  if (PROBLEM_CARD) return PROBLEM_CARD;
+  PROBLEM_CARD = CM.layer(IS_VERTICAL ? 740 : 700, IS_VERTICAL ? 540 : 420);
+  const x = PROBLEM_CARD.getContext('2d');
+  const w = PROBLEM_CARD.width, h = PROBLEM_CARD.height;
+  x.fillStyle = 'rgba(18, 18, 22, 0.95)'; x.strokeStyle = 'rgba(255, 255, 255, 0.12)'; x.lineWidth = 2;
+  rr(x, 10, 10, w - 20, h - 20, 18); x.fill(); x.stroke();
+
+  const layers = [
+    { name: 'Application & Runtime', col: '#38bdf8', sub: 'Isolated Service' },
+    { name: 'GUEST OPERATING SYSTEM', col: '#ff3b30', sub: '4 GB Bloat · Full Kernel & Daemons' },
+    { name: 'Hypervisor Virtualization', col: '#8e8d94', sub: 'Type-2 Hardware Emulation' },
+    { name: 'Physical Server Hardware', col: '#484852', sub: 'Compute & Memory' }
+  ];
+  let curY = 32; const lh = (h - 64) / 4 - 8;
+  layers.forEach((l, i) => {
+    x.fillStyle = (i === 1) ? 'rgba(255, 59, 48, 0.18)' : 'rgba(255, 255, 255, 0.04)';
+    x.strokeStyle = l.col; x.lineWidth = (i === 1) ? 2.5 : 1.5;
+    rr(x, 30, curY, w - 60, lh, 10); x.fill(); x.stroke();
+    x.fillStyle = l.col; x.font = '800 22px "Inter", sans-serif'; x.fillText(l.name, 50, curY + lh / 2 - 4);
+    x.fillStyle = '#8e8d94'; x.font = '600 14px "Inter", sans-serif'; x.fillText(l.sub, 50, curY + lh / 2 + 18);
+    curY += lh + 8;
+  });
+  return PROBLEM_CARD;
+}
+
+function scene1_Problem(c, t) {
+  const cy = IS_VERTICAL ? HH * 0.42 : HH * 0.48;
+  const yaw = lerp(0.18, -0.05, ez.out3(span(t, 4.5, 10.5)));
+  const card = getProblemCard();
+  drawYaw(c, card, W / 2, cy, card.width, card.height, yaw, 1.0);
+
+  if (t >= 7.2) {
+    const s = ez.outBack(span(t, 7.2, 7.45));
+    c.save(); c.translate(W / 2 + (IS_VERTICAL ? 0 : 260), cy + (IS_VERTICAL ? 320 : -120));
+    c.scale(s, s); c.fillStyle = 'rgba(255, 59, 48, 0.95)';
+    rr(c, -160, -28, 320, 56, 12); c.fill();
+    c.fillStyle = '#ffffff'; c.font = '800 18px "Inter", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText('⚠ 4096 MB MEMORY OVERHEAD', 0, 0); c.restore();
+  }
+}
+
+// Scene 2: 3D Console Mechanism (10.5s - 15.5s)
+let MECHANISM_CARD = null;
+function getMechanismCard() {
+  if (MECHANISM_CARD) return MECHANISM_CARD;
+  MECHANISM_CARD = CM.layer(IS_VERTICAL ? 740 : 720, IS_VERTICAL ? 540 : 420);
+  const x = MECHANISM_CARD.getContext('2d');
+  const w = MECHANISM_CARD.width, h = MECHANISM_CARD.height;
+  x.fillStyle = 'rgba(18, 18, 24, 0.95)'; x.strokeStyle = 'rgba(56, 189, 248, 0.35)'; x.lineWidth = 2;
+  rr(x, 10, 10, w - 20, h - 20, 18); x.fill(); x.stroke();
+
+  // Traffic lights
+  x.fillStyle = '#ff5f56'; x.beginPath(); x.arc(36, 34, 7, 0, 7); x.fill();
+  x.fillStyle = '#ffbd2e'; x.beginPath(); x.arc(58, 34, 7, 0, 7); x.fill();
+  x.fillStyle = '#27c93f'; x.beginPath(); x.arc(80, 34, 7, 0, 7); x.fill();
+  x.fillStyle = '#8e8d94'; x.font = '600 14px "Inter", sans-serif'; x.fillText('engine://daemon/namespaces-cgroups', 115, 38);
+
+  const pills = [
+    { title: 'PID Namespace', desc: 'Process tree isolation' },
+    { title: 'NET Namespace', desc: 'Virtual network bridge interface' },
+    { title: 'cgroups (Control Groups)', desc: 'Strict CPU & RAM hardware limits' }
+  ];
+  let curY = 80; const nh = (h - 180) / 3;
+  pills.forEach(p => {
+    x.fillStyle = 'rgba(56, 189, 248, 0.08)'; x.strokeStyle = 'rgba(56, 189, 248, 0.3)'; x.lineWidth = 1.5;
+    rr(x, 30, curY, w - 60, nh, 12); x.fill(); x.stroke();
+    x.fillStyle = '#38bdf8'; x.font = '800 20px "Inter", sans-serif'; x.fillText('⚡ ' + p.title, 50, curY + nh / 2 - 4);
+    x.fillStyle = '#f4f1ea'; x.font = '500 14px "Inter", sans-serif'; x.fillText(p.desc, 50, curY + nh / 2 + 18);
+    curY += nh + 10;
+  });
+  return MECHANISM_CARD;
+}
+
+function scene2_3DMockup(c, t) {
+  const cy = IS_VERTICAL ? HH * 0.42 : HH * 0.48;
+  const yaw = lerp(-0.15, 0.08, ez.out3(span(t, 10.5, 15.5)));
+  const card = getMechanismCard();
+  drawYaw(c, card, W / 2, cy, card.width, card.height, yaw, 1.0);
+}
+
+// Scene 3: Sub-100ms Speedometer (15.5s - 20.5s)
+function scene3_SpeedTimer(c, t) {
+  const sy = IS_VERTICAL ? 420 : 180;
+  const r1 = [word('LIGHTWEIGHT', 15.5, disp(IS_VERTICAL ? 96 : 84), C.cyan), word('CONTAINERS', 15.8, disp(IS_VERTICAL ? 96 : 84), C.ink)];
+  row(c, r1, W / 2, sy, 20); r1.forEach(it => slam(c, it, t));
+
+  const ms = Math.round(lerp(0, 85, ez.out3(span(t, 16.0, 18.2))));
+  const cy = sy + (IS_VERTICAL ? 220 : 150);
+  c.save(); c.translate(W / 2, cy);
+  c.font = '900 ' + (IS_VERTICAL ? 120 : 100) + 'px "Anton", sans-serif'; c.fillStyle = C.green;
+  c.shadowColor = 'rgba(48, 209, 88, 0.6)'; c.shadowBlur = 30; c.textAlign = 'center';
+  c.fillText(ms + ' MS', 0, 0);
+  c.font = 'italic 700 ' + (IS_VERTICAL ? 42 : 36) + 'px "Instrument Serif", serif'; c.fillStyle = C.accent;
+  c.fillText('Cold Spin-Up Speed', 0, IS_VERTICAL ? 65 : 55);
+  c.restore();
+}
+
+// Scene 4: 90% Rolling Stat & Flash (20.5s - 27.5s)
+function scene4_RollingStat(c, t) {
+  const sy = IS_VERTICAL ? 460 : 200;
+  const count = Math.round(90 * ez.out3(span(t, 20.6, 22.8)));
+
+  c.save(); c.translate(W / 2, sy);
+  c.font = '900 ' + (IS_VERTICAL ? 220 : 180) + 'px "Anton", sans-serif'; c.fillStyle = C.green;
+  c.shadowColor = 'rgba(48, 209, 88, 0.65)'; c.shadowBlur = 45; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText(count + '%', 0, 0); c.restore();
+
+  const r1 = [word('LESS', 22.8, disp(IS_VERTICAL ? 88 : 78), C.ink), word('MEMORY', 23.1, disp(IS_VERTICAL ? 88 : 78), C.ink), word('OVERHEAD', 23.4, disp(IS_VERTICAL ? 88 : 78), C.accent)];
+  row(c, r1, W / 2, sy + (IS_VERTICAL ? 160 : 130), 20); r1.forEach(it => slam(c, it, t));
+}
+
+// Scene 5: Tactile Rubber Stamp Rejection (27.5s - 30.5s)
+function scene5_RejectionStamp(c, t) {
+  const sy = IS_VERTICAL ? 520 : 240;
+  const r1 = [word('MONOLITHIC', 27.8, disp(IS_VERTICAL ? 120 : 110), C.red), word('INFRASTRUCTURE', 28.1, disp(IS_VERTICAL ? 120 : 110), C.ink)];
+  const b = row(c, r1, W / 2, sy, 22); r1.forEach(it => slam(c, it, t));
+  strike(c, b.x0 - 20, b.x0 + b.w + 20, sy, span(t, 28.4, 28.6), C.red, 18);
+
+  if (t >= 28.85) {
+    const u = span(t, 28.85, 29.05);
+    const s = lerp(2.2, 1.0, ez.outExpo(u));
+    const stamp = getStampLayer('DEPRECATED', C.red);
+    c.save(); c.translate(W / 2, sy + 30); c.rotate(-0.16); c.scale(s, s);
+    c.globalAlpha = Math.min(1, u * 4);
+    c.drawImage(stamp, -stamp.width / 2, -stamp.height / 2);
+    c.restore();
+  }
+}
+
+// Scene 6: Creator Takeaway Checklist (30.5s - 32.0s)
+function scene6_Takeaway(c, t) {
+  const sy = IS_VERTICAL ? 420 : 180;
+  const r1 = [word('CONTAINERIZE', 30.5, disp(IS_VERTICAL ? 104 : 96), C.cyan), word('YOUR STACK', 30.8, disp(IS_VERTICAL ? 104 : 96), C.ink)];
+  row(c, r1, W / 2, sy, 24); r1.forEach(it => slam(c, it, t));
+
+  const items = [
+    { text: 'Instant Sub-100ms Spin-Up', t: 31.0 },
+    { text: '90% Memory Overhead Reduction', t: 31.3 },
+    { text: 'Identical Dev & Production Parity', t: 31.6 }
+  ];
+  let curY = sy + (IS_VERTICAL ? 140 : 110);
+  items.forEach(it => {
+    if (t < it.t) return;
+    const s = ez.outBack(span(t, it.t, it.t + 0.22));
+    c.save(); c.translate(W / 2, curY); c.scale(s, s);
+    c.fillStyle = 'rgba(255, 255, 255, 0.05)'; c.strokeStyle = '#30d158'; c.lineWidth = 1.5;
+    rr(c, -260, -26, 520, 52, 12); c.fill(); c.stroke();
+    c.fillStyle = '#30d158'; c.font = '800 20px "Inter", sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle';
+    c.fillText('✓  ' + it.text, -230, 0);
+    c.restore();
+    curY += IS_VERTICAL ? 80 : 66;
+  });
+}
+
+/* ==========================================================================
+   7. COMPOSITOR & CAMERA ENGINE
+   ========================================================================== */
+const SCENES = [
+  scene0_Hook, scene1_Problem, scene2_3DMockup,
+  scene3_SpeedTimer, scene4_RollingStat, scene5_RejectionStamp, scene6_Takeaway
+];
+
+function getSceneIndex(t) {
+  let idx = 0; for (const cut of CUTS) if (t >= cut.t) idx++;
+  return Math.min(idx, SCENES.length - 1);
+}
+
+function getCamera(t) {
+  let z = 1.0, dx = 0, dy = 0;
+  for (const p of PUNCH) {
+    const d = t - p.t;
+    if (d >= 0 && d < 0.4) z += p.a * (d < 0.06 ? ez.out3(d / 0.06) : Math.exp(-(d - 0.06) * (p.k || 3.0)));
+  }
+  for (const s of SHAKE) {
+    const d = t - s.t;
+    if (d >= 0 && d < 0.8) {
+      const e = s.a * Math.exp(-d * 7.0);
+      dx += (rng('sx' + Math.floor(t * 30))() * 2 - 1) * e;
+      dy += (rng('sy' + Math.floor(t * 30))() * 2 - 1) * e;
+    }
+  }
+  return { z, dx, dy };
+}
+
+const cv = document.getElementById('stage');
+const cx = cv.getContext('2d');
+
+function renderScene(t) {
+  drawBackground(cx, t);
+
+  const cam = getCamera(t);
+  cx.save();
+  cx.translate(W / 2 + cam.dx, HH / 2 + cam.dy);
+  cx.scale(cam.z, cam.z);
+  cx.translate(-W / 2, -HH / 2);
+
+  // Transitions
+  let inCut = false;
+  for (const cut of CUTS) {
+    if (t >= cut.t - cut.d / 2 && t <= cut.t + cut.d / 2) {
+      inCut = true;
+      const u = (t - (cut.t - cut.d / 2)) / cut.d;
+      if (cut.type === 'whip') {
+        const offX = lerp(0, -W * cut.dir, ez.inout3(u));
+        cx.save(); cx.translate(offX, 0); SCENES[getSceneIndex(cut.t - 0.1)](cx, t); cx.restore();
+        cx.save(); cx.translate(offX + W * cut.dir, 0); SCENES[getSceneIndex(cut.t + 0.1)](cx, t); cx.restore();
+      } else if (cut.type === 'flash') {
+        SCENES[getSceneIndex(t)](cx, t);
+        const flashA = 1 - Math.abs(u - 0.5) * 2;
+        cx.fillStyle = `rgba(255, 255, 255, ${flashA * 0.9})`; cx.fillRect(0, 0, W, HH);
+      } else {
+        SCENES[getSceneIndex(t)](cx, t);
+        cx.fillStyle = `rgba(56, 189, 248, 0.25)`; cx.fillRect(0, (rng(t)() * HH), W, 20);
+      }
+      break;
+    }
+  }
+
+  if (!inCut) SCENES[getSceneIndex(t)](cx, t);
+  cx.restore();
+
+  if (t >= 22.8 && t <= 23.4) {
+    const fa = (1 - (t - 22.8) / 0.6) * 0.7;
+    cx.fillStyle = `rgba(255, 255, 255, ${fa})`; cx.fillRect(0, 0, W, HH);
+  }
+
+  drawFinishing(cx, t);
+}
+
+/* ==========================================================================
+   8. SYNTHESIZED SOUND EFFECTS KIT (Zero External Files)
+   ========================================================================== */
+const SFX = (() => {
+  let ac = null;
+  function getContext() {
+    if (!ac) ac = new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  }
+  return {
+    slam() {
+      const c = getContext(), t = c.currentTime;
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.frequency.setValueAtTime(150, t); osc.frequency.exponentialRampToValueAtTime(50, t + 0.18);
+      g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+      osc.connect(g); g.connect(c.destination); osc.start(t); osc.stop(t + 0.22);
+    },
+    boom() {
+      const c = getContext(), t = c.currentTime;
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.frequency.setValueAtTime(95, t); osc.frequency.exponentialRampToValueAtTime(32, t + 1.2);
+      g.gain.setValueAtTime(0.7, t); g.gain.exponentialRampToValueAtTime(0.001, t + 1.4);
+      osc.connect(g); g.connect(c.destination); osc.start(t); osc.stop(t + 1.5);
+    },
+    stamp() {
+      const c = getContext(), t = c.currentTime;
+      const osc = c.createOscillator(), g = c.createGain();
+      osc.frequency.setValueAtTime(180, t); osc.frequency.exponentialRampToValueAtTime(45, t + 0.22);
+      g.gain.setValueAtTime(0.8, t); g.gain.exponentialRampToValueAtTime(0.01, t + 0.25);
+      osc.connect(g); g.connect(c.destination); osc.start(t); osc.stop(t + 0.26);
+    }
+  };
+})();
+
+/* ==========================================================================
+   9. INTERACTIVE TRANSPORT & HEADLESS RENDER HOOKS
+   ========================================================================== */
+let currentTime = 0;
+let isPlaying = false;
+let animReq = null;
+let lastTimestamp = 0;
+
+const playBtn = document.getElementById('playBtn');
+const scrubber = document.getElementById('scrubber');
+const timeDisp = document.getElementById('timeDisp');
+
+function updateUI(t) {
+  scrubber.value = t;
+  const m = Math.floor(t / 60), s = Math.floor(t % 60);
+  timeDisp.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} / 00:32`;
+}
+
+function seek(t) {
+  currentTime = CM.clamp(t, 0, DURATION);
+  renderScene(currentTime);
+  updateUI(currentTime);
+}
+
+function loop(timestamp) {
+  if (!isPlaying) return;
+  if (!lastTimestamp) lastTimestamp = timestamp;
+  const delta = (timestamp - lastTimestamp) / 1000;
+  lastTimestamp = timestamp;
+
+  currentTime += delta;
+  if (currentTime >= DURATION) {
+    pause();
+    seek(0);
+    return;
+  }
+  renderScene(currentTime);
+  updateUI(currentTime);
+  animReq = requestAnimationFrame(loop);
+}
+
+function play() {
+  isPlaying = true;
+  playBtn.textContent = 'Pause';
+  lastTimestamp = performance.now();
+  animReq = requestAnimationFrame(loop);
+}
+
+function pause() {
+  isPlaying = false;
+  playBtn.textContent = 'Play';
+  lastTimestamp = 0;
+  if (animReq) cancelAnimationFrame(animReq);
+}
+
+// Headless Render Hooks for Puppeteer / Playwright / FFmpeg
+window.seek = seek;
+window.DURATION = DURATION;
+
+playBtn.addEventListener('click', () => isPlaying ? pause() : play());
+scrubber.addEventListener('input', (e) => seek(parseFloat(e.target.value)));
+
+// Format Toggle: 16:9 Landscape vs 9:16 Vertical Shorts
+const stageBox = document.getElementById('stageBox');
+const btn16x9 = document.getElementById('btn16x9');
+const btn9x16 = document.getElementById('btn9x16');
+
+btn16x9.addEventListener('click', () => {
+  IS_VERTICAL = false;
+  W = 1280; HH = 720;
+  cv.width = W; cv.height = HH;
+  stageBox.classList.remove('vertical');
+  btn16x9.classList.add('active');
+  btn9x16.classList.remove('active');
+  seek(currentTime);
+});
+
+btn9x16.addEventListener('click', () => {
+  IS_VERTICAL = true;
+  W = 1080; HH = 1920;
+  cv.width = W; cv.height = HH;
+  stageBox.classList.add('vertical');
+  btn9x16.classList.add('active');
+  btn16x9.classList.remove('active');
+  seek(currentTime);
+});
+
+// Initial Render
+seek(0);
+</script>
+</body>
+</html>
