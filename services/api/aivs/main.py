@@ -44,6 +44,15 @@ class SceneUpdateRequest(BaseModel):
     status: str | None = None
 
 
+class V2TemplateGenerateRequest(BaseModel):
+    topic: str = Field(min_length=3, max_length=1500)
+    niche_id: str = Field(default="youtube_growth")
+    target_duration_s: int = Field(default=60, ge=15, le=600)
+    aspect_ratio: str = Field(default="9:16")
+    mode: str = Field(default="master_auto")
+    custom_instructions: str | None = None
+
+
 DEFAULT_USER_SETTINGS = {
     "theme": "dark",
     "accent_color": "blue",
@@ -528,6 +537,28 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
         store().update_job(jid, state="queued", error=None)
         app.state.worker.submit(jid)
         return store().get_job(jid)
+
+    # --------------------------------------------------------------------------
+    # AI Video Studio V2 — Top 10 Niche Templates & Master Blueprint Engine
+    # --------------------------------------------------------------------------
+    @app.get("/api/v2/templates/niches")
+    def get_v2_niches():
+        from packages.creator_engine.templates import TOP_10_NICHES
+        return {"niches": TOP_10_NICHES}
+
+    @app.post("/api/v2/templates/generate")
+    def generate_v2_template(req: V2TemplateGenerateRequest):
+        from packages.creator_engine.templates import TemplateGenerator
+        generator = TemplateGenerator()
+        blueprint = generator.generate_blueprint(
+            topic=req.topic,
+            niche_id=req.niche_id,
+            target_duration_s=req.target_duration_s,
+            aspect_ratio=req.aspect_ratio,
+            mode=req.mode,
+            custom_instructions=req.custom_instructions
+        )
+        return blueprint
 
     return app
 

@@ -6,6 +6,7 @@ import { api, type Health } from "@/lib/api";
 
 const NAV_ITEMS = [
   { href: "/", label: "Dashboard", icon: "◫" },
+  { href: "/v2-studio", label: "V2 Template Studio", icon: "✨" },
   { href: "/projects", label: "Projects", icon: "▤" },
   { href: "/projects/new", label: "Create Project", icon: "＋" },
   { href: "/jobs", label: "Jobs", icon: "⚡" },

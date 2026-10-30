@@ -407,25 +407,58 @@ function drawCaptions(c, t) {{
 
 // Scene 1: Hook (0.0s - 7.2s)
 function sceneHook(c, t) {{
-  const sy = IS_VERTICAL ? 520 : 200;
-  const r1 = [word('MOST PEOPLE', 0.25, disp(IS_VERTICAL ? 120 : 110), C.ink), word('GIVE UP', 1.0, disp(IS_VERTICAL ? 120 : 110), C.ink)];
-  const r2 = [word('RIGHT BEFORE', 1.8, disp(IS_VERTICAL ? 130 : 120), C.red), word('SUCCESS.', 2.4, disp(IS_VERTICAL ? 130 : 120), C.ink)];
-  row(c, r1, W / 2, sy, 24);
-  const b2 = row(c, r2, W / 2, sy + (IS_VERTICAL ? 140 : 110), 26);
+  if (IS_VERTICAL) {{
+    // 9:16 Mobile Vertical Layout (Strict Safe Zones: Left/Right > 120px padding)
+    const sy = 440;
+    const r1 = [word('MOST PEOPLE', 0.25, disp(84), C.ink)];
+    const r2 = [word('GIVE UP', 0.9, disp(84), C.ink)];
+    const r3 = [word('RIGHT BEFORE', 1.8, disp(90), C.red)];
+    const r4 = [word('SUCCESS.', 2.4, disp(90), C.ink)];
 
-  const dimA = 1 - 0.6 * span(t, 3.2, 3.5);
-  r1.forEach(it => slam(c, it, t, {{ alpha: dimA }}));
-  r2.forEach(it => slam(c, it, t, {{ alpha: dimA, from: 1.6 }}));
-  strike(c, b2.x0 - 24, b2.x0 + b2.w + 24, sy + (IS_VERTICAL ? 140 : 110), span(t, 3.2, 3.5), C.red, 16);
+    row(c, r1, W / 2, sy, 0);
+    row(c, r2, W / 2, sy + 95, 0);
+    const b3 = row(c, r3, W / 2, sy + 205, 0);
+    const b4 = row(c, r4, W / 2, sy + 300, 0);
 
-  if (t >= 4.2) {{
-    const r3 = [
-      word('they hit what psychologists call', 4.2, inter(IS_VERTICAL ? 38 : 34, 600), C.dim, {{ base: 'alphabetic' }}),
-      word('the thirty-day wall.', 5.5, serif(IS_VERTICAL ? 104 : 92), C.accent, {{ base: 'alphabetic' }})
-    ];
-    row(c, r3, W / 2, sy + (IS_VERTICAL ? 280 : 220), 20);
-    slam(c, r3[0], t, {{ from: 1.15 }});
-    slam(c, r3[1], t, {{ from: 1.6, glow: 'rgba(255,214,10,0.4)', glowBlur: 40 }});
+    const dimA = 1 - 0.6 * span(t, 3.2, 3.5);
+    r1.forEach(it => slam(c, it, t, {{ alpha: dimA }}));
+    r2.forEach(it => slam(c, it, t, {{ alpha: dimA }}));
+    r3.forEach(it => slam(c, it, t, {{ alpha: dimA, from: 1.5 }}));
+    r4.forEach(it => slam(c, it, t, {{ alpha: dimA, from: 1.5 }}));
+
+    strike(c, b3.x0 - 24, b3.x0 + b3.w + 24, sy + 205, span(t, 3.2, 3.5), C.red, 16);
+    strike(c, b4.x0 - 24, b4.x0 + b4.w + 24, sy + 300, span(t, 3.2, 3.5), C.red, 16);
+
+    if (t >= 4.2) {{
+      const sub1 = [word('they hit what psychologists call', 4.2, inter(28, 600), C.dim, {{ base: 'middle' }})];
+      const sub2 = [word('the thirty-day wall.', 5.5, serif(78), C.accent, {{ base: 'middle' }})];
+      row(c, sub1, W / 2, sy + 430, 0);
+      row(c, sub2, W / 2, sy + 510, 0);
+      slam(c, sub1[0], t, {{ from: 1.15 }});
+      slam(c, sub2[0], t, {{ from: 1.6, glow: 'rgba(255,214,10,0.5)', glowBlur: 40 }});
+    }}
+  }} else {{
+    // 16:9 Landscape Layout
+    const sy = 200;
+    const r1 = [word('MOST PEOPLE', 0.25, disp(110), C.ink), word('GIVE UP', 1.0, disp(110), C.ink)];
+    const r2 = [word('RIGHT BEFORE', 1.8, disp(120), C.red), word('SUCCESS.', 2.4, disp(120), C.ink)];
+    row(c, r1, W / 2, sy, 24);
+    const b2 = row(c, r2, W / 2, sy + 110, 26);
+
+    const dimA = 1 - 0.6 * span(t, 3.2, 3.5);
+    r1.forEach(it => slam(c, it, t, {{ alpha: dimA }}));
+    r2.forEach(it => slam(c, it, t, {{ alpha: dimA, from: 1.6 }}));
+    strike(c, b2.x0 - 24, b2.x0 + b2.w + 24, sy + 110, span(t, 3.2, 3.5), C.red, 16);
+
+    if (t >= 4.2) {{
+      const r3 = [
+        word('they hit what psychologists call', 4.2, inter(34, 600), C.dim, {{ base: 'alphabetic' }}),
+        word('the thirty-day wall.', 5.5, serif(92), C.accent, {{ base: 'alphabetic' }})
+      ];
+      row(c, r3, W / 2, sy + 220, 20);
+      slam(c, r3[0], t, {{ from: 1.15 }});
+      slam(c, r3[1], t, {{ from: 1.6, glow: 'rgba(255,214,10,0.4)', glowBlur: 40 }});
+    }}
   }}
 }}
 
@@ -476,59 +509,128 @@ function sceneHabit(c, t) {{
 
 // Scene 3: 32° Ice Cube Phase Change (15.5s - 23.8s)
 function sceneIceCube(c, t) {{
-  const sy = IS_VERTICAL ? 420 : 180;
-  const r1 = [word('THE ICE CUBE', 15.5, disp(IS_VERTICAL ? 96 : 84), C.cyan), word('PHASE CHANGE', 16.2, disp(IS_VERTICAL ? 96 : 84), C.ink)];
-  row(c, r1, W / 2, sy, 20); r1.forEach(it => slam(c, it, t));
+  if (IS_VERTICAL) {{
+    const sy = 400;
+    const r1 = [word('THE ICE CUBE', 15.5, disp(82), C.cyan)];
+    const r2 = [word('PHASE CHANGE', 16.2, disp(82), C.ink)];
+    row(c, r1, W / 2, sy, 0);
+    row(c, r2, W / 2, sy + 90, 0);
+    r1.forEach(it => slam(c, it, t));
+    r2.forEach(it => slam(c, it, t));
 
-  // Temperature thermometer rising from 25 to 32
-  const tProg = ez.out3(span(t, 17.5, 22.5));
-  const temp = Math.round(lerp(25, 32, tProg));
+    const tProg = ez.out3(span(t, 17.5, 22.5));
+    const temp = Math.round(lerp(25, 32, tProg));
 
-  const cy = sy + (IS_VERTICAL ? 220 : 150);
-  c.save(); c.translate(W / 2, cy);
-  c.font = '900 ' + (IS_VERTICAL ? 140 : 110) + 'px "Anton", sans-serif';
-  c.fillStyle = (temp >= 32) ? C.green : C.accent;
-  c.shadowColor = (temp >= 32) ? 'rgba(48, 209, 88, 0.6)' : 'rgba(255, 214, 10, 0.6)';
-  c.shadowBlur = 35;
-  c.textAlign = 'center';
-  c.fillText(temp + '° FAHRENHEIT', 0, 0);
+    const cy = sy + 250;
+    c.save(); c.translate(W / 2, cy);
+    c.font = '900 120px "Anton", sans-serif';
+    c.fillStyle = (temp >= 32) ? C.green : C.accent;
+    c.shadowColor = (temp >= 32) ? 'rgba(48, 209, 88, 0.6)' : 'rgba(255, 214, 10, 0.6)';
+    c.shadowBlur = 35;
+    c.textAlign = 'center';
+    c.fillText(temp + '° FAHRENHEIT', 0, 0);
 
-  c.font = 'italic 700 ' + (IS_VERTICAL ? 42 : 36) + 'px "Instrument Serif", serif';
-  c.fillStyle = C.ink;
-  c.fillText((temp >= 32) ? '⚡ Radical Phase Change Begins!' : 'Heating room with zero visible change...', 0, IS_VERTICAL ? 70 : 60);
-  c.restore();
+    c.font = 'italic 700 36px "Instrument Serif", serif';
+    c.fillStyle = C.ink;
+    c.fillText((temp >= 32) ? '⚡ Radical Phase Change Begins!' : 'Heating room with zero visible change...', 0, 70);
+    c.restore();
+  }} else {{
+    const sy = 180;
+    const r1 = [word('THE ICE CUBE', 15.5, disp(84), C.cyan), word('PHASE CHANGE', 16.2, disp(84), C.ink)];
+    row(c, r1, W / 2, sy, 20); r1.forEach(it => slam(c, it, t));
+
+    const tProg = ez.out3(span(t, 17.5, 22.5));
+    const temp = Math.round(lerp(25, 32, tProg));
+
+    const cy = sy + 150;
+    c.save(); c.translate(W / 2, cy);
+    c.font = '900 110px "Anton", sans-serif';
+    c.fillStyle = (temp >= 32) ? C.green : C.accent;
+    c.shadowColor = (temp >= 32) ? 'rgba(48, 209, 88, 0.6)' : 'rgba(255, 214, 10, 0.6)';
+    c.shadowBlur = 35;
+    c.textAlign = 'center';
+    c.fillText(temp + '° FAHRENHEIT', 0, 0);
+
+    c.font = 'italic 700 36px "Instrument Serif", serif';
+    c.fillStyle = C.ink;
+    c.fillText((temp >= 32) ? '⚡ Radical Phase Change Begins!' : 'Heating room with zero visible change...', 0, 60);
+    c.restore();
+  }}
 }}
 
 // Scene 4: Stored Energy (23.8s - 32.5s)
 function sceneEnergy(c, t) {{
-  const sy = IS_VERTICAL ? 460 : 200;
-  const r1 = [word('THE STRUGGLE', 24.0, disp(IS_VERTICAL ? 100 : 90), C.ink), word('WAS NOT WASTED.', 24.8, disp(IS_VERTICAL ? 100 : 90), C.accent)];
-  row(c, r1, W / 2, sy, 20); r1.forEach(it => slam(c, it, t));
+  if (IS_VERTICAL) {{
+    const sy = 430;
+    const r1 = [word('THE STRUGGLE', 24.0, disp(82), C.ink)];
+    const r2 = [word('WAS NOT WASTED.', 24.8, disp(82), C.accent)];
+    row(c, r1, W / 2, sy, 0);
+    row(c, r2, W / 2, sy + 95, 0);
+    r1.forEach(it => slam(c, it, t));
+    r2.forEach(it => slam(c, it, t));
 
-  const r2 = [word('IT WAS STORED', 27.5, disp(IS_VERTICAL ? 88 : 78), C.cyan), word('POTENTIAL.', 28.2, disp(IS_VERTICAL ? 88 : 78), C.green)];
-  row(c, r2, W / 2, sy + (IS_VERTICAL ? 140 : 110), 20); r2.forEach(it => slam(c, it, t));
+    const r3 = [word('IT WAS STORED', 27.5, disp(78), C.cyan)];
+    const r4 = [word('POTENTIAL.', 28.2, disp(78), C.green)];
+    row(c, r3, W / 2, sy + 220, 0);
+    row(c, r4, W / 2, sy + 305, 0);
+    r3.forEach(it => slam(c, it, t));
+    r4.forEach(it => slam(c, it, t));
+  }} else {{
+    const sy = 200;
+    const r1 = [word('THE STRUGGLE', 24.0, disp(90), C.ink), word('WAS NOT WASTED.', 24.8, disp(90), C.accent)];
+    row(c, r1, W / 2, sy, 20); r1.forEach(it => slam(c, it, t));
+
+    const r2 = [word('IT WAS STORED', 27.5, disp(78), C.cyan), word('POTENTIAL.', 28.2, disp(78), C.green)];
+    row(c, r2, W / 2, sy + 110, 20); r2.forEach(it => slam(c, it, t));
+  }}
 }}
 
 // Scene 5: 99% Quitter Counter & White Flash (32.5s - 41.0s)
 function sceneQuitter(c, t) {{
-  const sy = IS_VERTICAL ? 460 : 200;
-  const count = Math.round(99 * ez.out3(span(t, 32.8, 35.2)));
+  if (IS_VERTICAL) {{
+    const sy = 430;
+    const count = Math.round(99 * ez.out3(span(t, 32.8, 35.2)));
 
-  c.save(); c.translate(W / 2, sy);
-  c.font = '900 ' + (IS_VERTICAL ? 220 : 180) + 'px "Anton", sans-serif'; c.fillStyle = C.green;
-  c.shadowColor = 'rgba(48, 209, 88, 0.65)'; c.shadowBlur = 45; c.textAlign = 'center'; c.textBaseline = 'middle';
-  c.fillText(count + '%', 0, 0); c.restore();
+    c.save(); c.translate(W / 2, sy);
+    c.font = '900 180px "Anton", sans-serif'; c.fillStyle = C.green;
+    c.shadowColor = 'rgba(48, 209, 88, 0.65)'; c.shadowBlur = 45; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(count + '%', 0, 0); c.restore();
 
-  const r1 = [word('QUIT RIGHT AT', 35.2, disp(IS_VERTICAL ? 88 : 78), C.ink), word('DAY TWENTY-NINE.', 36.0, disp(IS_VERTICAL ? 88 : 78), C.accent)];
-  row(c, r1, W / 2, sy + (IS_VERTICAL ? 160 : 130), 20); r1.forEach(it => slam(c, it, t));
+    const r1 = [word('QUIT RIGHT AT', 35.2, disp(76), C.ink)];
+    const r2 = [word('DAY TWENTY-NINE.', 36.0, disp(76), C.accent)];
+    row(c, r1, W / 2, sy + 140, 0);
+    row(c, r2, W / 2, sy + 225, 0);
+    r1.forEach(it => slam(c, it, t));
+    r2.forEach(it => slam(c, it, t));
 
-  if (t >= 37.5) {{
-    const s = ez.outBack(span(t, 37.5, 37.8));
-    c.save(); c.translate(W / 2, sy + (IS_VERTICAL ? 280 : 220)); c.scale(s, s);
-    c.fillStyle = 'rgba(255, 214, 10, 0.15)'; c.strokeStyle = '#ffd60a'; c.lineWidth = 2;
-    rr(c, -200, -30, 400, 60, 14); c.fill(); c.stroke();
-    c.fillStyle = '#ffd60a'; c.font = '800 22px "Inter", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.fillText('⚡ OUTLAST THE SILENCE', 0, 0); c.restore();
+    if (t >= 37.5) {{
+      const s = ez.outBack(span(t, 37.5, 37.8));
+      c.save(); c.translate(W / 2, sy + 330); c.scale(s, s);
+      c.fillStyle = 'rgba(255, 214, 10, 0.15)'; c.strokeStyle = '#ffd60a'; c.lineWidth = 2;
+      rr(c, -200, -30, 400, 60, 14); c.fill(); c.stroke();
+      c.fillStyle = '#ffd60a'; c.font = '800 22px "Inter", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('⚡ OUTLAST THE SILENCE', 0, 0); c.restore();
+    }}
+  }} else {{
+    const sy = 200;
+    const count = Math.round(99 * ez.out3(span(t, 32.8, 35.2)));
+
+    c.save(); c.translate(W / 2, sy);
+    c.font = '900 180px "Anton", sans-serif'; c.fillStyle = C.green;
+    c.shadowColor = 'rgba(48, 209, 88, 0.65)'; c.shadowBlur = 45; c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.fillText(count + '%', 0, 0); c.restore();
+
+    const r1 = [word('QUIT RIGHT AT', 35.2, disp(78), C.ink), word('DAY TWENTY-NINE.', 36.0, disp(78), C.accent)];
+    row(c, r1, W / 2, sy + 130, 20); r1.forEach(it => slam(c, it, t));
+
+    if (t >= 37.5) {{
+      const s = ez.outBack(span(t, 37.5, 37.8));
+      c.save(); c.translate(W / 2, sy + 220); c.scale(s, s);
+      c.fillStyle = 'rgba(255, 214, 10, 0.15)'; c.strokeStyle = '#ffd60a'; c.lineWidth = 2;
+      rr(c, -200, -30, 400, 60, 14); c.fill(); c.stroke();
+      c.fillStyle = '#ffd60a'; c.font = '800 22px "Inter", sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText('⚡ OUTLAST THE SILENCE', 0, 0); c.restore();
+    }}
   }}
 }}
 

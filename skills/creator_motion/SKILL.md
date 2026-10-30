@@ -12,23 +12,31 @@ references_urls:
 triggers: [kinetic, creator, typography, 3d_mockup, nafay, slam, rubber_stamp, tech, explain, architecture, shorts, reels, fast]
 priority: 10
 render:
-  visual_style: creator-dark
-  aspect_ratio: "both"
-  allowed_visual_types: [kinetic_slam, 3d_yaw_mockup, rolling_counter, rubber_stamp, speed_timer, summary_checklist]
-  allowed_element_kinds: [statement_caps, serif_accent, pill_card, strike_line, stamp_badge, code_window, metric_number]
+  visual_style: clean-technical
+  aspect_ratio: "9:16"
+  backdrop: warm_stage
+  allowed_visual_types: [architecture, animated_diagram, chart, icons_labels, layered_motion, hybrid]
+  allowed_element_kinds: []
   layout:
     max_elements_per_scene: 8
-    min_statement_font_px: 80
-    min_label_font_px: 24
-    key_metric_font_px: 180
-  pacing:
-    words_per_minute: 150
-    words_per_second: 2.5
-    scene_interval_s: [4.0, 6.0]
+    require_position_hints: false
+    min_gap_px: 24
   camera:
-    punch_zooms: true
-    screen_shake: true
-    transitions: [whip, glitch, flash, whipV]
+    max_zoom: 1.3
+    allow_focus: true
+    allow_pan: true
+    idle_push_in: 1.05
+  stock_card:
+    enabled: true
+    position: auto
+    max_seconds: 5.5
+  captions:
+    font_size: 44
+    max_words_per_line: 6
+sample:
+  title: "Docker Containers Under the Hood"
+  topic: "How Docker container isolation actually works"
+  script: "Most developers think containers are just tiny virtual machines. That is completely wrong. Every virtual machine forces a hypervisor to emulate hardware."
 ---
 
 # Creator Motion Graphics — Master Locked Skill (`SKILL.md`)

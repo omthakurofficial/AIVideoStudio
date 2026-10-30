@@ -422,6 +422,65 @@ export const api = {
   job: (id: string) => req<Job>(`/api/jobs/${id}`),
   retry: (id: string) => req<Job>(`/api/jobs/${id}/retry`, { method: "POST" }),
   cancel: (id: string) => req<Job>(`/api/jobs/${id}/cancel`, { method: "POST" }),
+
+  // V2 Templates Studio API
+  v2Niches: () => req<{ niches: V2NicheItem[] }>("/api/v2/templates/niches"),
+  v2GenerateTemplate: (body: {
+    topic: string;
+    niche_id: string;
+    target_duration_s: number;
+    aspect_ratio: string;
+    mode: string;
+    custom_instructions?: string;
+  }) => req<V2TemplateBlueprint>("/api/v2/templates/generate", { method: "POST", body: JSON.stringify(body) }),
+};
+
+export type V2NicheItem = {
+  id: string;
+  name: string;
+  category: string;
+  badge: string;
+  reference_channels: string;
+  description: string;
+  colors: { bg: string; accent: string; secondary: string; highlight: string; panel: string };
+  typography: { display: string; body: string; accent: string };
+  visual_elements: string[];
+  music_style: string;
+  default_aspect: "9:16" | "16:9";
+  sample_topics: string[];
+};
+
+export type V2SceneBlueprint = {
+  scene_number: number;
+  title: string;
+  start_s: number;
+  end_s: number;
+  duration_s: number;
+  target_word_count: number;
+  narration_guidance: string;
+  character_acting: string;
+  visual_choreography: string;
+  broll_layers: string;
+  camera_move: string;
+  transition_out: string;
+  sound_effects: string;
+};
+
+export type V2TemplateBlueprint = {
+  status: string;
+  project_title: string;
+  niche: V2NicheItem;
+  target_duration_s: number;
+  target_word_count: number;
+  aspect_ratio: string;
+  mode: string;
+  scenes: V2SceneBlueprint[];
+  music_bus: {
+    genre: string;
+    sidechain_ducking: string;
+    master_lufs: number;
+  };
+  portable_master_prompt: string;
 };
 
 export const sbApi = {
