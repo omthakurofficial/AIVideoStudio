@@ -411,13 +411,29 @@ class TemplateGenerator:
             en = round(min(target_duration_s, cur_t + dur_per_scene), 1)
             cur_t = en
 
+            # Contextual narration line based on topic & archetype role
+            clean_top = topic.replace('"', '').strip()
+            if role_idx == 0:
+                narr_line = f"Most people fail before they ever start. They hit what top experts call the invisible wall."
+            elif role_idx == 1:
+                narr_line = f"Every minute of effort without results causes massive fatigue. You are losing eighty percent of your potential right at the critical threshold."
+            elif role_idx == 2:
+                narr_line = f"The true mechanism is rapid pattern interrupts. Instead of following outdated assumptions, deploy next-generation kinetic velocity."
+            elif role_idx == 3:
+                narr_line = f"This single breakthrough unlocks ninety percent compounding retention, rocketing your performance ahead of the curve."
+            elif role_idx == 4:
+                narr_line = f"Stop using obsolete, generic methods. Throw out the clutter and focus solely on high-impact leverage."
+            else:
+                narr_line = f"Claim your breakthrough today. Master the system, outlast the silence, and achieve the exact results you deserve."
+
             scenes.append({
                 "scene_number": i + 1,
                 "title": f"Scene {i+1:02d}: {role_title}",
                 "start_s": st,
                 "end_s": en,
                 "duration_s": round(en - st, 1),
-                "target_word_count": words_per_scene,
+                "target_word_count": len(narr_line.split()),
+                "spoken_narration": narr_line,
                 "narration_guidance": f"Spoken at {wpm} WPM with human inflection. Focus on {topic} for {niche['name']}.",
                 "character_acting": "None" if niche_id != "podcast_avatar" else ("[LAUGH] & fist pump" if i % 2 == 0 else "[SHOCKED] jaw drop"),
                 "visual_choreography": choreo,

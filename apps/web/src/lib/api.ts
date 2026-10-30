@@ -424,7 +424,7 @@ export const api = {
   cancel: (id: string) => req<Job>(`/api/jobs/${id}/cancel`, { method: "POST" }),
 
   // V2 Templates Studio API
-  v2Niches: () => req<{ niches: V2NicheItem[]; voices: V2VoiceItem[]; max_duration_s: number }>("/api/v2/templates/niches"),
+  v2Niches: () => req<{ niches: V2NicheItem[]; voices: V2VoiceItem[]; models?: V2BedrockModelItem[]; max_duration_s: number }>("/api/v2/templates/niches"),
   v2GenerateTemplate: (body: {
     topic: string;
     niche_id: string;
@@ -432,11 +432,51 @@ export const api = {
     aspect_ratio: string;
     mode: string;
     voice_id?: string;
+    model_id?: string;
+    synthesize_audio?: boolean;
     custom_instructions?: string;
   }) => req<V2TemplateBlueprint>("/api/v2/templates/generate", { method: "POST", body: JSON.stringify(body) }),
+  v2SynthesizePlayer: (body: {
+    topic: string;
+    niche_id: string;
+    target_duration_s: number;
+    aspect_ratio: string;
+    mode: string;
+    voice_id?: string;
+    model_id?: string;
+    custom_instructions?: string;
+  }) => req<V2TemplateBlueprint>("/api/v2/templates/synthesize-player", { method: "POST", body: JSON.stringify(body) }),
   v2SavePreviewHtml: (html: string) => req<{ ok: boolean; url: string }>("/api/v2/templates/render-html-preview", { method: "POST", body: JSON.stringify({ html }) }),
   v2RenderMp4: (body: { html_file: string; master_wav: string; aspect_ratio: string }) =>
     req<{ ok: boolean; mp4_file: string; filename: string; download_url: string }>("/api/v2/templates/render-mp4", { method: "POST", body: JSON.stringify(body) }),
+};
+
+export type V2BedrockModelItem = {
+  id: string;
+  name: string;
+  vendor: string;
+  badge: string;
+  input_cost_per_1m: number;
+  output_cost_per_1m: number;
+  speed: string;
+  description: string;
+};
+
+export type V2TokenTelemetry = {
+  provider: string;
+  model_id: string;
+  model_label: string;
+  model_name: string;
+  vendor: string;
+  family: string;
+  input_tokens: number;
+  output_tokens: number;
+  total_tokens: number;
+  input_cost_usd: number;
+  output_cost_usd: number;
+  total_cost_usd: number;
+  latency_ms?: number;
+  official_pricing_url: string;
 };
 
 export type V2VoiceItem = {
@@ -471,6 +511,7 @@ export type V2SceneBlueprint = {
   end_s: number;
   duration_s: number;
   target_word_count: number;
+  spoken_narration?: string;
   narration_guidance: string;
   character_acting: string;
   visual_choreography: string;
@@ -488,6 +529,7 @@ export type V2TemplateBlueprint = {
   target_word_count: number;
   aspect_ratio: string;
   mode: string;
+  voice_id?: string;
   scenes: V2SceneBlueprint[];
   music_bus: {
     genre: string;
@@ -501,6 +543,9 @@ export type V2TemplateBlueprint = {
   master_mp3?: string;
   audio_base64?: string;
   has_audio?: boolean;
+  token_telemetry?: V2TokenTelemetry;
+  selected_model_id?: string;
+  audio_error?: string;
 };
 
 export const sbApi = {
