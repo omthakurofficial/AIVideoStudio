@@ -544,86 +544,35 @@ def create_app(settings: Settings | None = None, director_factory=None) -> FastA
     # --------------------------------------------------------------------------
     # AI Video Studio V2 — Top 10 Niche Templates & Master Blueprint Engine
     # --------------------------------------------------------------------------
-    BEDROCK_MODELS = [
-        {
-            "id": "apac.anthropic.claude-3-5-sonnet-20241022-v2:0",
-            "name": "Claude 3.5 Sonnet v2",
-            "vendor": "Anthropic",
-            "badge": "🧠 Flagship Creative Director",
-            "input_cost_per_1m": 3.00,
-            "output_cost_per_1m": 15.00,
-            "speed": "Balanced",
-            "description": "Highest retention narrative pacing, viral psychological hooks, cinematic choreography"
-        },
-        {
-            "id": "apac.anthropic.claude-3-haiku-20240307-v1:0",
-            "name": "Claude 3 Haiku",
-            "vendor": "Anthropic",
-            "badge": "⚡ Ultra-Fast & 90% Cost Saving",
-            "input_cost_per_1m": 0.25,
-            "output_cost_per_1m": 1.25,
-            "speed": "Ultra Fast",
-            "description": "Sub-second response, ultra-low token cost ($0.0003/video), great for rapid iteration"
-        },
-        {
-            "id": "au.anthropic.claude-haiku-4-5-20251001-v1:0",
-            "name": "Claude Haiku 4.5",
-            "vendor": "Anthropic",
-            "badge": "🚀 Next-Gen Fast Reasoning",
-            "input_cost_per_1m": 1.00,
-            "output_cost_per_1m": 5.00,
-            "speed": "Very Fast",
-            "description": "State-of-the-art fast model with higher structured prompt precision"
-        },
-        {
-            "id": "apac.amazon.nova-pro-v1:0",
-            "name": "Amazon Nova Pro",
-            "vendor": "Amazon",
-            "badge": "🌐 Multimodal Cinematic Reasoning",
-            "input_cost_per_1m": 0.80,
-            "output_cost_per_1m": 3.20,
-            "speed": "Fast",
-            "description": "AWS native multimodal model tailored for complex scene choreography"
-        },
-        {
-            "id": "apac.amazon.nova-lite-v1:0",
-            "name": "Amazon Nova Lite",
-            "vendor": "Amazon",
-            "badge": "💰 Ultra-Economical (~$0.0001/video)",
-            "input_cost_per_1m": 0.06,
-            "output_cost_per_1m": 0.24,
-            "speed": "Lightning",
-            "description": "Lowest cost Bedrock model available, saves 98% on token spend"
-        },
-        {
-            "id": "deepseek.v3.2",
-            "name": "DeepSeek V3.2",
-            "vendor": "DeepSeek",
-            "badge": "🎯 Viral Retention & Data Logic",
-            "input_cost_per_1m": 0.58,
-            "output_cost_per_1m": 1.68,
-            "speed": "Fast",
-            "description": "Specialized in pattern interrupts, contrarian angles, and analytical breakdowns"
-        },
-        {
-            "id": "minimax.minimax-m2.5",
-            "name": "MiniMax M2.5",
-            "vendor": "MiniMax",
-            "badge": "✍️ Narrative Conversational Writer",
-            "input_cost_per_1m": 0.30,
-            "output_cost_per_1m": 1.20,
-            "speed": "Fast",
-            "description": "Natural human cadence, great for podcast and explainer storytelling"
-        }
-    ]
-
     @app.get("/api/v2/templates/niches")
     def get_v2_niches():
         from packages.creator_engine.templates import TOP_10_NICHES
+        from services.api.aivs.pricing import _RAW_CATALOG
+
+        bedrock_models = []
+        for m in _RAW_CATALOG:
+            in_p = float(m.get("input_per_1m_usd", 1.0))
+            out_p = float(m.get("output_per_1m_usd", 5.0))
+            vendor = m.get("vendor", "AWS Bedrock")
+            family = m.get("family", vendor)
+            label = m.get("label", m["model_id"])
+            speed = "Lightning" if in_p <= 0.07 else ("Ultra Fast" if in_p <= 0.25 else ("Fast" if in_p <= 1.0 else "Balanced"))
+            bedrock_models.append({
+                "id": m["model_id"],
+                "name": label,
+                "vendor": vendor,
+                "family": family,
+                "badge": f"${in_p:.2f} / ${out_p:.2f} per 1M",
+                "input_cost_per_1m": in_p,
+                "output_cost_per_1m": out_p,
+                "speed": speed,
+                "description": f"Official AWS Bedrock: ${in_p:.2f} in / ${out_p:.2f} out per 1M tokens."
+            })
+
         return {
             "niches": TOP_10_NICHES,
             "voices": AVAILABLE_VOICES,
-            "models": BEDROCK_MODELS,
+            "models": bedrock_models,
             "max_duration_s": 600  # Up to 10 Minutes (600 seconds)
         }
 

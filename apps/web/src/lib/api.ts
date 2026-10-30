@@ -455,6 +455,7 @@ export type V2BedrockModelItem = {
   id: string;
   name: string;
   vendor: string;
+  family?: string;
   badge: string;
   input_cost_per_1m: number;
   output_cost_per_1m: number;
